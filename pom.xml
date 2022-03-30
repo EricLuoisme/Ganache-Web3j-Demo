@@ -21,6 +21,22 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Web3j依赖 -->
+        <dependency>
+            <groupId>org.web3j</groupId>
+            <artifactId>core</artifactId>
+            <version>5.0.0</version>
+        </dependency>
+
+        <!-- Okhttp -->
+        <!-- 自带的okhttp版本过低, 需要显式选用更高版本的-->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.9.3</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
