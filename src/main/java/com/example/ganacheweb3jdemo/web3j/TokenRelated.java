@@ -2,6 +2,7 @@ package com.example.ganacheweb3jdemo.web3j;
 
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
+import org.web3j.abi.Utils;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
@@ -47,6 +48,12 @@ public class TokenRelated {
 
         Function function = new Function("tokenId", new ArrayList<>(), Stream.of(TypeReference.create(Uint256.class)).collect(Collectors.toList()));
         List<Type> decode = FunctionReturnDecoder.decode(logObject_721.getTopics().get(3), function.getOutputParameters());
+
+        List<TypeReference<?>> outputParameters = Stream.of(TypeReference.create(Uint256.class))
+                .collect(Collectors.toList());
+
+        List<Type> TokenIdList_1 = FunctionReturnDecoder.decode(logObject_721.getTopics().get(3), Utils.convert(outputParameters));
+        System.out.println(TokenIdList_1.get(0).getValue());
 
 
         // ERC-1155 Single Log
