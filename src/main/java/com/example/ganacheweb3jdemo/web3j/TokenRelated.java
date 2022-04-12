@@ -73,5 +73,9 @@ public class TokenRelated {
                         "0x0000000000000000000000000000000000000000000000000000000000000000",
                         "0x000000000000000000000000723a9bb7abacf54e46b2b31ecfcca3b5921b9d52")
                 .collect(Collectors.toList()));
+
+
+        // chain node
+        String https_url = "https://kovan.infura.io/v3/36ad2ee634ef4b418b4b9fecbbda6883";
     }
 }
