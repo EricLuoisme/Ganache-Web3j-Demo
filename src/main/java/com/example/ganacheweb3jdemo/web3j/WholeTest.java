@@ -2,6 +2,9 @@ package com.example.ganacheweb3jdemo.web3j;
 
 import okhttp3.OkHttpClient;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 
@@ -31,6 +34,10 @@ public class WholeTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
+//        web3.ethLogFlowable(new EthFilter(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.Lag
+//        ))
 
 
     }
