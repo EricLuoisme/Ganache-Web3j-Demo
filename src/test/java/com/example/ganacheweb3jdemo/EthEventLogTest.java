@@ -1,6 +1,8 @@
 package com.example.ganacheweb3jdemo;
 
+import com.example.ganacheweb3jdemo.web3j.RemoteSubscribeTest;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.jta.atomikos.AtomikosProperties;
 import org.web3j.abi.*;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Uint256;
@@ -9,10 +11,12 @@ import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.EthTransaction;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,7 +36,8 @@ public class EthEventLogTest {
             = Stream.of(TypeReference.create(Address.class)).collect(Collectors.toList());
 
     public static final List<TypeReference<?>> UINT256_LIST_OUTPUT
-            = Stream.of(new TypeReference<DynamicArray<Uint256>>() {}).collect(Collectors.toList());
+            = Stream.of(new TypeReference<DynamicArray<Uint256>>() {
+    }).collect(Collectors.toList());
 
 
     @Test
@@ -146,7 +151,7 @@ public class EthEventLogTest {
         logObject_1155_single.setBlockNumber("0x1d4caa3");
         // the address for smart contract that accept ERC-1155 token
         logObject_1155_single.setAddress("0xcc57b6d9768e05e8cfb6081ec0f1cb4635e1548d");
-        // id, without value ???
+        // token id
         logObject_1155_single.setData("0x467fcabdddf8a5e4ddcfb6bc056755e5adfa099b560aca0cfe8afe071e2717050000000000000000000000000000000000000000000000056bc75e2d63100000");
         logObject_1155_single.setType("mined");
         logObject_1155_single.setTopics(Stream.of(
@@ -196,9 +201,50 @@ public class EthEventLogTest {
     }
 
     @Test
-    public void parseErc1155BatchLog() {
+    public void parseErc1155BatchLog() throws IOException {
 
+        // ERC-1155 Batch Log (From http://testnet-bsc-dataseed2.functionx.io:8545 Node)
+        EthLog.LogObject logObject_1155_batch = new EthLog.LogObject();
+        logObject_1155_batch.setRemoved(false);
+        logObject_1155_batch.setLogIndex("0xb");
+        logObject_1155_batch.setTransactionIndex("0x1");
+        logObject_1155_batch.setTransactionHash("0xf6a17dce026ba9373b1cd89a0b7231f1e39675d7010cd84a14685360f4bb9f7c");
+        logObject_1155_batch.setBlockHash("0x8b1bbb972a6b85b06fadeff37a22ce6da844ad5f0dfa94f6541be9f74f9deaea");
+        logObject_1155_batch.setBlockNumber("0x3e588a");
+        // the address for smart contract that accept ERC-1155 token
+        logObject_1155_batch.setAddress("0x907316f56b0be6d4cb5a455eef368d3a75d08501");
+        // data[0]: tokenIds, data[1]: tokenAmounts
+        logObject_1155_batch.setData("0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000" +
+                "1a0000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000" +
+                "1000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000030" +
+                "0000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000005000" +
+                "0000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000700000" +
+                "0000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000090000000" +
+                "00000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000a000000000" +
+                "0000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000" +
+                "0000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000" +
+                "0000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000" +
+                "0000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000" +
+                "000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001");
+        logObject_1155_batch.setType("null");
+        logObject_1155_batch.setTopics(Stream.of(
+                        // event keccak 256 signature
+                        "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb",
+                        // address for the ERC-1155 operator
+                        "0x000000000000000000000000e7698e900666687d5d0ef46ba7beaa39ca11d12c",
+                        // address send ERC-1155 token
+                        "0x000000000000000000000000e7698e900666687d5d0ef46ba7beaa39ca11d12c",
+                        // address receive ERC-1155 token
+                        "0x0000000000000000000000008cb9f475966cc409d3bb0b8f222841c65b7b8664")
+                .collect(Collectors.toList()));
 
+        List<TypeReference<Type>> nonIndexedParameters = RemoteSubscribeTest.EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH.event.getNonIndexedParameters();
+        List<Type> decode = FunctionReturnDecoder.decode(logObject_1155_batch.getData(), nonIndexedParameters);
+
+        Web3j web3j_functionx = Web3j.build(new HttpService("http://testnet-bsc-dataseed2.functionx.io:8545"));
+
+        EthTransaction tra = web3j_functionx.ethGetTransactionByHash(logObject_1155_batch.getTransactionHash()).send();
+        System.out.println(tra.toString());
     }
 
 }

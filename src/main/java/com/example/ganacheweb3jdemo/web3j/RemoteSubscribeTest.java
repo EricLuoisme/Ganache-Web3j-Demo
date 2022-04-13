@@ -8,10 +8,14 @@ import org.web3j.abi.datatypes.Event;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
+import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -24,34 +28,28 @@ public class RemoteSubscribeTest {
 
 
     public static void main(String[] args) throws Exception {
-
         RemoteSubscribeTest testInstance = new RemoteSubscribeTest();
-
         Web3j web3j = Web3j.build(new HttpService(INFURA_KOVAN_NODE_HTTP_LINK));
         testInstance.ethLogSubscription(web3j);
-
-
     }
 
-
-    private void ethLogSubscription(Web3j web3j) {
+    private void ethLogSubscription(Web3j web3j) throws IOException {
 
         EthFilter filter = new EthFilter(
                 DefaultBlockParameterName.LATEST,
                 DefaultBlockParameterName.LATEST,
                 Collections.emptyList());
 
-        filter.addOptionalTopics(EthEventTopics.TRANSFER_TOPIC_ERC_20_721.topicStr);
+        filter.addOptionalTopics(EthEventTopics.getTopicStr(EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH));
 
         web3j.ethLogFlowable(filter).subscribe(log -> {
-            if (log.getTopics().size() > 3) {
-                System.out.println("ERC-721");
-            } else {
-                System.out.println("ERC-20");
-            }
+            System.out.println("Data for batch transfer >>> " + log.getData());
         });
 
 
+//        EthGetTransactionReceipt send = web3j.ethGetTransactionReceipt("0x6e92e82f89c85cc780e5032ba255edf3214a78ccaae9c61fc9d7882d7e4f13f6").send();
+//
+//        System.out.println(send.toString());
     }
 
     /**
@@ -65,7 +63,7 @@ public class RemoteSubscribeTest {
         /**
          * ERC-20 & ERC-721 share same transfer event topic
          */
-        TRANSFER_TOPIC_ERC_20_721(EventEncoder.encode(new Event("Transfer",
+        TRANSFER_TOPIC_ERC_20_721(new Event("Transfer",
                 Arrays.asList(
                         // from
                         TypeReference.create(Address.class, true),
@@ -73,12 +71,12 @@ public class RemoteSubscribeTest {
                         TypeReference.create(Address.class, true),
                         // non-indexed:amount / indexed:tokenId
                         TypeReference.create(Uint256.class))
-        ))),
+        )),
 
         /**
          * ERC-1155 single transfer event topic
          */
-        TRANSFER_TOPIC_ERC_1155_SINGLE(EventEncoder.encode(new Event("TransferSingle",
+        TRANSFER_TOPIC_ERC_1155_SINGLE(new Event("TransferSingle",
                 Arrays.asList(
                         // operator
                         TypeReference.create(Address.class, true),
@@ -90,12 +88,12 @@ public class RemoteSubscribeTest {
                         TypeReference.create(Uint256.class),
                         // amount
                         TypeReference.create(Uint256.class))
-        ))),
+        )),
 
         /**
          * ERC-1155 batch transfer event topic
          */
-        TRANSFER_TOPIC_ERC_1155_BATCH(EventEncoder.encode(new Event("TransferBatch",
+        TRANSFER_TOPIC_ERC_1155_BATCH(new Event("TransferBatch",
                 Arrays.asList(
                         // operator
                         TypeReference.create(Address.class, true),
@@ -104,18 +102,24 @@ public class RemoteSubscribeTest {
                         // to
                         TypeReference.create(Address.class, true),
                         // tokenIds
-                        new TypeReference<DynamicArray<Uint256>>() {},
+                        new TypeReference<DynamicArray<Uint256>>() {
+                        },
                         // amounts
-                        new TypeReference<DynamicArray<Uint256>>() {})
-        )));
+                        new TypeReference<DynamicArray<Uint256>>() {
+                        })
+        ));
 
         /**
          * Topic String for an event
          */
-        public final String topicStr;
+        public final Event event;
 
-        EthEventTopics(String topicStr) {
-            this.topicStr = topicStr;
+        EthEventTopics(Event event) {
+            this.event = event;
+        }
+
+        public static String getTopicStr(EthEventTopics eventTopics) {
+            return EventEncoder.encode(eventTopics.event);
         }
 
         /**
@@ -123,7 +127,7 @@ public class RemoteSubscribeTest {
          */
         public static Optional<EthEventTopics> getEnumByStr(String inputStr) {
             return Arrays.stream(EthEventTopics.values())
-                    .filter(ethEventTopics -> ethEventTopics.topicStr.equals(inputStr))
+                    .filter(ethEventTopics -> getTopicStr(ethEventTopics).equals(inputStr))
                     .findFirst();
         }
     }
