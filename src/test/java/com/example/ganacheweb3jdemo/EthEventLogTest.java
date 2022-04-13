@@ -238,13 +238,27 @@ public class EthEventLogTest {
                         "0x0000000000000000000000008cb9f475966cc409d3bb0b8f222841c65b7b8664")
                 .collect(Collectors.toList()));
 
-        List<TypeReference<Type>> nonIndexedParameters = RemoteSubscribeTest.EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH.event.getNonIndexedParameters();
-        List<Type> decode = FunctionReturnDecoder.decode(logObject_1155_batch.getData(), nonIndexedParameters);
-
         Web3j web3j_functionx = Web3j.build(new HttpService("http://testnet-bsc-dataseed2.functionx.io:8545"));
-
         EthTransaction tra = web3j_functionx.ethGetTransactionByHash(logObject_1155_batch.getTransactionHash()).send();
-        System.out.println(tra.toString());
+
+        List<TypeReference<Type>> nonIndexedParameters = RemoteSubscribeTest.EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH.event.getNonIndexedParameters();
+        List<Type> decodeArr = FunctionReturnDecoder.decode(logObject_1155_batch.getData(), nonIndexedParameters);
+
+        // List <transferred token id>
+        DynamicArray<Uint256> tokenIdDyArr = (DynamicArray<Uint256>) decodeArr.get(0);
+        Iterator<Uint256> idIterator = tokenIdDyArr.getValue().iterator();
+
+        // List <transferred token amount>
+        DynamicArray<Uint256> tokenAmountList = ((DynamicArray<Uint256>) decodeArr.get(1));
+        Iterator<Uint256> amountIterator = tokenAmountList.getValue().iterator();
+
+        while (idIterator.hasNext()) {
+            System.out.println();
+            System.out.println(idIterator.next().getValue());
+            System.out.println(amountIterator.next().getValue());
+        }
+
+
     }
 
 }
