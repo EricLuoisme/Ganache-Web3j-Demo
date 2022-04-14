@@ -1,6 +1,7 @@
 package com.example.ganacheweb3jdemo;
 
 import com.example.ganacheweb3jdemo.web3j.EthEventTopics;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
@@ -112,15 +113,15 @@ public class EthContractCallingTest {
 
     @Test
     public void callErc1155Contract() throws IOException {
-        // ERC-1155 Single 获取uri
-        EthLog.LogObject erc1155SingleLogObj = EthEventLogTest.getErc1155SingleLogObj();
-        System.out.println();
-        System.out.println("ERC-1155 Single token url >>> " + callGetErc1155SingleUri(erc1155SingleLogObj));
+//        // ERC-1155 Single 获取uri
+//        EthLog.LogObject erc1155SingleLogObj = EthEventLogTest.getErc1155SingleLogObj();
+//        System.out.println();
+//        System.out.println("ERC-1155 Single token url >>> " + callGetErc1155SingleUri(erc1155SingleLogObj));
 
         // ERC-1155 Batch 获取uri
-//        EthLog.LogObject erc1155BatchLogObj = EthEventLogTest.getErc1155BatchLogObj();
-//        List<String> urlList = callGetErc1155BatchUri(erc1155BatchLogObj);
-//        urlList.forEach(System.out::println);
+        EthLog.LogObject erc1155BatchLogObj = EthEventLogTest.getErc1155BatchLogObj_Real();
+        List<String> urlList = callGetErc1155BatchUri(erc1155BatchLogObj);
+        urlList.forEach(System.out::println);
     }
 
 
@@ -221,7 +222,7 @@ public class EthContractCallingTest {
         DynamicArray<Uint256> tokenIdDyArr = (DynamicArray<Uint256>) decodeArr.get(0);
         List<Uint256> tokenId = tokenIdDyArr.getValue();
 
-        List<String> urlList = Collections.emptyList();
+        List<String> urlList = Lists.newArrayList();
 
         tokenId.stream().forEach(id -> {
             try {
@@ -243,13 +244,15 @@ public class EthContractCallingTest {
         String encode = FunctionEncoder.encode(uriFunc);
 
         Transaction reqTxn = Transaction.createEthCallTransaction(contractAddress, contractAddress, encode);
-        EthCall callResult = web3j_functionx.ethCall(reqTxn, DefaultBlockParameterName.LATEST).send();
+        EthCall callResult = web3j.ethCall(reqTxn, DefaultBlockParameterName.LATEST).send();
 
         List<Type> uriDecoded = FunctionReturnDecoder.decode(callResult.getValue(), uriFunc.getOutputParameters());
         Utf8String uri = (Utf8String) uriDecoded.get(0);
 
         // replace {id} with real token id
         String url = uri.getValue();
+        System.out.println(">>> Raw Url >>> " + url);
+
         return url.replaceAll("\\{id}", tokenId.getValue().toString());
     }
 

@@ -38,6 +38,8 @@ public class RemoteSubscribeTest {
             System.out.println("type >>" + log.getType());
             System.out.println("topics >>>> ");
             log.getTopics().forEach(System.out::println);
+
+            System.out.println("Yeah!!!!!!!!");
         });
     }
 

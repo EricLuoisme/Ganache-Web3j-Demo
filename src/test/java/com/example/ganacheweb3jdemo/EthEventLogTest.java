@@ -167,12 +167,12 @@ public class EthEventLogTest {
         eth20.setData("0x0000000000000000000000000000000000000000000000008ac7230489e80000");
         eth20.setType("mined");
         eth20.setTopics(Stream.of(
-                        // event keccak 256 signature
-                        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                        // address send ERC-20 token
-                        "0x0000000000000000000000004281ecf07378ee595c564a59048801330f3084ee",
-                        // address receive ERC-20 token
-                        "0x000000000000000000000000943ad1ea9b8efac0c039a2325cf1ec7b0cc57ec1")
+                // event keccak 256 signature
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                // address send ERC-20 token
+                "0x0000000000000000000000004281ecf07378ee595c564a59048801330f3084ee",
+                // address receive ERC-20 token
+                "0x000000000000000000000000943ad1ea9b8efac0c039a2325cf1ec7b0cc57ec1")
                 .collect(Collectors.toList()));
         return eth20;
     }
@@ -191,14 +191,14 @@ public class EthEventLogTest {
         logObject_721.setData("0x");
         logObject_721.setType("mined");
         logObject_721.setTopics(Stream.of(
-                        // event keccak 256 signature
-                        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                        // address send ERC-721 token
-                        "0x0000000000000000000000000000000000000000000000000000000000000000",
-                        // address receive ERC-721 token
-                        "0x0000000000000000000000006dcdfa62f1c4cae2ea4e0e568d7850408be1435f",
-                        // id of ERC-721 token
-                        "0x00000000000000000000000000000000000000000000000000000000000ca8b5")
+                // event keccak 256 signature
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                // address send ERC-721 token
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                // address receive ERC-721 token
+                "0x0000000000000000000000006dcdfa62f1c4cae2ea4e0e568d7850408be1435f",
+                // id of ERC-721 token
+                "0x00000000000000000000000000000000000000000000000000000000000ca8b5")
                 .collect(Collectors.toList()));
         return logObject_721;
     }
@@ -219,14 +219,14 @@ public class EthEventLogTest {
         logObject_1155_single.setData("0x467fcabdddf8a5e4ddcfb6bc056755e5adfa099b560aca0cfe8afe071e2717050000000000000000000000000000000000000000000000056bc75e2d63100000");
         logObject_1155_single.setType("mined");
         logObject_1155_single.setTopics(Stream.of(
-                        // event keccak 256 signature
-                        "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62",
-                        // address for the ERC-1155 operator
-                        "0x000000000000000000000000723a9bb7abacf54e46b2b31ecfcca3b5921b9d52",
-                        // address send ERC-1155 token
-                        "0x0000000000000000000000000000000000000000000000000000000000000000",
-                        // address receive ERC-1155 token
-                        "0x000000000000000000000000723a9bb7abacf54e46b2b31ecfcca3b5921b9d52")
+                // event keccak 256 signature
+                "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62",
+                // address for the ERC-1155 operator
+                "0x000000000000000000000000723a9bb7abacf54e46b2b31ecfcca3b5921b9d52",
+                // address send ERC-1155 token
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                // address receive ERC-1155 token
+                "0x000000000000000000000000723a9bb7abacf54e46b2b31ecfcca3b5921b9d52")
                 .collect(Collectors.toList()));
         return logObject_1155_single;
     }
@@ -258,16 +258,50 @@ public class EthEventLogTest {
                 "000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001");
         logObject_1155_batch.setType("null");
         logObject_1155_batch.setTopics(Stream.of(
-                        // event keccak 256 signature
-                        "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb",
-                        // address for the ERC-1155 operator
-                        "0x000000000000000000000000e7698e900666687d5d0ef46ba7beaa39ca11d12c",
-                        // address send ERC-1155 token
-                        "0x000000000000000000000000e7698e900666687d5d0ef46ba7beaa39ca11d12c",
-                        // address receive ERC-1155 token
-                        "0x0000000000000000000000008cb9f475966cc409d3bb0b8f222841c65b7b8664")
+                // event keccak 256 signature
+                "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb",
+                // address for the ERC-1155 operator
+                "0x000000000000000000000000e7698e900666687d5d0ef46ba7beaa39ca11d12c",
+                // address send ERC-1155 token
+                "0x000000000000000000000000e7698e900666687d5d0ef46ba7beaa39ca11d12c",
+                // address receive ERC-1155 token
+                "0x0000000000000000000000008cb9f475966cc409d3bb0b8f222841c65b7b8664")
                 .collect(Collectors.toList()));
         return logObject_1155_batch;
+    }
+
+    @NotNull
+    public static EthLog.LogObject getErc1155BatchLogObj_Real() {
+        EthLog.LogObject logObject = new EthLog.LogObject();
+        logObject.setRemoved(false);
+        logObject.setLogIndex("0x1");
+        logObject.setTransactionIndex("0x1");
+        logObject.setTransactionHash("0x29d48ef6313ae3556730ea6c8629fd1587a668bf51a8327a4c34e3f311c19b0a");
+        logObject.setBlockHash("0xe3ae444cb47a65fbefaeadd350656fe933636e2d3a8d830d82439e7b5d019268");
+        logObject.setBlockNumber("0x1d93d90");
+        // the address for smart contract that accept ERC-1155 token
+        logObject.setAddress("0x1964a17522e9d6100d0e73e3a32e8945712ff6df");
+        // data[0]: tokenIds, data[1]: tokenAmounts
+        logObject.setData("0x000000000000000000000000000000000000000000000000000000000000004" +
+                "0000000000000000000000000000000000000000000000000000000000000008" +
+                "00000000000000000000000000000000000000000000000000000000000000001" +
+                "0000000000000000000000000000000000000000000000000000000000000023" +
+                "0000000000000000000000000000000000000000000000000000000000000001" +
+                "0000000000000000000000000000000000000000000000000000000000000001");
+        logObject.setType("mined");
+        logObject.setTopics(Stream.of(
+                // event keccak 256 signature
+                "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb",
+                // address for the ERC-1155 operator
+                "0x000000000000000000000000b362a4c6ae61ca2ccf8bf16964d28732e8615bd2",
+                // address send ERC-1155 token
+                "0x00000000000000000000000078a4ac782e4993c0e93ed0b5034d973419629dc4",
+                // address receive ERC-1155 token
+                "0x00000000000000000000000012cfdc139b97906e0bc66cdc9c4662a2d2193137"
+                ).collect(Collectors.toList())
+        );
+        return logObject;
+
     }
 
 }
