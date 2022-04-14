@@ -1,8 +1,7 @@
 package com.example.ganacheweb3jdemo;
 
-import com.example.ganacheweb3jdemo.web3j.RemoteSubscribeTest;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.jta.atomikos.AtomikosProperties;
 import org.web3j.abi.*;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Uint256;
@@ -11,12 +10,10 @@ import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.EthTransaction;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,26 +41,7 @@ public class EthEventLogTest {
     public void parseErc20Log() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
         // ERC-20
-        EthLog.LogObject eth20 = new EthLog.LogObject();
-        eth20.setRemoved(false);
-        eth20.setLogIndex("0x0");
-        eth20.setTransactionIndex("0x0");
-        eth20.setTransactionHash("0x4d4c9e968e955ff7a688fa5e275211cdc09f995566b2f762a8adf23e02e3a58a");
-        eth20.setBlockHash("0xdcf299f86756f3cbc8664687dc82f68eb831fab42881595f59ea1a122bf29c7b");
-        eth20.setBlockNumber("0x1d8abff");
-        // the address for smart contract that accept ERC-20 token
-        eth20.setAddress("0xa36085f69e2889c224210f603d836748e7dc0088");
-        // the amount of the ERC-20 been sent
-        eth20.setData("0x0000000000000000000000000000000000000000000000008ac7230489e80000");
-        eth20.setType("mined");
-        eth20.setTopics(Stream.of(
-                        // event keccak 256 signature
-                        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                        // address send ERC-20 token
-                        "0x0000000000000000000000004281ecf07378ee595c564a59048801330f3084ee",
-                        // address receive ERC-20 token
-                        "0x000000000000000000000000943ad1ea9b8efac0c039a2325cf1ec7b0cc57ec1")
-                .collect(Collectors.toList()));
+        EthLog.LogObject eth20 = getEth20LogObj();
 
         // Parsing
         List<Type> amountDecode = FunctionReturnDecoder.decode(eth20.getData(), Utils.convert(UINT256_OUTPUT));
@@ -95,6 +73,8 @@ public class EthEventLogTest {
 
         System.out.println(transactionResult.getTransaction());
     }
+
+
 
     @Test
     public void parseErc721Log() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -241,7 +221,7 @@ public class EthEventLogTest {
         Web3j web3j_functionx = Web3j.build(new HttpService("http://testnet-bsc-dataseed2.functionx.io:8545"));
         EthTransaction tra = web3j_functionx.ethGetTransactionByHash(logObject_1155_batch.getTransactionHash()).send();
 
-        List<TypeReference<Type>> nonIndexedParameters = RemoteSubscribeTest.EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH.event.getNonIndexedParameters();
+        List<TypeReference<Type>> nonIndexedParameters = EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH.event.getNonIndexedParameters();
         List<Type> decodeArr = FunctionReturnDecoder.decode(logObject_1155_batch.getData(), nonIndexedParameters);
 
         // List <transferred token id>
@@ -261,4 +241,29 @@ public class EthEventLogTest {
 
     }
 
+
+    @NotNull
+    public static EthLog.LogObject getEth20LogObj() {
+        EthLog.LogObject eth20 = new EthLog.LogObject();
+        eth20.setRemoved(false);
+        eth20.setLogIndex("0x0");
+        eth20.setTransactionIndex("0x0");
+        eth20.setTransactionHash("0x4d4c9e968e955ff7a688fa5e275211cdc09f995566b2f762a8adf23e02e3a58a");
+        eth20.setBlockHash("0xdcf299f86756f3cbc8664687dc82f68eb831fab42881595f59ea1a122bf29c7b");
+        eth20.setBlockNumber("0x1d8abff");
+        // the address for smart contract that accept ERC-20 token
+        eth20.setAddress("0xa36085f69e2889c224210f603d836748e7dc0088");
+        // the amount of the ERC-20 been sent
+        eth20.setData("0x0000000000000000000000000000000000000000000000008ac7230489e80000");
+        eth20.setType("mined");
+        eth20.setTopics(Stream.of(
+                        // event keccak 256 signature
+                        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                        // address send ERC-20 token
+                        "0x0000000000000000000000004281ecf07378ee595c564a59048801330f3084ee",
+                        // address receive ERC-20 token
+                        "0x000000000000000000000000943ad1ea9b8efac0c039a2325cf1ec7b0cc57ec1")
+                .collect(Collectors.toList()));
+        return eth20;
+    }
 }
