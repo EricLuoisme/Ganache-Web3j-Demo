@@ -1,4 +1,4 @@
-package com.example.ganacheweb3jdemo;
+package com.example.ganacheweb3jdemo.web3j;
 
 import org.web3j.abi.EventEncoder;
 import org.web3j.abi.TypeReference;

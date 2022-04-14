@@ -1,5 +1,6 @@
 package com.example.ganacheweb3jdemo;
 
+import com.example.ganacheweb3jdemo.web3j.EthEventTopics;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
@@ -16,13 +17,10 @@ import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthLog;
-import org.web3j.protocol.core.methods.response.EthTransaction;
 import org.web3j.protocol.http.HttpService;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

@@ -1,5 +1,6 @@
 package com.example.ganacheweb3jdemo;
 
+import com.example.ganacheweb3jdemo.web3j.EthEventTopics;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.*;
