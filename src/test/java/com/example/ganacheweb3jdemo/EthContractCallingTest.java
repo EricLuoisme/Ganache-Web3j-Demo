@@ -20,6 +20,7 @@ import org.web3j.protocol.core.methods.response.EthTransaction;
 import org.web3j.protocol.http.HttpService;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -117,7 +118,6 @@ public class EthContractCallingTest {
         EthLog.LogObject erc1155SingleLogObj = EthEventLogTest.getErc1155SingleLogObj();
         System.out.println();
         System.out.println("ERC-1155 Single token url >>> " + callGetErc1155SingleUri(erc1155SingleLogObj));
-        System.out.println();
 
         // ERC-1155 Batch 获取uri
 //        EthLog.LogObject erc1155BatchLogObj = EthEventLogTest.getErc1155BatchLogObj();

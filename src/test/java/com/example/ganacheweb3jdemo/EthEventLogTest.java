@@ -45,7 +45,7 @@ public class EthEventLogTest {
 
         // Parsing
         List<Type> amountDecode = FunctionReturnDecoder.decode(eth20.getData(), Utils.convert(UINT256_OUTPUT));
-        System.out.println("Data field : " + amountDecode.get(0).getValue());
+        System.out.println("Data field (amount) : " + amountDecode.get(0).getValue());
 
         List<Type> fromAddDecode = FunctionReturnDecoder.decode(eth20.getTopics().get(1), Utils.convert(ADDRESS_OUTPUT));
         System.out.println("From Address : " + fromAddDecode.get(0).getValue());
