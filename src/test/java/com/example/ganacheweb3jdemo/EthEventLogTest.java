@@ -41,7 +41,7 @@ public class EthEventLogTest {
     public void parseErc20Log() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
         // ERC-20
-        EthLog.LogObject eth20 = getEth20LogObj();
+        EthLog.LogObject eth20 = getErc20LogObj();
 
         // Parsing
         List<Type> amountDecode = FunctionReturnDecoder.decode(eth20.getData(), Utils.convert(UINT256_OUTPUT));
@@ -79,27 +79,7 @@ public class EthEventLogTest {
     @Test
     public void parseErc721Log() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         // ERC-721 Log
-        EthLog.LogObject logObject_721 = new EthLog.LogObject();
-        logObject_721.setRemoved(false);
-        logObject_721.setLogIndex("0x2");
-        logObject_721.setTransactionIndex("0x0");
-        logObject_721.setTransactionHash("0x83729b2e8b203b7fbf492ec13d44c29a2db28b4c569fa546b2ea7379dee341f6");
-        logObject_721.setBlockHash("0xe3333874ff155f62128a3a587fe97e50956da6145e04a9edc4a3bfc44f5ae42c");
-        logObject_721.setBlockNumber("0x1d4ca9c");
-        // the address for smart contract that accept ERC-721 token
-        logObject_721.setAddress("0xf5de760f2e916647fd766b4ad9e85ff943ce3a2b");
-        logObject_721.setData("0x");
-        logObject_721.setType("mined");
-        logObject_721.setTopics(Stream.of(
-                        // event keccak 256 signature
-                        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                        // address send ERC-721 token
-                        "0x0000000000000000000000000000000000000000000000000000000000000000",
-                        // address receive ERC-721 token
-                        "0x0000000000000000000000006dcdfa62f1c4cae2ea4e0e568d7850408be1435f",
-                        // id of ERC-721 token
-                        "0x00000000000000000000000000000000000000000000000000000000000ca8b5")
-                .collect(Collectors.toList()));
+        EthLog.LogObject logObject_721 = getErc721LogObj();
 
         // Parsing
         List<Type> idDecode = FunctionReturnDecoder.decode(logObject_721.getTopics().get(3), Utils.convert(UINT256_OUTPUT));
@@ -116,6 +96,8 @@ public class EthEventLogTest {
 
         System.out.println(transactionResult.getTransaction());
     }
+
+
 
 
     @Test
@@ -243,7 +225,7 @@ public class EthEventLogTest {
 
 
     @NotNull
-    public static EthLog.LogObject getEth20LogObj() {
+    public static EthLog.LogObject getErc20LogObj() {
         EthLog.LogObject eth20 = new EthLog.LogObject();
         eth20.setRemoved(false);
         eth20.setLogIndex("0x0");
@@ -265,5 +247,31 @@ public class EthEventLogTest {
                         "0x000000000000000000000000943ad1ea9b8efac0c039a2325cf1ec7b0cc57ec1")
                 .collect(Collectors.toList()));
         return eth20;
+    }
+
+    @NotNull
+    public static EthLog.LogObject getErc721LogObj() {
+        EthLog.LogObject logObject_721 = new EthLog.LogObject();
+        logObject_721.setRemoved(false);
+        logObject_721.setLogIndex("0x2");
+        logObject_721.setTransactionIndex("0x0");
+        logObject_721.setTransactionHash("0x83729b2e8b203b7fbf492ec13d44c29a2db28b4c569fa546b2ea7379dee341f6");
+        logObject_721.setBlockHash("0xe3333874ff155f62128a3a587fe97e50956da6145e04a9edc4a3bfc44f5ae42c");
+        logObject_721.setBlockNumber("0x1d4ca9c");
+        // the address for smart contract that accept ERC-721 token
+        logObject_721.setAddress("0xf5de760f2e916647fd766b4ad9e85ff943ce3a2b");
+        logObject_721.setData("0x");
+        logObject_721.setType("mined");
+        logObject_721.setTopics(Stream.of(
+                        // event keccak 256 signature
+                        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                        // address send ERC-721 token
+                        "0x0000000000000000000000000000000000000000000000000000000000000000",
+                        // address receive ERC-721 token
+                        "0x0000000000000000000000006dcdfa62f1c4cae2ea4e0e568d7850408be1435f",
+                        // id of ERC-721 token
+                        "0x00000000000000000000000000000000000000000000000000000000000ca8b5")
+                .collect(Collectors.toList()));
+        return logObject_721;
     }
 }
