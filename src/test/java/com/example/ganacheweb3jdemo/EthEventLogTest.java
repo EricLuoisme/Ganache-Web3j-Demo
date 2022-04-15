@@ -61,6 +61,7 @@ public class EthEventLogTest {
         Transaction transaction = transactionResult.getTransaction().get();
         String inputData = transaction.getInput();
 
+        // 解析 input data
         String method = inputData.substring(0, 10);
         System.out.println("Method >>>>>> " + method);
         String to = inputData.substring(10, 74);
@@ -70,7 +71,7 @@ public class EthEventLogTest {
         Address address = (Address) refMethod.invoke(null, to, 0, Address.class);
         System.out.println("Address >>>>>> " + address.toString());
         Uint256 amount = (Uint256) refMethod.invoke(null, value, 0, Uint256.class);
-        System.out.println("amount >>>>>> " + amount.getValue());
+        System.out.println("Amount >>>>>> " + amount.getValue());
 
         System.out.println(transactionResult.getTransaction());
     }
