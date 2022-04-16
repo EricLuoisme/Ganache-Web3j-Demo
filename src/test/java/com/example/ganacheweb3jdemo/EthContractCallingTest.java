@@ -1,16 +1,15 @@
 package com.example.ganacheweb3jdemo;
 
 import com.example.ganacheweb3jdemo.web3j.EthEventTopics;
+import com.sun.org.apache.xml.internal.res.XMLErrorResources_tr;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.Utils;
-import org.web3j.abi.datatypes.DynamicArray;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.Type;
-import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.datatypes.*;
+import org.web3j.abi.datatypes.generated.Bytes4;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.protocol.Web3j;
@@ -19,8 +18,11 @@ import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.utils.Numeric;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -78,17 +80,19 @@ public class EthContractCallingTest {
         // ERC-20 获取Name
         List<Type> nameDecoded = callGetName(erc20LogObj);
         Utf8String name = (Utf8String) nameDecoded.get(0);
-        System.out.println(name.getValue());
+        System.out.println("ERC-20 token name >>> " + name.getValue());
 
         // ERC-20 获取Symbol (Unit)
         List<Type> symbolDecoded = callGetSymbol(erc20LogObj);
         Utf8String symbol = (Utf8String) symbolDecoded.get(0);
-        System.out.println(symbol.getValue());
+        System.out.println("ERC-20 token symbol >>> " + symbol.getValue());
 
         // ERC-20 获取该Token最小单位
         List<Type> decimalDecoded = callGetDecimal(erc20LogObj);
         Uint8 decimals = (Uint8) decimalDecoded.get(0);
-        System.out.println(decimals.getValue());
+        System.out.println("ERC-29 token decimal >>> " + decimals.getValue());
+
+        System.out.println("ERC-20 interface supports >>> " + checkErc165Support(erc20LogObj));
     }
 
     @Test
@@ -98,17 +102,19 @@ public class EthContractCallingTest {
         // ERC-721 获取Name
         List<Type> nameDecoded = callGetName(erc721LogObj);
         Utf8String name = (Utf8String) nameDecoded.get(0);
-        System.out.println(name.getValue());
+        System.out.println("ERC-721 token name >>> " + name.getValue());
 
         // ERC-721 获取Symbol (Unit)
         List<Type> symbolDecoded = callGetSymbol(erc721LogObj);
         Utf8String symbol = (Utf8String) symbolDecoded.get(0);
-        System.out.println(symbol.getValue());
+        System.out.println("ERC-721 token symbol >>> " + symbol.getValue());
 
         // ERC-721 获取token uri
         List<Type> tokenUriDecoded = callGetErc721TokenUri(erc721LogObj);
         Utf8String tokenId = (Utf8String) tokenUriDecoded.get(0);
-        System.out.println(tokenId.getValue());
+        System.out.println("ERC-721 token uri >>> " + tokenId.getValue());
+
+        System.out.println("ERC-721 interface supports >>> " + checkErc165Support(erc721LogObj));
     }
 
     @Test
@@ -122,6 +128,8 @@ public class EthContractCallingTest {
         EthLog.LogObject erc1155BatchLogObj = EthEventLogTest.getErc1155BatchLogObj_Real();
         List<String> urlList = callGetErc1155BatchUri(erc1155BatchLogObj);
         urlList.forEach(System.out::println);
+
+        System.out.println("ERC-1155 interface supports >>> " + checkErc165Support(erc1155BatchLogObj));
     }
 
 
@@ -256,5 +264,42 @@ public class EthContractCallingTest {
         return url.replaceAll("\\{id}", tokenId.getValue().toString());
     }
 
+    /**
+     * 明确请求ERC-165接口, 以确保合约符合ERC-721规范
+     */
+    private static boolean checkErc165Support(EthLog.LogObject logObject) throws IOException {
+
+        // get interface id
+        Bytes4 bytes4 = new Bytes4(new byte[]{13, 23, -2, 3});
+
+        Function tmp = new Function(
+                "supportsInterface",
+                Collections.singletonList(bytes4),
+                Collections.singletonList(TypeReference.create(Bool.class))
+        );
+
+        String tmpEncode = FunctionEncoder.encode(tmp);
+        String erc165_SupportsInterfaceId = tmpEncode.substring(0, 10);
+
+        System.out.println("Method Interface Id >>> " + erc165_SupportsInterfaceId);
+
+
+        // calling the contract
+        Bytes4 callingUse = new Bytes4(Numeric.hexStringToByteArray(erc165_SupportsInterfaceId));
+        Function supportFunc = new Function(
+                "supportsInterface",
+                Collections.singletonList(callingUse),
+                Collections.singletonList(TypeReference.create(Bool.class))
+        );
+        String encodeData = FunctionEncoder.encode(supportFunc);
+
+        Transaction reqTxn = Transaction.createEthCallTransaction(logObject.getAddress(), logObject.getAddress(), encodeData);
+
+        EthCall callResult = web3j.ethCall(reqTxn, DefaultBlockParameterName.LATEST).send();
+
+        List<Type> decode = FunctionReturnDecoder.decode(callResult.getValue(), supportFunc.getOutputParameters());
+
+        return decode.size() > 0 && (boolean) decode.get(0).getValue();
+    }
 
 }
