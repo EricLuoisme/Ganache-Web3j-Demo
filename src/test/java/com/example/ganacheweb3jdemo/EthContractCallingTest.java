@@ -1,7 +1,6 @@
 package com.example.ganacheweb3jdemo;
 
 import com.example.ganacheweb3jdemo.web3j.EthEventTopics;
-import com.sun.org.apache.xml.internal.res.XMLErrorResources_tr;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionEncoder;
@@ -21,8 +20,6 @@ import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
