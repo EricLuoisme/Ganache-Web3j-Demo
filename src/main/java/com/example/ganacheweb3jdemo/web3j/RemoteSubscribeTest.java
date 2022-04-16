@@ -26,7 +26,9 @@ public class RemoteSubscribeTest {
         filter.addOptionalTopics(EthEventTopics.getTopicStr(EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH));
 
         web3j.ethLogFlowable(filter).subscribe(log -> {
-            System.out.println("Data for batch transfer >>> ");
+
+            // 输出
+            System.out.println("\n\nData for ERC-1155 Batch Transfer >>> ");
             System.out.println("removed >>" + log.isRemoved());
             System.out.println("log index >>" + log.getLogIndex());
             System.out.println("txn index >>" + log.getTransactionIndex());
@@ -38,9 +40,8 @@ public class RemoteSubscribeTest {
             System.out.println("type >>" + log.getType());
             System.out.println("topics >>>> ");
             log.getTopics().forEach(System.out::println);
-
-            System.out.println("Yeah!!!!!!!!");
+            System.out.println();
+            System.out.println();
         });
     }
-
 }
