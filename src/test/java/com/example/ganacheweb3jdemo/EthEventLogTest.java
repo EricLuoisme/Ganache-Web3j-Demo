@@ -312,6 +312,16 @@ public class EthEventLogTest {
 
     @NotNull
     public static EthLog.LogObject getErc1155BatchLogObj_Real() {
+
+        return null;
+    }
+
+    @NotNull
+    public static List<EthLog.LogObject> getErc1155BatchLogObjectList() {
+
+        List<EthLog.LogObject> resultList = new LinkedList<>();
+
+        // Num.0
         EthLog.LogObject logObject = new EthLog.LogObject();
         logObject.setRemoved(false);
         logObject.setLogIndex("0x1");
@@ -330,32 +340,25 @@ public class EthEventLogTest {
                 "0000000000000000000000000000000000000000000000000000000000000001");
         logObject.setType("mined");
         logObject.setTopics(Stream.of(
-                        // event keccak 256 signature
-                        "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb",
-                        // address for the ERC-1155 operator
-                        "0x000000000000000000000000b362a4c6ae61ca2ccf8bf16964d28732e8615bd2",
-                        // address send ERC-1155 token
-                        "0x00000000000000000000000078a4ac782e4993c0e93ed0b5034d973419629dc4",
-                        // address receive ERC-1155 token
-                        "0x00000000000000000000000012cfdc139b97906e0bc66cdc9c4662a2d2193137"
+                // event keccak 256 signature
+                "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb",
+                // address for the ERC-1155 operator
+                "0x000000000000000000000000b362a4c6ae61ca2ccf8bf16964d28732e8615bd2",
+                // address send ERC-1155 token
+                "0x00000000000000000000000078a4ac782e4993c0e93ed0b5034d973419629dc4",
+                // address receive ERC-1155 token
+                "0x00000000000000000000000012cfdc139b97906e0bc66cdc9c4662a2d2193137"
                 ).collect(Collectors.toList())
         );
-        return logObject;
-    }
 
-    private List<EthLog.LogObject> getErc1155BatchLogObjectList() {
-
-        List<EthLog.LogObject> resultList = new LinkedList<>();
-
-        // TODO 需要将数字抓换为Hex才是真正抓取到的Log, 现在是因为其ToString方法被重写了所以输出num
-
+        // Num.1
         EthLog.LogObject logObject_1 = new EthLog.LogObject();
         logObject_1.setRemoved(false);
-        logObject_1.setLogIndex("9");
-        logObject_1.setTransactionIndex("4");
+        logObject_1.setLogIndex("0x9");
+        logObject_1.setTransactionIndex("0x4");
         logObject_1.setTransactionHash("0x6c25fcfaa0e7d04616c60beba6251d0bd722492671c516a6d97073c727698d5c");
         logObject_1.setBlockHash("0x929382bc6dc8d71e7867901037d6367b29a531a73f1864de3d58fa1dc5f8264b");
-        logObject_1.setBlockNumber("31048859");
+        logObject_1.setBlockNumber("0x1d9c49b");
         logObject_1.setAddress("0x0654ea99f802303533c515ae924f497a27a3f374");
         logObject_1.setData("0x000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001");
         logObject_1.setType("mined");
@@ -367,13 +370,14 @@ public class EthEventLogTest {
                         "0x000000000000000000000000e9fd653484cdd73bdfddfdf78e6c4cdcc5b1c180")
         );
 
+        // Num.2
         EthLog.LogObject logObject_2 = new EthLog.LogObject();
         logObject_2.setRemoved(false);
-        logObject_2.setLogIndex("21");
-        logObject_2.setTransactionIndex("6");
+        logObject_2.setLogIndex("0x15");
+        logObject_2.setTransactionIndex("0x6");
         logObject_2.setTransactionHash("0xc4d5298e6766e720bf0cea553786e67513e6fde2c0e8fec6a264989cab4ad90b");
         logObject_2.setBlockHash("0x2d15fea06de86d15f49dcf26d820dbbaf7222731b88eecff3e68af821ff5d03b");
-        logObject_2.setBlockNumber("31051024");
+        logObject_2.setBlockNumber("0x1d9cd10");
         logObject_2.setAddress("0x0654ea99f802303533c515ae924f497a27a3f374");
         logObject_2.setData("0x000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001");
         logObject_2.setType("mined");
@@ -384,13 +388,14 @@ public class EthEventLogTest {
                 "0x000000000000000000000000e9fd653484cdd73bdfddfdf78e6c4cdcc5b1c180"
         ));
 
+        // Num.3
         EthLog.LogObject logObject_3 = new EthLog.LogObject();
         logObject_3.setRemoved(false);
-        logObject_3.setLogIndex("5");
-        logObject_3.setTransactionIndex("3");
+        logObject_3.setLogIndex("0x5");
+        logObject_3.setTransactionIndex("0x3");
         logObject_3.setTransactionHash("0xb2ef9e3659b674f9397aea0ac0629d6d562e2e7e186c5961c2cf588218b0abf3");
         logObject_3.setBlockHash("0xf01826359d5d027d7077da3b9f4ef285a8235ef635d54fe45f08da0b8a488aaf");
-        logObject_3.setBlockNumber("31051065");
+        logObject_3.setBlockNumber("0x1d9cd39");
         logObject_3.setAddress("0x0654ea99f802303533c515ae924f497a27a3f374");
         logObject_3.setData("0x000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001");
         logObject_3.setType("mined");
@@ -401,13 +406,14 @@ public class EthEventLogTest {
                 "0x000000000000000000000000ea87484d933d12a52493e2e1731290fcabe6c39f"
         ));
 
+        // Num.4
         EthLog.LogObject logObject_4 = new EthLog.LogObject();
         logObject_4.setRemoved(false);
-        logObject_4.setLogIndex("12");
-        logObject_4.setTransactionIndex("2");
+        logObject_4.setLogIndex("0xc");
+        logObject_4.setTransactionIndex("0x2");
         logObject_4.setTransactionHash("0x4c683cb0fd7c5e7f3ada28d16114dfcb64b8025729ed8a1d19e0d3d970da1d06");
         logObject_4.setBlockHash("0x66b4b3be326ea86948ec7091da92215f47501bc68dec49982e2c82a804595487");
-        logObject_4.setBlockNumber("31051168");
+        logObject_4.setBlockNumber("0x1d9cda0");
         logObject_4.setAddress("0x0654ea99f802303533c515ae924f497a27a3f374");
         logObject_4.setData("0x000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001");
         logObject_4.setType("mined");
@@ -418,14 +424,14 @@ public class EthEventLogTest {
                 "0x000000000000000000000000ea87484d933d12a52493e2e1731290fcabe6c39f"
         ));
 
-
+        // Num.5
         EthLog.LogObject logObject_5 = new EthLog.LogObject();
         logObject_5.setRemoved(false);
-        logObject_5.setLogIndex("25");
-        logObject_5.setTransactionIndex("4");
+        logObject_5.setLogIndex("0x19");
+        logObject_5.setTransactionIndex("0x4");
         logObject_5.setTransactionHash("0xa1e9e2bfb0446c54ffbd67e36fdfdd97ba1ecb9235d71ce41df04970c8485e22");
         logObject_5.setBlockHash("0x1efc8ff664d86ac487dd47dff42f16a2cf35bb3e29e4f925ca74f60022213417");
-        logObject_5.setBlockNumber("31055747");
+        logObject_5.setBlockNumber("0x1d9df83");
         logObject_5.setAddress("0x0654ea99f802303533c515ae924f497a27a3f374");
         logObject_5.setData("0x000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001");
         logObject_5.setType("mined");
@@ -437,6 +443,12 @@ public class EthEventLogTest {
         ));
 
 
+        resultList.add(logObject);
+        resultList.add(logObject_1);
+        resultList.add(logObject_2);
+        resultList.add(logObject_3);
+        resultList.add(logObject_4);
+        resultList.add(logObject_5);
         return resultList;
     }
 
