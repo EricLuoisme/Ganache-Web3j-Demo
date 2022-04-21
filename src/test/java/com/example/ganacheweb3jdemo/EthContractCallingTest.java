@@ -203,6 +203,8 @@ public class EthContractCallingTest {
 
         String encode = FunctionEncoder.encode(tokenUriFunc);
 
+        System.out.println("ERC-721-Code >>>" + encode.substring(0, 10));
+
         Transaction reqTxn = Transaction.createEthCallTransaction(logObject.getAddress(), logObject.getAddress(), encode);
 
         EthCall callResult = web3j.ethCall(reqTxn, DefaultBlockParameterName.LATEST).send();
@@ -263,6 +265,8 @@ public class EthContractCallingTest {
                 Collections.singletonList(TypeReference.create(Utf8String.class))
         );
         String encode = FunctionEncoder.encode(uriFunc);
+
+        System.out.println("ERC-1155-Code>>>" + encode);
 
         Transaction reqTxn = Transaction.createEthCallTransaction(contractAddress, contractAddress, encode);
         EthCall callResult = web3j.ethCall(reqTxn, DefaultBlockParameterName.LATEST).send();
