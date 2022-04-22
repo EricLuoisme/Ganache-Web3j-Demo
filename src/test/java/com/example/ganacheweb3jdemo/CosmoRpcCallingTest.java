@@ -1,12 +1,12 @@
 package com.example.ganacheweb3jdemo;
 
 
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import okhttp3.*;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 尝试进行RPC解析测试
@@ -24,15 +24,27 @@ public class CosmoRpcCallingTest {
 
     private static final MediaType JSON_MEDIA_TYPE = MediaType.get("application/json; charset=utf-8");
 
+    private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
+            .readTimeout(10, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(false)
+            .build();
+
 
     @Test
-    public void callRpc() {
+    public void callRpc() throws IOException {
 
-        byte[] inputData = TEST_WALLET_ADDRESS.getBytes(StandardCharsets.UTF_8);
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(TERRA_BOMBAY_TEST_URL + BALANCE_PATH).newBuilder();
+        // 由于并不是路径参数, 不能使用addQueryParameter, 而是作为路径拼接
+        urlBuilder.addPathSegment(TEST_WALLET_ADDRESS);
+        String url = urlBuilder.build().toString();
+        System.out.println(url);
 
-        RequestBody requestBody = RequestBody.create(inputData, JSON_MEDIA_TYPE);
+        Request request = new Request.Builder().url(url).build();
 
-        new Request.Builder().url(TERRA_BOMBAY_TEST_URL + BALANCE_PATH).get().build();
+        Call call = okHttpClient.newCall(request);
+        Response response = call.execute();
+        String string = response.body().string();
+        System.out.println(string);
 
     }
 }
