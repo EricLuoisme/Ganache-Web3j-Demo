@@ -2,6 +2,7 @@ package com.example.ganacheweb3jdemo;
 
 
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class CosmoRpcCallingTest {
 
 
     @Test
-    public void callRpc() throws IOException {
+    public void callRpc() throws IOException, InterruptedException {
 
         HttpUrl.Builder urlBuilder = HttpUrl.parse(TERRA_BOMBAY_TEST_URL + BALANCE_PATH).newBuilder();
         // 由于并不是路径参数, 不能使用addQueryParameter, 而是作为路径拼接
@@ -39,12 +40,27 @@ public class CosmoRpcCallingTest {
         String url = urlBuilder.build().toString();
         System.out.println(url);
 
-        Request request = new Request.Builder().url(url).build();
+        Request requestGet = new Request.Builder()
+                .url(url)
+                .build();
 
-        Call call = okHttpClient.newCall(request);
-        Response response = call.execute();
-        String string = response.body().string();
-        System.out.println(string);
+        Call call = okHttpClient.newCall(requestGet);
 
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                System.out.println("On it failed");
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                System.out.println(response.body().string());
+            }
+        });
+
+
+        System.out.println("Keep going");
+        Thread.currentThread().join();
     }
 }
