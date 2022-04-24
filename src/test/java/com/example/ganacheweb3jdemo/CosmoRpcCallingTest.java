@@ -1,6 +1,8 @@
 package com.example.ganacheweb3jdemo;
 
 
+import com.example.ganacheweb3jdemo.web3j.ApplicationInterceptorImp;
+import com.example.ganacheweb3jdemo.web3j.LogInterceptorImp;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,10 @@ public class CosmoRpcCallingTest {
 
     private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .addInterceptor(new ApplicationInterceptorImp())
+            .addNetworkInterceptor(new LogInterceptorImp())
             .retryOnConnectionFailure(false)
             .build();
 
