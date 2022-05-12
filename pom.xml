@@ -28,6 +28,13 @@
             <version>5.0.0</version>
         </dependency>
 
+        <!-- Web3j for Eth 2.0 -->
+        <dependency>
+            <groupId>org.web3j.eth2</groupId>
+            <artifactId>beacon-node-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
         <!-- Okhttp -->
         <!-- 自带的okhttp版本过低, 需要显式选用更高版本的-->
         <dependency>
