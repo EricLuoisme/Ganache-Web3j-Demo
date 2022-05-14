@@ -122,11 +122,27 @@ public class EthContractCallingTest {
 //        System.out.println("ERC-1155 Single token url >>> " + callGetErc1155SingleUri(erc1155SingleLogObj));
 
         // ERC-1155 Batch 获取uri
-        EthLog.LogObject erc1155BatchLogObj = EthEventLogTest.getErc1155BatchLogObj_Real();
-        List<String> urlList = callGetErc1155BatchUri(erc1155BatchLogObj);
-        urlList.forEach(System.out::println);
+        List<EthLog.LogObject> erc1155BatchList = EthEventLogTest.getErc1155BatchLogObjectList();
+        erc1155BatchList.forEach(logObject -> {
+            try {
+                List<String> urlList = callGetErc1155BatchUri(logObject);
+                System.out.println("For New Log Object >>> ");
+                urlList.forEach(str -> {
+                    System.out.println("  Uri >>> " + str);
+                });
+                System.out.println();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
-        System.out.println("ERC-1155 interface supports >>> " + checkErc165Support(erc1155BatchLogObj));
+
+//        EthLog.LogObject erc1155BatchLogObj = EthEventLogTest.getErc1155BatchLogObjectList().get(0);
+//        List<String> urlList = callGetErc1155BatchUri(erc1155BatchLogObj);
+//        urlList.forEach(System.out::println);
+//
+//        // ERC-165 接口支持测试
+//        System.out.println("ERC-1155 interface supports >>> " + checkErc165Support(erc1155BatchLogObj));
     }
 
 
@@ -186,6 +202,8 @@ public class EthContractCallingTest {
         );
 
         String encode = FunctionEncoder.encode(tokenUriFunc);
+
+        System.out.println("ERC-721-Code >>>" + encode.substring(0, 10));
 
         Transaction reqTxn = Transaction.createEthCallTransaction(logObject.getAddress(), logObject.getAddress(), encode);
 
@@ -248,6 +266,8 @@ public class EthContractCallingTest {
         );
         String encode = FunctionEncoder.encode(uriFunc);
 
+        System.out.println("ERC-1155-Code>>>" + encode);
+
         Transaction reqTxn = Transaction.createEthCallTransaction(contractAddress, contractAddress, encode);
         EthCall callResult = web3j.ethCall(reqTxn, DefaultBlockParameterName.LATEST).send();
 
@@ -256,6 +276,7 @@ public class EthContractCallingTest {
 
         // replace {id} with real token id
         String url = uri.getValue();
+        System.out.println();
         System.out.println(">>> Raw Url >>> " + url);
 
         return url.replaceAll("\\{id}", tokenId.getValue().toString());

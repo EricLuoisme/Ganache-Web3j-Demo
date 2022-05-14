@@ -28,12 +28,25 @@
             <version>5.0.0</version>
         </dependency>
 
+        <!-- Web3j for Eth 2.0 -->
+        <dependency>
+            <groupId>org.web3j.eth2</groupId>
+            <artifactId>beacon-node-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
         <!-- Okhttp -->
         <!-- 自带的okhttp版本过低, 需要显式选用更高版本的-->
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>4.9.3</version>
+        </dependency>
+        <!-- Protocol Buffer -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.20.0</version>
         </dependency>
 
 
@@ -51,6 +64,14 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
     </dependencies>
 
@@ -91,6 +112,34 @@
                         <goals>
                             <goal>repackage</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- For Compile the Protocol Buffer File -->
+            <plugin>
+                <groupId>com.github.os72</groupId>
+                <artifactId>protoc-jar-maven-plugin</artifactId>
+                <version>3.11.4</version>
+                <executions>
+                    <execution>
+                        <id>protoc.main</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <protocVersion>3.20.0</protocVersion>
+                            <addSources>main</addSources>
+                            <includeMavenTypes>direct</includeMavenTypes>
+                            <includeStdTypes>true</includeStdTypes>
+                            <includeDirectories>
+                                <include>src/main/proto</include>
+                            </includeDirectories>
+                            <inputDirectories>
+                                <include>src/main/proto</include>
+                            </inputDirectories>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
