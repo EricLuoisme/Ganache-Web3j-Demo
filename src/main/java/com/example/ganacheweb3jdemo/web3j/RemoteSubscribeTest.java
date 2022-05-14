@@ -25,6 +25,8 @@ public class RemoteSubscribeTest {
 
         filter.addOptionalTopics(EthEventTopics.getTopicStr(EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH));
 
+        System.out.println("Start listening:\n");
+
         web3j.ethLogFlowable(filter).subscribe(log -> {
 
             // 输出
