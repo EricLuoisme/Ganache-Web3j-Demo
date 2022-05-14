@@ -21,31 +21,10 @@ public class RemoteSubscribeTest {
 
         System.out.println(Integer.toHexString(new Integer("31055747")));
 
-//        EthFilter filter = new EthFilter(
-//                DefaultBlockParameterName.LATEST,
-//                DefaultBlockParameterName.LATEST,
-//                Collections.emptyList());
-//
-//        filter.addOptionalTopics(EthEventTopics.getTopicStr(EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH));
-//
-//        web3j.ethLogFlowable(filter).subscribe(log -> {
-//
-//            // 输出
-//            System.out.println("\n\nData for ERC-1155 Batch Transfer >>> ");
-//            System.out.println("removed >>" + log.isRemoved());
-//            System.out.println("log index >>" + log.getLogIndex());
-//            System.out.println("txn index >>" + log.getTransactionIndex());
-//            System.out.println("txn hash >>" + log.getTransactionHash());
-//            System.out.println("block hash >>" + log.getBlockHash());
-//            System.out.println("block num >>" + log.getBlockNumber());
-//            System.out.println("address >>" + log.getAddress());
-//            System.out.println("data >>" + log.getData());
-//            System.out.println("type >>" + log.getType());
-//            System.out.println("topics >>>> ");
-//            log.getTopics().forEach(System.out::println);
-//            System.out.println();
-//            System.out.println();
-//        });
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameterName.LATEST,
+                DefaultBlockParameterName.LATEST,
+                Collections.emptyList());
 
         filter.addOptionalTopics(EthEventTopics.getTopicStr(EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH));
 
