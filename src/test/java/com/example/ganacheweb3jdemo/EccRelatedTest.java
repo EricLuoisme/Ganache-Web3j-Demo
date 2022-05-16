@@ -2,12 +2,12 @@ package com.example.ganacheweb3jdemo;
 
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.core.SignatureDecodeException;
 import org.bitcoinj.core.Utils;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.StopWatch;
+import org.web3j.crypto.*;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -21,18 +21,24 @@ import java.util.Base64;
  */
 public class EccRelatedTest {
 
-    public static final BigInteger PRI_KEY = new BigInteger("11143367460393672249027881867686059798241873017515514375134825408887879305524");
+    public static final BigInteger PRI_KEY_BIT = new BigInteger("11143367460393672249027881867686059798241873017515514375134825408887879305524");
 
-    public static final String PUB_KEY_HEX = "03b4ea618ec1f12b90bab57c02e5ac81b9d0af188e7c5abb676baca7d65585c665";
+    public static final String PUB_KEY_HEX_BIT = "03b4ea618ec1f12b90bab57c02e5ac81b9d0af188e7c5abb676baca7d65585c665";
+
+    public static final BigInteger PRI_KEY_ETH = new BigInteger("7597642418811430721017447471407646827753973391384087387872450773144584345619");
+
+    public static final String PUB_KEY_ADDRESS = "0x4fabaf87ed2e76ef18229eecd827e5ce6f074120";
+
+
 
     public static final String MESSAGE = "Whattx";
 
 
     @Test
-    public void SignAndVerifyTest() throws SignatureDecodeException {
+    public void SignAndVerifyTest_ByBitcoinMethod() {
 
         // create ECKey with pri + pub keys
-        ECKey ecKeyFull = ECKey.fromPrivateAndPrecalculatedPublic(PRI_KEY.toByteArray(), Utils.HEX.decode(PUB_KEY_HEX));
+        ECKey ecKeyFull = ECKey.fromPrivateAndPrecalculatedPublic(PRI_KEY_BIT.toByteArray(), Utils.HEX.decode(PUB_KEY_HEX_BIT));
 
         // convert string to hex
         String hexMsg = Hex.toHexString(MESSAGE.getBytes(StandardCharsets.UTF_8));
@@ -74,7 +80,7 @@ public class EccRelatedTest {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         // create ECKey entity by only adding public key
-        ECKey ecKeyPubOnly = ECKey.fromPublicOnly(Utils.HEX.decode(PUB_KEY_HEX));
+        ECKey ecKeyPubOnly = ECKey.fromPublicOnly(Utils.HEX.decode(PUB_KEY_HEX_BIT));
         boolean verify_pub = ecKeyPubOnly.verify(Sha256Hash.wrap(hashMsg), ecdsaSignature);
         stopWatch.stop();
         System.out.println(">>> Verifying using pub with result: " + verify_pub + ", used: " + stopWatch.getTotalTimeSeconds());
@@ -89,14 +95,28 @@ public class EccRelatedTest {
 
     }
 
+    @Test
+    public void SignAndVerifyTest_ByEthereumMethod() throws Exception {
+        creatNewECKeyPair_ByEthereumMethod();
+    }
+
     /**
      * Creat a random ECC pair
      */
-    private void createNewEccPair() {
+    private void createNewEccPair_ByBitcoinMethod() {
         ECKey ecKey = new ECKey();
         BigInteger priKey = ecKey.getPrivKey();
         byte[] pubKey = ecKey.getPubKey();
         System.out.println(">>> Private key: " + priKey.toString());
-        System.out.println(">>> Public key: " + Utils.HEX.encode(pubKey));
+        System.out.println(">>> Public key in Hex: " + Utils.HEX.encode(pubKey));
+    }
+
+    private void creatNewECKeyPair_ByEthereumMethod() throws Exception {
+        ECKeyPair ecKeyPair = Keys.createEcKeyPair();
+        BigInteger priKey = ecKeyPair.getPrivateKey();
+        WalletFile walletFile = Wallet.createLight("123456", ecKeyPair);
+        String address = walletFile.getAddress();
+        System.out.println(">>> Private key: " + priKey.toString());
+        System.out.println(">>> Public key of address: " + "0x" + address);
     }
 }
