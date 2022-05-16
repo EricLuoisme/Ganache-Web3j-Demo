@@ -21,6 +21,13 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- 包含ECC相关依赖 -->
+        <dependency>
+            <groupId>org.bitcoinj</groupId>
+            <artifactId>bitcoinj-core</artifactId>
+            <version>0.16.1</version>
+        </dependency>
+
         <!-- Web3j依赖 -->
         <dependency>
             <groupId>org.web3j</groupId>
