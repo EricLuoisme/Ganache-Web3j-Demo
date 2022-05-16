@@ -8,6 +8,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.StopWatch;
 import org.web3j.crypto.*;
+import org.web3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -29,9 +30,8 @@ public class EccRelatedTest {
 
     public static final String PUB_KEY_ADDRESS = "0x4fabaf87ed2e76ef18229eecd827e5ce6f074120";
 
-
-
-    public static final String MESSAGE = "Whattx";
+    // 不支持空格等特殊符号
+    public static final String MESSAGE = "WhatTheFuck";
 
 
     @Test
@@ -97,7 +97,25 @@ public class EccRelatedTest {
 
     @Test
     public void SignAndVerifyTest_ByEthereumMethod() throws Exception {
-        creatNewECKeyPair_ByEthereumMethod();
+
+        ECKeyPair ecKeyPair = ECKeyPair.create(PRI_KEY_ETH);
+
+        // convert string to hex
+        String hexMsg = Hex.toHexString(MESSAGE.getBytes(StandardCharsets.UTF_8));
+        System.out.println("\n >>> Hex Msg is : " + hexMsg + "\n");
+
+        // use web3j methods
+        Sign.SignatureData signatureData = Sign.signMessage(Hash.sha3(hexMsg.getBytes(StandardCharsets.UTF_8)), ecKeyPair);
+        byte[] v = signatureData.getV();
+        byte[] r = signatureData.getR();
+        byte[] s = signatureData.getS();
+
+        System.out.println(Numeric.toHexString(v));
+        System.out.println(Numeric.toHexString(r));
+        System.out.println(Numeric.toHexString(s));
+
+
+
     }
 
     /**
@@ -114,6 +132,7 @@ public class EccRelatedTest {
     private void creatNewECKeyPair_ByEthereumMethod() throws Exception {
         ECKeyPair ecKeyPair = Keys.createEcKeyPair();
         BigInteger priKey = ecKeyPair.getPrivateKey();
+
         WalletFile walletFile = Wallet.createLight("123456", ecKeyPair);
         String address = walletFile.getAddress();
         System.out.println(">>> Private key: " + priKey.toString());
