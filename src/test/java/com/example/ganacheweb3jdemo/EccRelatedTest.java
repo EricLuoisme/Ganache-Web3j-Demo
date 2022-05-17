@@ -31,7 +31,7 @@ public class EccRelatedTest {
     public static final String PUB_KEY_ADDRESS = "0x4fabaf87ed2e76ef18229eecd827e5ce6f074120";
 
     // 不支持空格等特殊符号
-    public static final String MESSAGE = "WhatTheFuck";
+    public static final String MESSAGE = "WhatTheFuckIsThat";
 
 
     @Test
@@ -104,17 +104,37 @@ public class EccRelatedTest {
         String hexMsg = Hex.toHexString(MESSAGE.getBytes(StandardCharsets.UTF_8));
         System.out.println("\n >>> Hex Msg is : " + hexMsg + "\n");
 
-        // use web3j methods
+        // 1. use web3j methods to sign the message
         Sign.SignatureData signatureData = Sign.signMessage(Hash.sha3(hexMsg.getBytes(StandardCharsets.UTF_8)), ecKeyPair);
-        byte[] v = signatureData.getV();
         byte[] r = signatureData.getR();
         byte[] s = signatureData.getS();
-
-        System.out.println(Numeric.toHexString(v));
-        System.out.println(Numeric.toHexString(r));
-        System.out.println(Numeric.toHexString(s));
+        byte[] v = signatureData.getV();
 
 
+        System.out.println(">>> Signature r: " + Numeric.toHexString(r) + "\n with length: " + Numeric.toHexString(r).length());
+        System.out.println(">>> Signature s: " + Numeric.toHexString(s) + "\n with length: " + Numeric.toHexString(s).length());
+        System.out.println(">>> Signature v: " + Numeric.toHexString(v) + "\n with length: " + Numeric.toHexString(v).length());
+        System.out.println();
+
+        // combine into single signature
+        StringBuilder sb = new StringBuilder();
+        sb.append(Numeric.toHexString(r).substring(2));
+        sb.append(Numeric.toHexString(s).substring(2));
+        sb.append(Numeric.toHexString(v).substring(2));
+        System.out.println(">>> Single combined signature would be: " + sb);
+
+        // 2. verify the message
+        String inputSignature = sb.toString();
+        String r_str = "0x" + inputSignature.substring(0, 64);
+        String s_str = "0x" + inputSignature.substring(64, 64 + 64);
+        String v_str = "0x" + inputSignature.substring(64 + 64);
+
+        byte[] bytes_r = Numeric.hexStringToByteArray(r_str);
+        byte[] bytes_s = Numeric.hexStringToByteArray(s_str);
+        byte[] bytes_v = Numeric.hexStringToByteArray(v_str);
+
+
+        // For Ethereum, it's also using the ECDSA Algorithm for calculating and verifying the signature
 
     }
 
