@@ -42,13 +42,26 @@
             <version>1.0.0</version>
         </dependency>
 
-        <!-- Lightning Network 依赖 -->
+        <!-- LND Lightning Network 依赖 -->
         <dependency>
             <groupId>org.lightningj</groupId>
             <artifactId>lightningj</artifactId>
             <version>0.14.3-Beta</version>
         </dependency>
 
+        <!-- c-Lightning Lightning Network 依赖 -->
+        <dependency>
+            <groupId>io.github.clightning4j</groupId>
+            <artifactId>jrpclightning</artifactId>
+            <version>0.2.1</version>
+        </dependency>
+
+        <!-- Use Macaroon -->
+        <dependency>
+            <groupId>com.github.nitram509</groupId>
+            <artifactId>jmacaroons</artifactId>
+            <version>0.4.1</version>
+        </dependency>
 
         <!-- Okhttp -->
         <!-- 自带的okhttp版本过低, 需要显式选用更高版本的-->
