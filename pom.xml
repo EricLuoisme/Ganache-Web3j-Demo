@@ -42,6 +42,14 @@
             <version>1.0.0</version>
         </dependency>
 
+        <!-- Lightning Network 依赖 -->
+        <dependency>
+            <groupId>org.lightningj</groupId>
+            <artifactId>lightningj</artifactId>
+            <version>0.14.3-Beta</version>
+        </dependency>
+
+
         <!-- Okhttp -->
         <!-- 自带的okhttp版本过低, 需要显式选用更高版本的-->
         <dependency>
