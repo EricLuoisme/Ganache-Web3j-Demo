@@ -6,15 +6,34 @@ import com.github.nitram509.jmacaroons.Macaroon;
 import com.github.nitram509.jmacaroons.MacaroonsBuilder;
 import okhttp3.*;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+import org.lightningj.lnd.proto.LightningApi;
 import org.lightningj.lnd.wrapper.*;
+import org.lightningj.lnd.wrapper.message.*;
+import org.web3j.utils.Numeric;
 
+import javax.json.Json;
+import javax.net.ssl.SSLException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.util.Iterator;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import javax.xml.bind.JAXBException;
+import java.io.StringReader;
+import java.util.Iterator;
+
 
 /**
  * 尝试进行RPC解析测试
@@ -40,6 +59,8 @@ public class PolarLightningCallingTest {
     // Bob - c-lightning
     private final static String BOB_REST_API = "http://127.0.0.1:8182/";
     private final static String BOB_MACAROON = "/Users/pundix2022/.polar/networks/1/volumes/c-lightning/bob/rest-api/access.macaroon";
+
+
     private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .readTimeout(10, TimeUnit.SECONDS)
             .writeTimeout(10, TimeUnit.SECONDS)
@@ -50,20 +71,49 @@ public class PolarLightningCallingTest {
             .build();
 
 
+    // ************************************************** LND Node *********************************************************
     @Test
-    public void LND_syncChannelBalanceTest() throws IOException, StatusException, ValidationException {
+    public void LND_SyncChannelBalanceTest() throws IOException, StatusException, ValidationException {
 
-        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+        SynchronousLndAPI synchronousLndAPI_Alice = new SynchronousLndAPI(
                 "127.0.0.1",
                 ALICE_GRPC_PORT,
                 new File(ALICE_CERT),
                 new File(ALICE_MACAROON));
 
-        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
+        System.out.println(synchronousLndAPI_Alice.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+        System.out.println(synchronousLndAPI_Alice.walletBalance().toJsonAsString(true));
+//        System.out.println(synchronousLndAPI_Alice.listPeers(false).toJsonAsString(true));
     }
 
     @Test
-    public void CLIGHTNING_syncChannelBalanceTest() throws IOException, ClientSideException {
+    public void LND_OpenChannel_ByRestAPI() throws StatusException, IOException, ValidationException, CertificateException, JAXBException {
+
+        SynchronousLndAPI synchronousLndAPI_Alice = new SynchronousLndAPI(
+                "127.0.0.1",
+                ALICE_GRPC_PORT,
+                new File(ALICE_CERT),
+                new File(ALICE_MACAROON));
+
+        OpenChannelRequest openChannelRequest = new OpenChannelRequest();
+        openChannelRequest.setNodePubkey(Numeric.hexStringToByteArray("02776c2c0c87f492b85be9646c25fcc7be91968d76d7a40aa77aff3e669cc12329"));
+        openChannelRequest.setLocalFundingAmount(1000000L);
+        openChannelRequest.setPushSat(2000L);
+
+        Iterator<OpenStatusUpdate> result = synchronousLndAPI_Alice.openChannel(openChannelRequest);
+
+        while (result.hasNext()) {
+            System.out.println("Received Update: " + result.next().toJsonAsString(true));
+        }
+
+        synchronousLndAPI_Alice.close();
+
+    }
+
+
+    // ************************************************** c-lightning Node **************************************************
+    @Test
+    public void CLIGHTNING_SyncChannelBalanceTest() throws IOException, ClientSideException {
 
         // toBase64String already contains calling the encode function
         byte[] macaroonBytes = Files.readAllBytes(Paths.get(BOB_MACAROON));

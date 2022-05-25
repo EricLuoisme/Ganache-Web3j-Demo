@@ -46,7 +46,7 @@
         <dependency>
             <groupId>org.lightningj</groupId>
             <artifactId>lightningj</artifactId>
-            <version>0.14.3-Beta</version>
+            <version>0.12.1-Beta</version>
         </dependency>
 
         <!-- c-Lightning Lightning Network 依赖 -->
@@ -76,7 +76,6 @@
             <artifactId>protobuf-java</artifactId>
             <version>3.20.0</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
