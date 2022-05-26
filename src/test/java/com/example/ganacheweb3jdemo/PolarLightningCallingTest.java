@@ -11,7 +11,6 @@ import org.web3j.utils.Numeric;
 
 import javax.net.ssl.SSLException;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Iterator;
@@ -177,6 +176,7 @@ public class PolarLightningCallingTest {
         // 	the description_hash field is not being used.
         invoice.setMemo("Dave's invoice should be paid by Alice 10,000");
         // The value of this invoice in satoshis The fields value and value_msat are mutually exclusive.
+        // if the value is smaller than node's routing policy, this invoice could not 'see' this route
         invoice.setValue(10_000L);
 
         AddInvoiceResponse addInvoiceResponse = synchronousLndAPI.addInvoice(invoice);
@@ -195,7 +195,6 @@ public class PolarLightningCallingTest {
 
         SendRequest sendRequest = new SendRequest();
         sendRequest.setPaymentRequest("lnbcrt100u1p3g73a7pp5fcaxhz6zncrw342xqpuehxv3g0767qj0ejy4jpg3u4dh8udey02qdzgg3shvef8wvsxjmnkda5kxefqwd5x7atvvssxyefqwpskjepqvfujqstvd93k2gp3xqkrqvpscqzpgsp5lrlue7ch6lecspy0sp2y76aleylx9tplv9guc884k7097x9ew82q9qyyssqly5r9yd80xff9mg8kvw3au2d6eyzjm3t2fex68pcht8zr0hxm3n42x8kyp6kek82j03gr6pw995wsr2rlw42sav7rl9ae4u7apw47ncpmdk0k5");
-
 
         SendResponse sendResponse = synchronousLndAPI_Alice.sendPaymentSync(sendRequest);
         System.out.println(sendResponse.toJsonAsString(true));
