@@ -1,14 +1,13 @@
 package com.example.ganacheweb3jdemo;
 
 
-import com.example.ganacheweb3jdemo.web3j.ApplicationInterceptorImp;
-import com.example.ganacheweb3jdemo.web3j.LogInterceptorImp;
+import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.ApplicationInterceptorImp;
+import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.LogInterceptorImp;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 /**
