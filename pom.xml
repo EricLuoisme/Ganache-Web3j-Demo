@@ -75,6 +75,20 @@
             <artifactId>okhttp</artifactId>
             <version>4.9.3</version>
         </dependency>
+        <!-- okhttp + tls -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-tls</artifactId>
+            <version>4.9.3</version>
+        </dependency>
+        <!-- SSLContexts -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.15</version>
+        </dependency>
+
+
         <!-- Protocol Buffer -->
         <dependency>
             <groupId>com.google.protobuf</groupId>
@@ -104,6 +118,12 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.cloud</groupId>
+            <artifactId>ssl-context-spring-boot-starter</artifactId>
+            <version>0.0.15</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

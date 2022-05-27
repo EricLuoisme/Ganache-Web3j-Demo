@@ -3,15 +3,23 @@ package com.example.ganacheweb3jdemo;
 import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.ApplicationInterceptorImp;
 import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.LogInterceptorImp;
 import okhttp3.*;
+import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.util.encoders.Base64;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import org.lightningj.lnd.wrapper.*;
+import org.lightningj.lnd.wrapper.StatusException;
+import org.lightningj.lnd.wrapper.SynchronousLndAPI;
+import org.lightningj.lnd.wrapper.ValidationException;
 import org.lightningj.lnd.wrapper.message.*;
 import org.web3j.utils.Numeric;
 
-import javax.net.ssl.*;
-import java.io.*;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
@@ -21,8 +29,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.codec.binary.Hex;
 
 
 /**
@@ -308,7 +314,7 @@ public class PolarLightningCallingTest {
 
         // For TrustManager
         X509TrustManager TRUST_FILES_CERTS = generateTrustManagerByFile(certificate);
-        SSLContext sslContext = SSLContext.getInstance("SSL");
+        SSLContext sslContext = SSLContext.getInstance("TLS");
         sslContext.init(null, new TrustManager[]{TRUST_FILES_CERTS}, new java.security.SecureRandom());
 
         OkHttpClient okHttpClient_sin = new OkHttpClient.Builder()
