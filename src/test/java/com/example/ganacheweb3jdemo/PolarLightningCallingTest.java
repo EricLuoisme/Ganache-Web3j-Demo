@@ -1,7 +1,7 @@
 package com.example.ganacheweb3jdemo;
 
-import com.example.ganacheweb3jdemo.web3j.ApplicationInterceptorImp;
-import com.example.ganacheweb3jdemo.web3j.LogInterceptorImp;
+import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.ApplicationInterceptorImp;
+import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.LogInterceptorImp;
 import okhttp3.*;
 import org.bouncycastle.util.encoders.Base64;
 import org.junit.jupiter.api.Test;
@@ -9,16 +9,25 @@ import org.lightningj.lnd.wrapper.*;
 import org.lightningj.lnd.wrapper.message.*;
 import org.web3j.utils.Numeric;
 
-import javax.net.ssl.SSLException;
+import javax.net.ssl.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.codec.binary.Hex;
 
 
 /**
  * 尝试进行RPC解析测试
+ * cert: https://www.baeldung.com/okhttp-self-signed-cert
  *
  * @author Roylic
  * @date 2022/4/21
@@ -61,7 +70,7 @@ public class PolarLightningCallingTest {
             .build();
 
 
-    // ************************************************** LND Nodes *********************************************************
+    // ************************************************** Grpc Request *********************************************************
     @Test
     public void LND_SyncChannelBalanceTest_Alice() throws IOException, StatusException, ValidationException {
 
@@ -89,7 +98,6 @@ public class PolarLightningCallingTest {
 
     }
 
-
     @Test
     public void LND_SyncChannelBalanceTest_Erin() throws IOException, StatusException, ValidationException {
         // Erin
@@ -105,7 +113,6 @@ public class PolarLightningCallingTest {
 //        System.out.println(synchronousLndAPI.getChanInfo(130841883770880L));
 //        System.out.println(synchronousLndAPI.listInvoices(new ListInvoiceRequest()));
     }
-
 
     @Test
     public void LND_SyncChannelBalanceTest_Dave() throws IOException, StatusException, ValidationException {
@@ -126,7 +133,6 @@ public class PolarLightningCallingTest {
 //        listInvoiceRequest.setPendingOnly(true);
 //        System.out.println(synchronousLndAPI.listInvoices(listInvoiceRequest));
     }
-
 
     @Test
     public void LND_OpenChannel_ByRpcAPI_Alice2Erin() throws StatusException, IOException, ValidationException {
@@ -197,9 +203,6 @@ public class PolarLightningCallingTest {
         // close stub
         synchronousLndAPI.close();
     }
-
-
-
 
     @Test
     public void LND_CreateInvoice_ByRpcAPI() throws StatusException, SSLException, ValidationException {
@@ -274,9 +277,79 @@ public class PolarLightningCallingTest {
     }
 
 
-    // ************************************************** c-lightning Nodes **************************************************
+    // ************************************************** Rest Request **************************************************
+
     @Test
-    public void CLIGHTNING_SyncChannelBalanceTest() throws IOException {
+    public void LND_SyncRestTest() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        // By Rest
+
+        // encode binary macaroon into hex string
+        String macaroonHexStr = Hex.encodeHexString(Files.readAllBytes(Paths.get(ALICE_MACAROON)));
+        // When using Numeric, it will automatically add 0x, at the front... but LND would not accept this 0x
+        String macaroon0xStr = Numeric.toHexString(Files.readAllBytes(Paths.get(ALICE_MACAROON)));
+        if (macaroon0xStr.substring(2).equals(macaroonHexStr)) {
+            System.out.println(">>> They are the same");
+        }
+
+
+        byte[] bytes = Files.readAllBytes(Paths.get(ALICE_CERT));
+        String s = new String(bytes);
+        System.out.println("\n Cert \n");
+        System.out.println(s);
+
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        Certificate certificate = cf.generateCertificate(new FileInputStream(ALICE_CERT));
+
+
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://127.0.0.1:8081" + "/v1/getinfo").newBuilder();
+        String url = urlBuilder
+                .build()
+                .toString();
+
+        Request requestGet = new Request.Builder()
+                .url(url)
+                .header("Grpc-Metadata-macaroon", macaroonHexStr)
+                .build();
+
+        // For TrustManager
+        X509TrustManager TRUST_ALL_CERTS = new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                System.out.println();
+            }
+
+            @Override
+            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                System.out.println();
+            }
+
+            @Override
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return new java.security.cert.X509Certificate[]{};
+            }
+        };
+        SSLContext sslContext = SSLContext.getInstance("SSL");
+        sslContext.init(null, new TrustManager[]{TRUST_ALL_CERTS}, new java.security.SecureRandom());
+
+        OkHttpClient okHttpClient_sin = new OkHttpClient.Builder()
+                .sslSocketFactory(sslContext.getSocketFactory(), TRUST_ALL_CERTS)
+                .build();
+        Call call = okHttpClient_sin.newCall(requestGet);
+
+        ResponseBody body = call.execute().body();
+        if (null != body) {
+            System.out.println();
+            System.out.println(body.string());
+            System.out.println();
+        }
+    }
+
+
+    /**
+     * c-lightning test
+     */
+    @Test
+    public void CLIGHTNING_SyncChannelBalanceTest() throws IOException, NoSuchAlgorithmException, KeyManagementException {
 
         // toBase64String already contains calling the encode function
         byte[] macaroonBytes = Files.readAllBytes(Paths.get(BOB_MACAROON));
