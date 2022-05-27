@@ -32,19 +32,19 @@ public class PolarLightningCallingTest {
     private final static int ALICE_GRPC_PORT = 10001;
     private final static String ALICE_CERT = POLAR_MACAROON_LOC + "/alice/tls.cert";
     private final static String ALICE_MACAROON = POLAR_MACAROON_LOC + "/alice/data/chain/bitcoin/regtest/admin.macaroon";
-    private final static String ALICE_PUB_KEY = "02667dc9cba7b7ecde8d93a17fa74159f4ac3822892fed0a47c1344d7a2ff9d379";
+    private final static String ALICE_PUB_KEY = "02e5e73d1654251a54709341cbda20f8441a639d6ac24e8f5ff0f2b15ef0aaacb5";
 
     // Erin
     private final static int ERIN_GRPC_PORT = 10005;
     private final static String ERIN_CERT = POLAR_MACAROON_LOC + "/erin/tls.cert";
     private final static String ERIN_MACAROON = POLAR_MACAROON_LOC + "/erin/data/chain/bitcoin/regtest/admin.macaroon";
-    private final static String ERIN_PUB_KEY = "0363151ad22fc77b6de81ded9e416d3a5db08c5c2259ac902ee5be8d50fb6beb4a";
+    private final static String ERIN_PUB_KEY = "02cabd7ebe714e37fad2f25e07f9bdde8713f44c16af2d74e3d0b278727b62d1fc";
 
     // Dave
     private final static int DAVE_GRPC_PORT = 10004;
     private final static String DAVE_CERT = POLAR_MACAROON_LOC + "/dave/tls.cert";
     private final static String DAVE_MACAROON = POLAR_MACAROON_LOC + "/dave/data/chain/bitcoin/regtest/admin.macaroon";
-    private final static String DAVE_PUB_KEY = "0398690d55825b8fa6b7ac2b05f68e390b65e0b80e8a9e9edc2631884a43432f49";
+    private final static String DAVE_PUB_KEY = "0216ba75f68d5e695c754696751080e98db0f1d8674fa72b1c1df221f25fecc2f5";
 
     // Bob - c-lightning
     private final static String BOB_REST_API = "http://127.0.0.1:8182/";
@@ -72,17 +72,20 @@ public class PolarLightningCallingTest {
                 new File(ALICE_CERT),
                 new File(ALICE_MACAROON));
         System.out.println("\nAlice\n");
-//        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
-//        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
-//        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
-//        System.out.println(synchronousLndAPI.listInvoices(new ListInvoiceRequest()).toJsonAsString(true));
+        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
+        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
+        System.out.println(synchronousLndAPI.listInvoices(new ListInvoiceRequest()).toJsonAsString(true));
+
+        System.out.println(synchronousLndAPI.listPayments(new ListPaymentsRequest()).toJsonAsString(true));
+
 //        System.out.println(synchronousLndAPI.getChanInfo(148434069815297L));
 
-        SendRequest sendRequest = new SendRequest();
-        sendRequest.setPaymentRequest("lnbcrt500u1p3g73jspp5v8s6mywu3mlcz38y8axej6fus3y4ex8v3qfhfqxzw6md45ngznnsdqqcqzpgsp5ffxyh20dc4ztv6lwaj9k6pf7n9n5w705xzuuu6pu9mpangtnxfjs9qyyssq255dnth59h7dgu9nyh2ytu2j2r57npqy4w6esyv8tk5w3skj90uhgy9vrsqxy33sxq85aqqh59jq685anzxlm0w9fsk4y72jvls3eggq622hzh");
-
-        SendResponse sendResponse = synchronousLndAPI.sendPaymentSync(sendRequest);
-        System.out.println(sendResponse.toJsonAsString(true));
+//        SendRequest sendRequest = new SendRequest();
+//        sendRequest.setPaymentRequest("lnbcrt500u1p3g73jspp5v8s6mywu3mlcz38y8axej6fus3y4ex8v3qfhfqxzw6md45ngznnsdqqcqzpgsp5ffxyh20dc4ztv6lwaj9k6pf7n9n5w705xzuuu6pu9mpangtnxfjs9qyyssq255dnth59h7dgu9nyh2ytu2j2r57npqy4w6esyv8tk5w3skj90uhgy9vrsqxy33sxq85aqqh59jq685anzxlm0w9fsk4y72jvls3eggq622hzh");
+//
+//        SendResponse sendResponse = synchronousLndAPI.sendPaymentSync(sendRequest);
+//        System.out.println(sendResponse.toJsonAsString(true));
 
     }
 
@@ -96,11 +99,11 @@ public class PolarLightningCallingTest {
                 new File(ERIN_CERT),
                 new File(ERIN_MACAROON));
         System.out.println("\nErin\n");
-//        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
-//        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
-//        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
+        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
+        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
 //        System.out.println(synchronousLndAPI.getChanInfo(130841883770880L));
-        System.out.println(synchronousLndAPI.listInvoices(new ListInvoiceRequest()));
+//        System.out.println(synchronousLndAPI.listInvoices(new ListInvoiceRequest()));
     }
 
 
@@ -114,28 +117,28 @@ public class PolarLightningCallingTest {
                 new File(DAVE_CERT),
                 new File(DAVE_MACAROON));
         System.out.println("\nDave\n");
-//        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
-//        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
-//        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
+        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
+        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
 //        System.out.println(synchronousLndAPI.getChanInfo(130841883770880L));
 
-        ListInvoiceRequest listInvoiceRequest = new ListInvoiceRequest();
-        listInvoiceRequest.setPendingOnly(true);
-        System.out.println(synchronousLndAPI.listInvoices(listInvoiceRequest));
+//        ListInvoiceRequest listInvoiceRequest = new ListInvoiceRequest();
+//        listInvoiceRequest.setPendingOnly(true);
+//        System.out.println(synchronousLndAPI.listInvoices(listInvoiceRequest));
     }
 
 
     @Test
-    public void LND_OpenChannel_ByRpcAPI() throws StatusException, IOException, ValidationException {
+    public void LND_OpenChannel_ByRpcAPI_Alice2Erin() throws StatusException, IOException, ValidationException {
 
         SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
                 "127.0.0.1",
-                ERIN_GRPC_PORT,
-                new File(ERIN_CERT),
-                new File(ERIN_MACAROON));
+                ALICE_GRPC_PORT,
+                new File(ALICE_CERT),
+                new File(ALICE_MACAROON));
 
         OpenChannelRequest openChannelRequest = new OpenChannelRequest();
-        openChannelRequest.setNodePubkey(Numeric.hexStringToByteArray(DAVE_PUB_KEY));
+        openChannelRequest.setNodePubkey(Numeric.hexStringToByteArray(ERIN_PUB_KEY));
         // The number of SATs the wallet should commit to the channel
         openChannelRequest.setLocalFundingAmount(2_000_000L);
         // The number of SATs to push to the remote side as part of the initial commitment state
@@ -159,6 +162,43 @@ public class PolarLightningCallingTest {
         // close stub
         synchronousLndAPI.close();
     }
+
+    @Test
+    public void LND_OpenChannel_ByRpcAPI_Erin2Dave() throws StatusException, IOException, ValidationException {
+
+        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+                "127.0.0.1",
+                ERIN_GRPC_PORT,
+                new File(ERIN_CERT),
+                new File(ERIN_MACAROON));
+
+        OpenChannelRequest openChannelRequest = new OpenChannelRequest();
+        openChannelRequest.setNodePubkey(Numeric.hexStringToByteArray(DAVE_PUB_KEY));
+        // The number of SATs the wallet should commit to the channel
+        openChannelRequest.setLocalFundingAmount(1_000_000L);
+        // The number of SATs to push to the remote side as part of the initial commitment state
+        openChannelRequest.setPushSat(50_000L);
+        // The target number of blocks that the funding transaction should be confirmed by.
+        openChannelRequest.setTargetConf(3);
+        // Whether this channel should be private, not announced to the greater network.
+        openChannelRequest.setPrivate(false);
+        // The minimum number of confirmations each one of your outputs used for the funding transaction must satisfy.
+        openChannelRequest.setMinConfs(5);
+        // Whether unconfirmed outputs should be used as inputs for the funding transaction.
+        openChannelRequest.setSpendUnconfirmed(false);
+
+
+        // request
+        Iterator<OpenStatusUpdate> result = synchronousLndAPI.openChannel(openChannelRequest);
+        while (result.hasNext()) {
+            System.out.println("Received Update: " + result.next().toJsonAsString(true));
+        }
+
+        // close stub
+        synchronousLndAPI.close();
+    }
+
+
 
 
     @Test
@@ -194,7 +234,7 @@ public class PolarLightningCallingTest {
         System.out.println("\nAlice\n");
 
         SendRequest sendRequest = new SendRequest();
-        sendRequest.setPaymentRequest("lnbcrt100u1p3g73a7pp5fcaxhz6zncrw342xqpuehxv3g0767qj0ejy4jpg3u4dh8udey02qdzgg3shvef8wvsxjmnkda5kxefqwd5x7atvvssxyefqwpskjepqvfujqstvd93k2gp3xqkrqvpscqzpgsp5lrlue7ch6lecspy0sp2y76aleylx9tplv9guc884k7097x9ew82q9qyyssqly5r9yd80xff9mg8kvw3au2d6eyzjm3t2fex68pcht8zr0hxm3n42x8kyp6kek82j03gr6pw995wsr2rlw42sav7rl9ae4u7apw47ncpmdk0k5");
+        sendRequest.setPaymentRequest("lnbcrt100u1p3g75mdpp5my0ndmtkdcw6xk5qjul7sut8zjclxfhk25um2lwycavu0zwxp0yqdzgg3shvef8wvsxjmnkda5kxefqwd5x7atvvssxyefqwpskjepqvfujqstvd93k2gp3xqkrqvpscqzpgsp5l8x3pw2q8sryzst5pqd562k070umghcul50x04xyj9srm8vnjakq9qyyssq7m7qmqjxla95p0gs83at5vnfh8z29zcardcl4evt9luz0vlppla5n58zlf3s9glxnjt0km8rg0gpqr2480zw6ccn9ds8mscu0ay583sphqhtue");
 
         SendResponse sendResponse = synchronousLndAPI_Alice.sendPaymentSync(sendRequest);
         System.out.println(sendResponse.toJsonAsString(true));
@@ -211,9 +251,9 @@ public class PolarLightningCallingTest {
 
         ChannelPoint channelPoint = new ChannelPoint();
         // before :
-        channelPoint.setFundingTxidStr("0386fc8cc01a503b7b304034cdac9003005472efe78b286ec1b9e720ee3050fb");
+        channelPoint.setFundingTxidStr("0c50ff69a260ba757c72bfbefea7ab13c5bce52afbc14334a004503f82d83a0f");
         // after :
-        channelPoint.setOutputIndex(0);
+        channelPoint.setOutputIndex(1);
 
         CloseChannelRequest closeChannelRequest = new CloseChannelRequest();
         // channel point
