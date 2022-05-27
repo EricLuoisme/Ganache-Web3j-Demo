@@ -4,6 +4,7 @@ import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.ApplicationIntercep
 import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.LogInterceptorImp;
 import okhttp3.*;
 import org.bouncycastle.util.encoders.Base64;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.lightningj.lnd.wrapper.*;
 import org.lightningj.lnd.wrapper.message.*;
@@ -13,12 +14,11 @@ import javax.net.ssl.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +28,7 @@ import org.apache.commons.codec.binary.Hex;
 /**
  * 尝试进行RPC解析测试
  * cert: https://www.baeldung.com/okhttp-self-signed-cert
+ * trust: https://github.com/lightningnetwork/lnd/blob/master/docs/grpc/java.md
  *
  * @author Roylic
  * @date 2022/4/21
@@ -283,6 +284,10 @@ public class PolarLightningCallingTest {
     public void LND_SyncRestTest() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         // By Rest
 
+        // this is for verifying
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        final Certificate certificate = cf.generateCertificate(new FileInputStream(ALICE_CERT));
+
         // encode binary macaroon into hex string
         String macaroonHexStr = Hex.encodeHexString(Files.readAllBytes(Paths.get(ALICE_MACAROON)));
         // When using Numeric, it will automatically add 0x, at the front... but LND would not accept this 0x
@@ -290,16 +295,6 @@ public class PolarLightningCallingTest {
         if (macaroon0xStr.substring(2).equals(macaroonHexStr)) {
             System.out.println(">>> They are the same");
         }
-
-
-        byte[] bytes = Files.readAllBytes(Paths.get(ALICE_CERT));
-        String s = new String(bytes);
-        System.out.println("\n Cert \n");
-        System.out.println(s);
-
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        Certificate certificate = cf.generateCertificate(new FileInputStream(ALICE_CERT));
-
 
         HttpUrl.Builder urlBuilder = HttpUrl.parse("https://127.0.0.1:8081" + "/v1/getinfo").newBuilder();
         String url = urlBuilder
@@ -312,27 +307,12 @@ public class PolarLightningCallingTest {
                 .build();
 
         // For TrustManager
-        X509TrustManager TRUST_ALL_CERTS = new X509TrustManager() {
-            @Override
-            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-                System.out.println();
-            }
-
-            @Override
-            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-                System.out.println();
-            }
-
-            @Override
-            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                return new java.security.cert.X509Certificate[]{};
-            }
-        };
+        X509TrustManager TRUST_FILES_CERTS = generateTrustManagerByFile(certificate);
         SSLContext sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(null, new TrustManager[]{TRUST_ALL_CERTS}, new java.security.SecureRandom());
+        sslContext.init(null, new TrustManager[]{TRUST_FILES_CERTS}, new java.security.SecureRandom());
 
         OkHttpClient okHttpClient_sin = new OkHttpClient.Builder()
-                .sslSocketFactory(sslContext.getSocketFactory(), TRUST_ALL_CERTS)
+                .sslSocketFactory(sslContext.getSocketFactory(), TRUST_FILES_CERTS)
                 .build();
         Call call = okHttpClient_sin.newCall(requestGet);
 
@@ -342,6 +322,38 @@ public class PolarLightningCallingTest {
             System.out.println(body.string());
             System.out.println();
         }
+    }
+
+    @NotNull
+    private X509TrustManager generateTrustManagerByFile(Certificate certificate) {
+        return new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) {
+                try {
+                    certificate.verify(chain[0].getPublicKey());
+                } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException | SignatureException e) {
+                    System.out.println("Client Illegal");
+                    e.printStackTrace();
+                }
+                System.out.println("Client Trusted");
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                try {
+                    certificate.verify(chain[0].getPublicKey());
+                } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException | SignatureException e) {
+                    System.out.println("Server Illegal");
+                    e.printStackTrace();
+                }
+                System.out.println("Server Trusted");
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[]{};
+            }
+        };
     }
 
 
