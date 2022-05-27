@@ -73,11 +73,11 @@ public class PolarLightningCallingTest {
                 new File(ALICE_MACAROON));
         System.out.println("\nAlice\n");
         System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
-        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
-        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
-        System.out.println(synchronousLndAPI.listInvoices(new ListInvoiceRequest()).toJsonAsString(true));
-
-        System.out.println(synchronousLndAPI.listPayments(new ListPaymentsRequest()).toJsonAsString(true));
+//        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
+//        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
+//        System.out.println(synchronousLndAPI.listInvoices(new ListInvoiceRequest()).toJsonAsString(true));
+//
+//        System.out.println(synchronousLndAPI.listPayments(new ListPaymentsRequest()).toJsonAsString(true));
 
 //        System.out.println(synchronousLndAPI.getChanInfo(148434069815297L));
 
