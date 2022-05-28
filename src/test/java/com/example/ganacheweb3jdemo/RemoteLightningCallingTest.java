@@ -28,7 +28,7 @@ public class RemoteLightningCallingTest {
 
     private final static String NODE_IP = "18.139.32.218";
     private final static int NODE_GRPC_PORT = 10009;
-    private final static int NODE_REST_PORT = 9735;
+    private final static int NODE_REST_PORT = 8080;
 
 //    private final static String FILE_BASE_PATH = "/Users/pundix2022/Desktop/开发项目/LightningNetworkRelated/";
 //    private final static String CERT_PATH = FILE_BASE_PATH + "tls.cert";
@@ -58,6 +58,7 @@ public class RemoteLightningCallingTest {
         SSLContext sslContext = SSLContext.getInstance("TLS");
         X509TrustManager x509TrustManager = generateTrustManagerByFile(certificate);
         X509KeyManager x509KeyManager = generateKeyManagerByFile(certificate);
+        HostnameVerifier hostnameVerifier = generateHostnameVerifier();
         sslContext.init(
                 new KeyManager[]{x509KeyManager},
                 new TrustManager[]{x509TrustManager},
@@ -66,6 +67,7 @@ public class RemoteLightningCallingTest {
 
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .sslSocketFactory(sslContext.getSocketFactory(), x509TrustManager)
+                .hostnameVerifier(hostnameVerifier)
                 .build();
         Call call = okHttpClient.newCall(requestGet);
 
@@ -79,7 +81,9 @@ public class RemoteLightningCallingTest {
     }
 
     @NotNull
-    private X509KeyManager generateKeyManagerByFile(Certificate certificate) throws NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException {
+    private X509KeyManager generateKeyManagerByFile(Certificate certificate)
+            throws NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException {
+
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         kmf.init(null, null);
 
@@ -145,31 +149,13 @@ public class RemoteLightningCallingTest {
 
             @Override
             public X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[]{};
+                return new X509Certificate[]{(X509Certificate) certificate};
             }
         };
     }
 
-
-    @Test
-    public KeyStore readKeyStore() throws KeyStoreException, IOException {
-        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-
-        // get user password and file input stream
-        char[] password = "123456".toCharArray();
-
-        java.io.FileInputStream fis = null;
-        try {
-            fis = new java.io.FileInputStream(FILE_BASE_PATH + "/lnd_keystore");
-            ks.load(fis, password);
-        } catch (CertificateException | IOException | NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } finally {
-            if (fis != null) {
-                fis.close();
-            }
-        }
-        return ks;
+    @NotNull
+    private HostnameVerifier generateHostnameVerifier() {
+        return (hostname, session) -> true;
     }
-
 }
