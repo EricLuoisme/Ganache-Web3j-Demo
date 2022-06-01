@@ -1,4 +1,4 @@
-package com.example.ganacheweb3jdemo;
+package com.example.ganacheweb3jdemo.lightning;
 
 import okhttp3.*;
 import org.apache.commons.codec.binary.Hex;

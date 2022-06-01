@@ -1,4 +1,4 @@
-package com.example.ganacheweb3jdemo;
+package com.example.ganacheweb3jdemo.lightning;
 
 
 import org.junit.jupiter.api.Test;
@@ -34,6 +34,9 @@ public class LocalLightningNodeCallingTest {
         System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
 
     }
+
+
+
 
 
 }

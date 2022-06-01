@@ -1,4 +1,4 @@
-package com.example.ganacheweb3jdemo;
+package com.example.ganacheweb3jdemo.lightning;
 
 import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.ApplicationInterceptorImp;
 import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.LogInterceptorImp;
@@ -27,7 +27,9 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -281,6 +283,26 @@ public class PolarLightningCallingTest {
 
         // close stub
         synchronousLndAPI_Alice.close();
+    }
+
+
+    @Test
+    public void LND_EstimateFee_ByRpcAPI() throws StatusException, SSLException, ValidationException {
+        SynchronousLndAPI synchronousLndAPI_Alice = new SynchronousLndAPI(
+                "127.0.0.1",
+                ALICE_GRPC_PORT,
+                new File(ALICE_CERT),
+                new File(ALICE_MACAROON));
+
+        Map<String, Long> reqMap = new HashMap<>();
+        reqMap.put(ERIN_PUB_KEY, 500_000L);
+
+        EstimateFeeRequest request = new EstimateFeeRequest();
+        request.setAddrToAmount(reqMap);
+
+        EstimateFeeResponse estimateFeeResponse = synchronousLndAPI_Alice.estimateFee(request);
+        System.out.println(estimateFeeResponse.toJsonAsString(true));
+
     }
 
 

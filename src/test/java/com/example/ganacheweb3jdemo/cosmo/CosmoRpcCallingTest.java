@@ -1,4 +1,4 @@
-package com.example.ganacheweb3jdemo;
+package com.example.ganacheweb3jdemo.cosmo;
 
 
 import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.ApplicationInterceptorImp;
