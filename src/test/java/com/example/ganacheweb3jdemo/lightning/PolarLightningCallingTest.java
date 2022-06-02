@@ -295,7 +295,7 @@ public class PolarLightningCallingTest {
                 new File(ALICE_MACAROON));
 
         Map<String, Long> reqMap = new HashMap<>();
-        reqMap.put(ERIN_PUB_KEY, 500_000L);
+        reqMap.put("0336a9dc9c596320c7dabedc8e02299040e4a8224d1a16237d1caef118593d8508", 500_000L);
 
         EstimateFeeRequest request = new EstimateFeeRequest();
         request.setAddrToAmount(reqMap);

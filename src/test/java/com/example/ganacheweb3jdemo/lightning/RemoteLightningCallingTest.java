@@ -33,13 +33,13 @@ public class RemoteLightningCallingTest {
     private final static int NODE_GRPC_PORT = 10009;
     private final static int NODE_REST_PORT = 8080;
 
-//    private final static String FILE_BASE_PATH = "/Users/pundix2022/Desktop/开发项目/LightningNetworkRelated/";
-//    private final static String CERT_PATH = FILE_BASE_PATH + "tls.cert";
-//    private final static String MACAROON_PATH = FILE_BASE_PATH + "admin.macaroon";
-
-    private final static String FILE_BASE_PATH = "D:\\lightning\\";
+    private final static String FILE_BASE_PATH = "/Users/pundix2022/Desktop/开发项目/LightningNetworkRelated/";
     private final static String CERT_PATH = FILE_BASE_PATH + "tls.cert";
     private final static String MACAROON_PATH = FILE_BASE_PATH + "admin.macaroon";
+
+//    private final static String FILE_BASE_PATH = "D:\\lightning\\";
+//    private final static String CERT_PATH = FILE_BASE_PATH + "tls.cert";
+//    private final static String MACAROON_PATH = FILE_BASE_PATH + "admin.macaroon";
 
 
     // ************************************************** LND Nodes *********************************************************
