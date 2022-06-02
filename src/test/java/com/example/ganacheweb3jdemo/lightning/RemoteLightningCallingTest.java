@@ -1,12 +1,23 @@
 package com.example.ganacheweb3jdemo.lightning;
 
+import io.grpc.ManagedChannel;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslProvider;
 import okhttp3.*;
 import org.apache.commons.codec.binary.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import org.lightningj.lnd.proto.LightningApi;
+import org.lightningj.lnd.proto.LightningGrpc;
+import org.lightningj.lnd.wrapper.StatusException;
+import org.lightningj.lnd.wrapper.ValidationException;
 
 import javax.net.ssl.*;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -42,7 +53,7 @@ public class RemoteLightningCallingTest {
 //    private final static String MACAROON_PATH = FILE_BASE_PATH + "admin.macaroon";
 
 
-    // ************************************************** LND Nodes *********************************************************
+    // ************************************************** LND Nodes With RESTFul *********************************************************
     @Test
     public void connectionTest() throws IOException, CertificateException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException {
 
@@ -206,4 +217,49 @@ public class RemoteLightningCallingTest {
         // or else get block...
         return (hostname, session) -> true;
     }
+
+
+    // ************************************************** LND Nodes With Grpc *********************************************************
+
+    @Test
+    public void grpc_connection() throws StatusException, SSLException, ValidationException, NoSuchAlgorithmException, KeyManagementException, CertificateException, FileNotFoundException, UnrecoverableKeyException, KeyStoreException {
+        // Alice
+//        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+//                NODE_IP,
+//                NODE_GRPC_PORT,
+//                new File(CERT_PATH),
+//                new File(MACAROON_PATH));
+
+        // get certificate
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        // generate certificate instance from input file stream, this certificate would be used in verifying response
+        final Certificate certificate = cf.generateCertificate(new FileInputStream(CERT_PATH));
+
+        // ssl context would be specific using TLS
+//        SSLContext sslContext = SSLContext.getInstance("TLS");
+        // create suitable trust manager & key manager for https request
+        X509TrustManager x509TrustManager = generateTrustManagerByFile(certificate);
+//        X509KeyManager x509KeyManager = generateKeyManagerByFile(certificate);
+//        sslContext.init(
+//                new KeyManager[]{x509KeyManager},
+//                new TrustManager[]{x509TrustManager},
+//                new java.security.SecureRandom());
+
+
+        SslContext sslRealContext = GrpcSslContexts
+                .configure(SslContextBuilder.forClient(), SslProvider.OPENSSL)
+                .trustManager(x509TrustManager)
+                .build();
+
+
+        ManagedChannel channel = NettyChannelBuilder.forAddress(NODE_IP, NODE_GRPC_PORT)
+                .sslContext(sslRealContext)
+                .build();
+
+        LightningGrpc.LightningBlockingStub stub = LightningGrpc.newBlockingStub(channel);
+        LightningApi.ListChannelsRequest.Builder reqBuilder = LightningApi.ListChannelsRequest.newBuilder();
+        LightningApi.ListChannelsResponse listChannelsResponse = stub.listChannels(reqBuilder.build());
+        System.out.println(listChannelsResponse.toString());
+    }
+
 }

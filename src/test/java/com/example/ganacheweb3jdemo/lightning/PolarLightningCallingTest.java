@@ -1,7 +1,10 @@
 package com.example.ganacheweb3jdemo.lightning;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.ApplicationInterceptorImp;
 import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.LogInterceptorImp;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.util.encoders.Base64;
@@ -27,9 +30,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -48,21 +49,24 @@ public class PolarLightningCallingTest {
 
     // Alice
     private final static int ALICE_GRPC_PORT = 10001;
+    private final static String ALICE_REST_HOST = "https://127.0.0.1:8081";
     private final static String ALICE_CERT = POLAR_MACAROON_LOC + "/alice/tls.cert";
     private final static String ALICE_MACAROON = POLAR_MACAROON_LOC + "/alice/data/chain/bitcoin/regtest/admin.macaroon";
-    private final static String ALICE_PUB_KEY = "02e5e73d1654251a54709341cbda20f8441a639d6ac24e8f5ff0f2b15ef0aaacb5";
+    private final static String ALICE_PUB_KEY = "030e7f17ec64d9bede258ec71370baaeeee2b12df6e5a664d0766b29070dd9720b";
 
     // Erin
     private final static int ERIN_GRPC_PORT = 10005;
+    private final static String ERIN_REST_HOST = "https://127.0.0.1:8085";
     private final static String ERIN_CERT = POLAR_MACAROON_LOC + "/erin/tls.cert";
     private final static String ERIN_MACAROON = POLAR_MACAROON_LOC + "/erin/data/chain/bitcoin/regtest/admin.macaroon";
-    private final static String ERIN_PUB_KEY = "02cabd7ebe714e37fad2f25e07f9bdde8713f44c16af2d74e3d0b278727b62d1fc";
+    private final static String ERIN_PUB_KEY = "0283f7142dfd9fff02d5f68d139d4e6bb774e62c364c414128d85ae758bbf834a9";
 
     // Dave
     private final static int DAVE_GRPC_PORT = 10004;
+    private final static String DAVE_REST_HOST = "https://127.0.0.1:8084";
     private final static String DAVE_CERT = POLAR_MACAROON_LOC + "/dave/tls.cert";
     private final static String DAVE_MACAROON = POLAR_MACAROON_LOC + "/dave/data/chain/bitcoin/regtest/admin.macaroon";
-    private final static String DAVE_PUB_KEY = "0216ba75f68d5e695c754696751080e98db0f1d8674fa72b1c1df221f25fecc2f5";
+    private final static String DAVE_PUB_KEY = "039495ddcf05f3392ef9efbba8b71db8d3a6435c756aebd3da9cf1e7549d2e611d";
 
     // Bob - c-lightning
     private final static String BOB_REST_API = "http://127.0.0.1:8182/";
@@ -190,7 +194,7 @@ public class PolarLightningCallingTest {
         OpenChannelRequest openChannelRequest = new OpenChannelRequest();
         openChannelRequest.setNodePubkey(Numeric.hexStringToByteArray(DAVE_PUB_KEY));
         // The number of SATs the wallet should commit to the channel
-        openChannelRequest.setLocalFundingAmount(1_000_000L);
+        openChannelRequest.setLocalFundingAmount(500_000L);
         // The number of SATs to push to the remote side as part of the initial commitment state
         openChannelRequest.setPushSat(50_000L);
         // The target number of blocks that the funding transaction should be confirmed by.
@@ -308,31 +312,94 @@ public class PolarLightningCallingTest {
 
     // ************************************************** Rest Request **************************************************
 
+
     @Test
-    public void LND_SyncRestTest() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        // By Rest
+    public void LND_SyncRestTest() throws IOException, NoSuchAlgorithmException, KeyManagementException, CertificateException, InterruptedException {
 
-        // this is for verifying
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        final Certificate certificate = cf.generateCertificate(new FileInputStream(ALICE_CERT));
+        String who_cert = ALICE_CERT;
+        String who_macaroon = ALICE_MACAROON;
+        String who_host = ALICE_REST_HOST;
+//        String which_path = "/v1/getinfo";
+        String which_path = "/v1/channels/stream";
 
-        // encode binary macaroon into hex string
-        String macaroonHexStr = Hex.encodeHexString(Files.readAllBytes(Paths.get(ALICE_MACAROON)));
-        // When using Numeric, it will automatically add 0x, at the front... but LND would not accept this 0x
-        String macaroon0xStr = Numeric.toHexString(Files.readAllBytes(Paths.get(ALICE_MACAROON)));
-        if (macaroon0xStr.substring(2).equals(macaroonHexStr)) {
-            System.out.println(">>> They are the same");
-        }
-
-        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://127.0.0.1:8081" + "/v1/getinfo").newBuilder();
+        // building url
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(who_host + which_path).newBuilder();
         String url = urlBuilder
                 .build()
                 .toString();
 
-        Request requestGet = new Request.Builder()
+        JSONObject reqJson = new JSONObject();
+        reqJson.put("nodePubkey", java.util.Base64.getEncoder().encodeToString(Numeric.hexStringToByteArray(ERIN_PUB_KEY)));
+        reqJson.put("localFundingAmount", 100_000L);
+        reqJson.put("pushSat", 5_000L);
+        System.out.println(">>> request:" + reqJson);
+
+        // building request
+        Request request = new Request.Builder()
                 .url(url)
-                .header("Grpc-Metadata-macaroon", macaroonHexStr)
+                .post(RequestBody.create(reqJson.toString(), MediaType.parse("application/json")))
+                .header("Grpc-Metadata-macaroon", Hex.encodeHexString(Files.readAllBytes(Paths.get(who_macaroon))))
                 .build();
+
+        // this is for verifying
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        final Certificate certificate = cf.generateCertificate(new FileInputStream(who_cert));
+
+        // do request
+        String s = LND_FormatRestReq_Async(request, certificate);
+        System.out.println(s);
+
+        Thread.currentThread().join();
+    }
+
+    /**
+     * 真正请求, 异步方式
+     */
+    private String LND_FormatRestReq_Async(Request request, Certificate certificate)
+            throws NoSuchAlgorithmException, KeyManagementException {
+
+        // For TrustManager
+        X509TrustManager TRUST_FILES_CERTS = generateTrustManagerByFile(certificate);
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, new TrustManager[]{TRUST_FILES_CERTS}, new java.security.SecureRandom());
+
+        OkHttpClient okHttpClient_sin = new OkHttpClient.Builder()
+                .sslSocketFactory(sslContext.getSocketFactory(), TRUST_FILES_CERTS)
+                .readTimeout(10 * 5, TimeUnit.MINUTES)
+                .build();
+
+        okHttpClient_sin.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                System.out.println("<<< Failure with exception:" + e);
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                ObjectMapper om = new ObjectMapper();
+                String str = om.writerWithDefaultPrettyPrinter().writeValueAsString(JSON.parse(response.body().string()));
+                System.out.println("<<< Successful response:" + str);
+            }
+        });
+
+        return ">>>> Request sending";
+    }
+
+
+    /**
+     * 真正请求, 同步方式
+     */
+    private ResponseBody LND_FormatRestReq_Sync(Request request, Certificate certificate)
+            throws IOException, NoSuchAlgorithmException, KeyManagementException {
+
+        //        // encode binary macaroon into hex string
+//        String macaroonHexStr = Hex.encodeHexString(Files.readAllBytes(Paths.get(who_macaroon)));
+//        // When using Numeric, it will automatically add 0x, at the front... but LND would not accept this 0x
+//        String macaroon0xStr = Numeric.toHexString(Files.readAllBytes(Paths.get(who_macaroon)));
+//        if (macaroon0xStr.substring(2).equals(macaroonHexStr)) {
+//            System.out.println(">>> They are the same");
+//        }
+
 
         // For TrustManager
         X509TrustManager TRUST_FILES_CERTS = generateTrustManagerByFile(certificate);
@@ -342,14 +409,9 @@ public class PolarLightningCallingTest {
         OkHttpClient okHttpClient_sin = new OkHttpClient.Builder()
                 .sslSocketFactory(sslContext.getSocketFactory(), TRUST_FILES_CERTS)
                 .build();
-        Call call = okHttpClient_sin.newCall(requestGet);
+        Call call = okHttpClient_sin.newCall(request);
 
-        ResponseBody body = call.execute().body();
-        if (null != body) {
-            System.out.println();
-            System.out.println(body.string());
-            System.out.println();
-        }
+        return call.execute().body();
     }
 
     @NotNull
