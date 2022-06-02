@@ -94,7 +94,8 @@ public class PolarLightningCallingTest {
                 new File(ALICE_CERT),
                 new File(ALICE_MACAROON));
         System.out.println("\nAlice\n");
-        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+//        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+//        System.out.println(synchronousLndAPI.feeReport().toJsonAsString(true));
 //        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
 //        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
 //        System.out.println(synchronousLndAPI.listInvoices(new ListInvoiceRequest()).toJsonAsString(true));
@@ -108,6 +109,11 @@ public class PolarLightningCallingTest {
 //
 //        SendResponse sendResponse = synchronousLndAPI.sendPaymentSync(sendRequest);
 //        System.out.println(sendResponse.toJsonAsString(true));
+
+        QueryRoutesRequest req = new QueryRoutesRequest();
+        req.setPubKey("0283f7142dfd9fff02d5f68d139d4e6bb774e62c364c414128d85ae758bbf834a9");
+
+        System.out.println(synchronousLndAPI.queryRoutes(req).toJsonAsString(true));
 
     }
 
@@ -299,7 +305,7 @@ public class PolarLightningCallingTest {
                 new File(ALICE_MACAROON));
 
         Map<String, Long> reqMap = new HashMap<>();
-        reqMap.put("0336a9dc9c596320c7dabedc8e02299040e4a8224d1a16237d1caef118593d8508", 500_000L);
+        reqMap.put("039495ddcf05f3392ef9efbba8b71db8d3a6435c756aebd3da9cf1e7549d2e611d", 50_000L);
 
         EstimateFeeRequest request = new EstimateFeeRequest();
         request.setAddrToAmount(reqMap);
