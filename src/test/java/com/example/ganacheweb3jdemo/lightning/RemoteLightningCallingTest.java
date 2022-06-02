@@ -1,23 +1,15 @@
 package com.example.ganacheweb3jdemo.lightning;
 
-import io.grpc.ManagedChannel;
-import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslProvider;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.apache.commons.codec.binary.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import org.lightningj.lnd.proto.LightningApi;
-import org.lightningj.lnd.proto.LightningGrpc;
-import org.lightningj.lnd.wrapper.StatusException;
-import org.lightningj.lnd.wrapper.ValidationException;
 
 import javax.net.ssl.*;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -27,6 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -54,6 +47,82 @@ public class RemoteLightningCallingTest {
 
 
     // ************************************************** LND Nodes With RESTFul *********************************************************
+
+
+    @Test
+    public void openChannelTest() throws IOException, NoSuchAlgorithmException, KeyManagementException, CertificateException, InterruptedException {
+
+        String who_cert = CERT_PATH;
+        String who_macaroon = MACAROON_PATH;
+//        String which_path = "/v1/channels/stream";
+//        String which_path = "/v1/channels/transactions";
+        String which_path = "/v1/invoices";
+
+        // building url
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://" + NODE_IP + ":" + NODE_REST_PORT + which_path).newBuilder();
+        String url = urlBuilder
+                .build()
+                .toString();
+
+        // openChannel
+//        JSONObject reqJson = new JSONObject();
+//        reqJson.put("nodePubkey", java.util.Base64.getEncoder().encodeToString(Numeric.hexStringToByteArray("SOME_ONE_PUB_KEY_IN_HEX")));
+//        reqJson.put("localFundingAmount", 100_000L);
+//        reqJson.put("pushSat", 5_000L);
+//        System.out.println(">>> request:" + reqJson);
+
+        // payInvoice
+//        JSONObject reqJson = new JSONObject();
+//        reqJson.put("paymentRequest", "c4f3de2535089e4a41c3805a93858edff9c7dcfbccf89d519797e3ec0fd90842");
+//        System.out.println(">>> request:" + reqJson);
+
+        // createInvoice
+        JSONObject reqJson = new JSONObject();
+        reqJson.put("memo", "Invoice From Ziwei Lightning Node");
+        reqJson.put("value", 5_000L);
+        System.out.println(">>> request:" + reqJson);
+
+
+        // building request
+        Request request = new Request.Builder()
+                .url(url)
+                .post(RequestBody.create(reqJson.toString(), MediaType.parse("application/json")))
+                .header("Grpc-Metadata-macaroon", Hex.encodeHexString(Files.readAllBytes(Paths.get(who_macaroon))))
+                .build();
+
+        // this is for verifying
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        final Certificate certificate = cf.generateCertificate(new FileInputStream(who_cert));
+
+        // For TrustManager
+        X509TrustManager TRUST_FILES_CERTS = generateTrustManagerByFile(certificate);
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, new TrustManager[]{TRUST_FILES_CERTS}, new java.security.SecureRandom());
+        HostnameVerifier hostnameVerifier = generateHostnameVerifier();
+
+        OkHttpClient okHttpClient_sin = new OkHttpClient.Builder()
+                .sslSocketFactory(sslContext.getSocketFactory(), TRUST_FILES_CERTS)
+                .readTimeout(10 * 5, TimeUnit.MINUTES)
+                .hostnameVerifier(hostnameVerifier)
+                .build();
+
+        okHttpClient_sin.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                System.out.println("<<< Failure with exception:" + e);
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                ObjectMapper om = new ObjectMapper();
+                String str = om.writerWithDefaultPrettyPrinter().writeValueAsString(JSON.parse(response.body().string()));
+                System.out.println("<<< Successful response:" + str);
+            }
+        });
+
+        Thread.currentThread().join();
+    }
+
     @Test
     public void connectionTest() throws IOException, CertificateException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException {
 
@@ -95,7 +164,8 @@ public class RemoteLightningCallingTest {
         ResponseBody body = call.execute().body();
         if (null != body) {
             System.out.println();
-            System.out.println(body.string());
+            ObjectMapper om = new ObjectMapper();
+            System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(JSON.parse(body.string())));
             System.out.println();
         }
 
@@ -217,49 +287,4 @@ public class RemoteLightningCallingTest {
         // or else get block...
         return (hostname, session) -> true;
     }
-
-
-    // ************************************************** LND Nodes With Grpc *********************************************************
-
-    @Test
-    public void grpc_connection() throws StatusException, SSLException, ValidationException, NoSuchAlgorithmException, KeyManagementException, CertificateException, FileNotFoundException, UnrecoverableKeyException, KeyStoreException {
-        // Alice
-//        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
-//                NODE_IP,
-//                NODE_GRPC_PORT,
-//                new File(CERT_PATH),
-//                new File(MACAROON_PATH));
-
-        // get certificate
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        // generate certificate instance from input file stream, this certificate would be used in verifying response
-        final Certificate certificate = cf.generateCertificate(new FileInputStream(CERT_PATH));
-
-        // ssl context would be specific using TLS
-//        SSLContext sslContext = SSLContext.getInstance("TLS");
-        // create suitable trust manager & key manager for https request
-        X509TrustManager x509TrustManager = generateTrustManagerByFile(certificate);
-//        X509KeyManager x509KeyManager = generateKeyManagerByFile(certificate);
-//        sslContext.init(
-//                new KeyManager[]{x509KeyManager},
-//                new TrustManager[]{x509TrustManager},
-//                new java.security.SecureRandom());
-
-
-        SslContext sslRealContext = GrpcSslContexts
-                .configure(SslContextBuilder.forClient(), SslProvider.OPENSSL)
-                .trustManager(x509TrustManager)
-                .build();
-
-
-        ManagedChannel channel = NettyChannelBuilder.forAddress(NODE_IP, NODE_GRPC_PORT)
-                .sslContext(sslRealContext)
-                .build();
-
-        LightningGrpc.LightningBlockingStub stub = LightningGrpc.newBlockingStub(channel);
-        LightningApi.ListChannelsRequest.Builder reqBuilder = LightningApi.ListChannelsRequest.newBuilder();
-        LightningApi.ListChannelsResponse listChannelsResponse = stub.listChannels(reqBuilder.build());
-        System.out.println(listChannelsResponse.toString());
-    }
-
 }
