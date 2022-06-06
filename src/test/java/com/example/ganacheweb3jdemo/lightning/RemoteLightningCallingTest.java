@@ -7,8 +7,12 @@ import okhttp3.*;
 import org.apache.commons.codec.binary.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import org.lightningj.lnd.wrapper.StatusException;
+import org.lightningj.lnd.wrapper.SynchronousLndAPI;
+import org.lightningj.lnd.wrapper.ValidationException;
 
 import javax.net.ssl.*;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -287,4 +291,17 @@ public class RemoteLightningCallingTest {
         // or else get block...
         return (hostname, session) -> true;
     }
+
+
+    // ************************************************** LND Nodes With gRpc *********************************************************
+    @Test
+    public void connectTest_GRpc() throws StatusException, SSLException, ValidationException {
+        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+                NODE_IP,
+                NODE_GRPC_PORT,
+                new File(CERT_PATH),
+                new File(MACAROON_PATH));
+        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
+    }
+
 }
