@@ -110,9 +110,12 @@ public class PolarLightningCallingTest {
 //        SendResponse sendResponse = synchronousLndAPI.sendPaymentSync(sendRequest);
 //        System.out.println(sendResponse.toJsonAsString(true));
 
-        QueryRoutesRequest req = new QueryRoutesRequest();
-        req.setPubKey("0283f7142dfd9fff02d5f68d139d4e6bb774e62c364c414128d85ae758bbf834a9");
 
+        // routing fee query, would return a route array
+        // the totalAmtMst would be Amt + Fee, in Msat (/1000 = rsatoshis)
+        QueryRoutesRequest req = new QueryRoutesRequest();
+        req.setPubKey("039495ddcf05f3392ef9efbba8b71db8d3a6435c756aebd3da9cf1e7549d2e611d");
+        req.setAmt(50_000L);
         System.out.println(synchronousLndAPI.queryRoutes(req).toJsonAsString(true));
 
     }
