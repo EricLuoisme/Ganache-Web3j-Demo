@@ -20,7 +20,6 @@ public class ParseDappRadar {
 
 
     private static final String SCRIPT_PATH = "/Users/pundix2022/PycharmProjects/dapps-scraping/own_dappradar/save_dappradar_file.py";
-    private static final String FILE_PATH = "/Users/pundix2022/Juypter Working Env/";
 
 
     public static void main(String[] args) throws InterruptedException {
