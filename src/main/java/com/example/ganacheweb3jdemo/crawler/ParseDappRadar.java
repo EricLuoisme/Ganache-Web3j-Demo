@@ -32,6 +32,8 @@ public class ParseDappRadar {
             System.out.println();
         }
 
+//        parsingProcess("/Users/pundix2022/Juypter Working Env/rank_top_all_2022-06-07.json");
+
     }
 
     /**
