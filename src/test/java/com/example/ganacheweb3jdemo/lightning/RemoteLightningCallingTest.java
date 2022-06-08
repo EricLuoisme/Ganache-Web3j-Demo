@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.lightningj.lnd.wrapper.StatusException;
 import org.lightningj.lnd.wrapper.SynchronousLndAPI;
 import org.lightningj.lnd.wrapper.ValidationException;
+import org.lightningj.lnd.wrapper.message.*;
+import org.web3j.utils.Numeric;
 
 import javax.net.ssl.*;
 import java.io.File;
@@ -23,6 +25,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 
@@ -40,10 +43,21 @@ public class RemoteLightningCallingTest {
     private final static String NODE_IP = "18.139.32.218";
     private final static int NODE_GRPC_PORT = 10009;
     private final static int NODE_REST_PORT = 8080;
+    private final static String NODE_PUB = "0224c04dd5b928c15d52bae00aeba47511ee4ec8fe594465d9b0be2f413c4a9a69";
 
     private final static String FILE_BASE_PATH = "/Users/pundix2022/Desktop/开发项目/LightningNetworkRelated/";
     private final static String CERT_PATH = FILE_BASE_PATH + "tls.cert";
     private final static String MACAROON_PATH = FILE_BASE_PATH + "admin.macaroon";
+
+
+    private final static String NODE_IP_2 = "18.140.86.31";
+    private final static int NODE_GRPC_PORT_2 = 10009;
+    private final static int NODE_REST_PORT_2 = 8080;
+    private final static String NODE_PUB_2 = "033464d76c9bea1c3a40f410ca3adeffe7cce14085fc40da6a1779cb75169687d4";
+
+    private final static String CERT_PATH_2 = FILE_BASE_PATH + "tls-2.cert";
+    private final static String MACAROON_PATH_2 = FILE_BASE_PATH + "admin-2.macaroon";
+
 
 //    private final static String FILE_BASE_PATH = "D:\\lightning\\";
 //    private final static String CERT_PATH = FILE_BASE_PATH + "tls.cert";
@@ -301,7 +315,72 @@ public class RemoteLightningCallingTest {
                 NODE_GRPC_PORT,
                 new File(CERT_PATH),
                 new File(MACAROON_PATH));
-        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
+//        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
+
+//        LightningAddress lightningAddress = new LightningAddress();
+//        lightningAddress.setHost(NODE_IP_2 + ":" + "9735");
+//        lightningAddress.setPubkey(NODE_PUB_2);
+//
+//        ConnectPeerRequest connectPeerRequest = new ConnectPeerRequest();
+//        connectPeerRequest.setAddr(lightningAddress);
+//        System.out.println(synchronousLndAPI.connectPeer(connectPeerRequest).toJsonAsString(true));
+
+        System.out.println("\n>>>> Second\n");
+
+//        SynchronousLndAPI synchronousLndAPI_2 = new SynchronousLndAPI(
+//                NODE_IP_2,
+//                NODE_GRPC_PORT_2,
+//                new File(CERT_PATH_2),
+//                new File(MACAROON_PATH_2));
+//        System.out.println(synchronousLndAPI_2.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+//        System.out.println(synchronousLndAPI_2.walletBalance().toJsonAsString(true));
+//
+//        LightningAddress lightningAddress = new LightningAddress();
+//        lightningAddress.setHost(NODE_IP + ":" + NODE_GRPC_PORT);
+//        lightningAddress.setPubkey(NODE_PUB);
+//
+//        ConnectPeerRequest connectPeerRequest = new ConnectPeerRequest();
+//        connectPeerRequest.setAddr(lightningAddress);
+//
+//        System.out.println(synchronousLndAPI_2.connectPeer(connectPeerRequest).toJsonAsString(true));
+    }
+
+    // ************************************************** LND Nodes With gRpc *********************************************************
+    @Test
+    public void openChannel_GRpc() throws StatusException, SSLException, ValidationException {
+
+        // LND2 -> LND1
+
+        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+                NODE_IP_2,
+                NODE_GRPC_PORT_2,
+                new File(CERT_PATH_2),
+                new File(MACAROON_PATH_2));
+
+        OpenChannelRequest openChannelRequest = new OpenChannelRequest();
+        openChannelRequest.setNodePubkey(Numeric.hexStringToByteArray(NODE_PUB));
+        // The number of SATs the wallet should commit to the channel
+        openChannelRequest.setLocalFundingAmount(50_000L);
+        // The number of SATs to push to the remote side as part of the initial commitment state
+        openChannelRequest.setPushSat(0L);
+        // The target number of blocks that the funding transaction should be confirmed by.
+        openChannelRequest.setTargetConf(3);
+        // Whether this channel should be private, not announced to the greater network.
+        openChannelRequest.setPrivate(false);
+        // The minimum number of confirmations each one of your outputs used for the funding transaction must satisfy.
+        openChannelRequest.setMinConfs(5);
+        // Whether unconfirmed outputs should be used as inputs for the funding transaction.
+        openChannelRequest.setSpendUnconfirmed(false);
+
+        // request
+        Iterator<OpenStatusUpdate> result = synchronousLndAPI.openChannel(openChannelRequest);
+        while (result.hasNext()) {
+            System.out.println("Received Update: " + result.next().toJsonAsString(true));
+        }
+
+        // close stub
+        synchronousLndAPI.close();
     }
 
 }
