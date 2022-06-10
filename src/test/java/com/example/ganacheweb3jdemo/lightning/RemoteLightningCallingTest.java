@@ -310,13 +310,15 @@ public class RemoteLightningCallingTest {
     // ************************************************** LND Nodes With gRpc *********************************************************
     @Test
     public void connectTest_GRpc() throws StatusException, SSLException, ValidationException {
+
         SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
                 NODE_IP,
                 NODE_GRPC_PORT,
                 new File(CERT_PATH),
                 new File(MACAROON_PATH));
-//        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
-        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
+        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+//        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
+//        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
 
 //        LightningAddress lightningAddress = new LightningAddress();
 //        lightningAddress.setHost(NODE_IP_2 + ":" + "9735");
@@ -328,13 +330,15 @@ public class RemoteLightningCallingTest {
 
         System.out.println("\n>>>> Second\n");
 
-//        SynchronousLndAPI synchronousLndAPI_2 = new SynchronousLndAPI(
-//                NODE_IP_2,
-//                NODE_GRPC_PORT_2,
-//                new File(CERT_PATH_2),
-//                new File(MACAROON_PATH_2));
-//        System.out.println(synchronousLndAPI_2.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+        SynchronousLndAPI synchronousLndAPI_2 = new SynchronousLndAPI(
+                NODE_IP_2,
+                NODE_GRPC_PORT_2,
+                new File(CERT_PATH_2),
+                new File(MACAROON_PATH_2));
+        System.out.println(synchronousLndAPI_2.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+////        System.out.println(synchronousLndAPI_2.pendingChannels().toJsonAsString(true));
 //        System.out.println(synchronousLndAPI_2.walletBalance().toJsonAsString(true));
+//        System.out.println(synchronousLndAPI_2.channelBalance().toJsonAsString(true));
 //
 //        LightningAddress lightningAddress = new LightningAddress();
 //        lightningAddress.setHost(NODE_IP + ":" + NODE_GRPC_PORT);

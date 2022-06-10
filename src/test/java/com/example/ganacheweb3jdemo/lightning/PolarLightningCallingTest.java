@@ -111,7 +111,7 @@ public class PolarLightningCallingTest {
 //        System.out.println(sendResponse.toJsonAsString(true));
 
 
-        // routing fee query, would return a route array
+//        // routing fee query, would return a route array
         // the totalAmtMst would be Amt + Fee, in Msat (/1000 = rsatoshis)
         QueryRoutesRequest req = new QueryRoutesRequest();
         req.setPubKey("039495ddcf05f3392ef9efbba8b71db8d3a6435c756aebd3da9cf1e7549d2e611d");
