@@ -101,9 +101,12 @@
             <artifactId>commons-io</artifactId>
             <version>2.11.0</version>
         </dependency>
-
-
-
+        <!-- Excel Utils, https://sargeraswang.com/blog/2018/11/27/excelutil-1-dot-2-1-doc/ -->
+        <dependency>
+            <groupId>com.sargeraswang.util</groupId>
+            <artifactId>excel-util</artifactId>
+            <version>1.2.1</version>
+        </dependency>
 
         <!-- Protocol Buffer -->
         <dependency>
