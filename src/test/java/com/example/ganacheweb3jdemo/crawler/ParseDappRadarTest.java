@@ -40,24 +40,26 @@ public class ParseDappRadarTest {
     @Test
     public void decoding() throws IOException, InterruptedException {
 
-        String fileStr_07 = FileUtils.readFileToString(new File(BASE_FILE_PATH + "rank_top_all_2022-06-07.json"), Charset.defaultCharset());
-        String fileStr_08 = FileUtils.readFileToString(new File(BASE_FILE_PATH + "rank_top_all_2022-06-08.json"), Charset.defaultCharset());
+        String fileStr_07 = FileUtils.readFileToString(new File(BASE_FILE_PATH + "rank_top_all_2022-06-13.json"), Charset.defaultCharset());
 
         JSONObject file_07 = JSONObject.parseObject(fileStr_07);
-        JSONObject file_08 = JSONObject.parseObject(fileStr_08);
 
         JSONArray dapps_07 = file_07.getJSONArray("dapps");
-        JSONArray dapps_08 = file_08.getJSONArray("dapps");
 
-        List<DappDetail> dappDetails_07 = JSON.parseArray(dapps_07.toJSONString(), DappDetail.class);
-        List<DappDetail> dappDetails_08 = JSON.parseArray(dapps_08.toJSONString(), DappDetail.class);
+        List<DappRadarDetail> dappDetails_07 = JSON.parseArray(dapps_07.toJSONString(), DappRadarDetail.class);
 
-        List<DappDetail> main_page_sort = dappDetails_08.stream()
+        // for parse
+
+
+
+
+
+        List<DappRadarDetail> main_page_sort = dappDetails_07.stream()
                 .sorted((o1, o2) -> o2.getStatistic().getUserActivity() - o1.getStatistic().getUserActivity())
                 .collect(Collectors.toList());
 
-        List<DappDetail> first_9 = main_page_sort.subList(0, 9);
-        List<DappDetail> second_9 = main_page_sort.subList(9, 18);
+        List<DappRadarDetail> first_9 = main_page_sort.subList(0, 9);
+        List<DappRadarDetail> second_9 = main_page_sort.subList(9, 18);
 
         // remote only accept 9 request as a bucket
         first_9.forEach(dapp -> {

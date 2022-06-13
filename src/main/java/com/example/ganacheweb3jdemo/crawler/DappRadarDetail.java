@@ -1,5 +1,7 @@
 package com.example.ganacheweb3jdemo.crawler;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
+import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,12 +18,20 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DappDetail {
+public class DappRadarDetail {
 
+    @ExcelIgnore
     private Integer id;
+
+    @ExcelProperty("名称")
     private String name;
+    @ExcelProperty
     private String slug;
+    @ExcelProperty("是否上新")
     private Boolean isNew;
+
+
+
     private Statistic statistic;
     private String godzillaId;
     private String logo;
