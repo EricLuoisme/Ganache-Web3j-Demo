@@ -23,16 +23,19 @@ public class ParseDappRadar {
 
 
     public static void main(String[] args) throws InterruptedException {
-        String allFileNames = crawlingData("python " + SCRIPT_PATH);
-        String[] split = allFileNames.split(",");
-        for (String sinFile : split) {
-            parsingProcess(sinFile);
-            System.out.println();
-            System.out.println();
-            System.out.println();
-        }
+
+//        String allFileNames = crawlingData("python " + SCRIPT_PATH);
+//        String[] split = allFileNames.split(",");
+//        for (String sinFile : split) {
+//            parsingProcess(sinFile);
+//            System.out.println();
+//            System.out.println();
+//            System.out.println();
+//        }
 
 //        parsingProcess("/Users/pundix2022/Juypter Working Env/rank_top_all_2022-06-07.json");
+
+        parsingProcess("/Users/pundix2022/Downloads/DappRadar Dapp 1-255.json");
 
     }
 
