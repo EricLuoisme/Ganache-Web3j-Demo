@@ -1,12 +1,15 @@
 package com.example.ganacheweb3jdemo.crawler;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.StopWatch;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -16,8 +19,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -34,21 +36,51 @@ public class ParseDappRadarTest {
     private static final String BASE_FILE_PATH = "/Users/pundix2022/Juypter Working Env/";
 
 
+    private static Set<String> WHOLE_SET = new HashSet<>();
+    private static List<DappRadarDetail> WHOLE_LIST = new LinkedList<>();
+
+    private static Map<String, List<DappRadarDetail>> SHEET_DATA_MAP = new HashMap<>();
+
+
     @Test
-    public void crawling() {
-        crawlingData("python " + SCRIPT_PATH);
+    public void crawling() throws IOException, InterruptedException {
+
+//        System.out.println(">>> Start calling python script");
+//        String filenames = crawlingData("python " + SCRIPT_PATH);
+//        System.out.println("<<< Script returns: " + filenames);
+
+        String filenames = "/Users/pundix2022/Juypter Working Env/all.json,/Users/pundix2022/Juypter Working Env/eth.json,/Users/pundix2022/Juypter Working Env/eos.json,/Users/pundix2022/Juypter Working Env/tron.json,/Users/pundix2022/Juypter Working Env/ont.json,/Users/pundix2022/Juypter Working Env/thunderCore.json,/Users/pundix2022/Juypter Working Env/waves.json,/Users/pundix2022/Juypter Working Env/wax.json,/Users/pundix2022/Juypter Working Env/steem.json,/Users/pundix2022/Juypter Working Env/hive.json,/Users/pundix2022/Juypter Working Env/bnb.json,/Users/pundix2022/Juypter Working Env/polygon.json,/Users/pundix2022/Juypter Working Env/flow.json,/Users/pundix2022/Juypter Working Env/near.json,/Users/pundix2022/Juypter Working Env/avalanche.json,/Users/pundix2022/Juypter Working Env/telos.json,/Users/pundix2022/Juypter Working Env/tezos.json,/Users/pundix2022/Juypter Working Env/rsk.json,/Users/pundix2022/Juypter Working Env/iotex.json,/Users/pundix2022/Juypter Working Env/vulcan.json,/Users/pundix2022/Juypter Working Env/harmony.json,/Users/pundix2022/Juypter Working Env/okc.json,/Users/pundix2022/Juypter Working Env/solana.json,/Users/pundix2022/Juypter Working Env/ronin.json,/Users/pundix2022/Juypter Working Env/klaytn.json,/Users/pundix2022/Juypter Working Env/everscale.json,/Users/pundix2022/Juypter Working Env/heco.json,/Users/pundix2022/Juypter Working Env/dep.json,/Users/pundix2022/Juypter Working Env/immutablex.json,/Users/pundix2022/Juypter Working Env/fuse.json,/Users/pundix2022/Juypter Working Env/algorand.json,/Users/pundix2022/Juypter Working Env/telosevm.json,/Users/pundix2022/Juypter Working Env/cronos.json,/Users/pundix2022/Juypter Working Env/moonriver.json,/Users/pundix2022/Juypter Working Env/moonbean.json,/Users/pundix2022/Juypter Working Env/fantom.json,/Users/pundix2022/Juypter Working Env/oasisNetwork.json,/Users/pundix2022/Juypter Working Env/shiden.json,/Users/pundix2022/Juypter Working Env/celo.json,/Users/pundix2022/Juypter Working Env/kardiaChain.json,/Users/pundix2022/Juypter Working Env/hedera.json,/Users/pundix2022/Juypter Working Env/optimism.json,/Users/pundix2022/Juypter Working Env/astar.json,/Users/pundix2022/Juypter Working Env/stacks.json,/Users/pundix2022/Juypter Working Env/zilliqa.json,/Users/pundix2022/Juypter Working Env/aurora.json,/Users/pundix2022/Juypter Working Env/theta.json,/Users/pundix2022/Juypter Working Env/b_cate_games.json,/Users/pundix2022/Juypter Working Env/b_cate_defi.json,/Users/pundix2022/Juypter Working Env/b_cate_gambling.json,/Users/pundix2022/Juypter Working Env/b_cate_exchanges.json,/Users/pundix2022/Juypter Working Env/b_cate_collectibles.json,/Users/pundix2022/Juypter Working Env/b_cate_marketplaces.json,/Users/pundix2022/Juypter Working Env/b_cate_social.json,/Users/pundix2022/Juypter Working Env/b_cate_highRisks.json,";
+
+        // split and set export excels
+        String[] split = filenames.split(",");
+        for (String sinFilename : split) {
+            decodeAndOutputExcel(sinFilename);
+        }
+
+        System.out.println(">>>> Start single file writing with size:" + SHEET_DATA_MAP.size());
+        outputAsFile(SHEET_DATA_MAP);
+        System.out.println("<<<< Single file all cate finished");
+
+//        System.out.println(">>>> Start consuming set with size:" + WHOLE_SET.size());
+//        outputAsFile("mixed", WHOLE_LIST);
+//        System.out.println("<<<< Single file mix-up finished");
+
+        Runtime.getRuntime().exec(new String[]{"osascript", "-e", "display notification \"Crawling For DappRadar Finished\" with title \"Finished\" subtitle \"DappRadar\" sound name \"Funk\""});
+        TimeUnit.SECONDS.sleep(5L);
     }
 
-    @Test
-    public void decoding() throws IOException, InterruptedException {
 
-        String fileStr = FileUtils.readFileToString(new File(BASE_FILE_PATH + "rank_top_all_2022-06-13.json"), Charset.defaultCharset());
+    private void decodeAndOutputExcel(String filepath) throws IOException, InterruptedException {
 
+        StopWatch stopWatch = new StopWatch();
+        String filename = filepath.substring(BASE_FILE_PATH.length());
+
+        System.out.println(">>>> Start consuming file:" + filepath);
+        stopWatch.start();
+
+        String fileStr = FileUtils.readFileToString(new File(filepath), Charset.defaultCharset());
         JSONObject file = JSONObject.parseObject(fileStr);
-
         JSONArray dappsArr = file.getJSONArray("dapps");
-
-
         List<DappRadarDetail> dappDetails = new LinkedList<>();
 
         dappsArr.forEach(dapp -> {
@@ -99,8 +131,12 @@ public class ParseDappRadarTest {
             dappRadarDetail.setTotalBalanceLabel(totalBalance.getString("label"));
             dappRadarDetail.setTotalBalanceStatus(totalBalance.getString("status"));
 
-
+            // adding
             dappDetails.add(dappRadarDetail);
+            if (!WHOLE_SET.contains(dappRadarDetail.getName())) {
+                WHOLE_SET.add(dappRadarDetail.getName());
+                WHOLE_LIST.add(dappRadarDetail);
+            }
         });
 
         // correct the order
@@ -109,21 +145,45 @@ public class ParseDappRadarTest {
                 .collect(Collectors.toList());
 
         // replace real url
+        System.out.println(">>>>> replacing for real urls");
         replaceForRealUrl(main_page_sort);
 
-        // export to excel
-        outputAsFile(main_page_sort);
+        // store first
+        SHEET_DATA_MAP.put(filename, main_page_sort);
+
+        stopWatch.stop();
+        System.out.println("<<<< Finish consuming file:" + filepath + ", time using:" + stopWatch.getTotalTimeSeconds());
     }
 
-    private static void outputAsFile(List<DappRadarDetail> dappRadarDetails) throws IOException {
-        System.out.println(">>> start formatting file");
+    private static void outputAsFile(Map<String, List<DappRadarDetail>> map) throws IOException {
+        System.out.println(">>>>>>> start formatting file");
 
-        String fileName = "dapp_radar_first_25_dapp.xlsx";
-        EasyExcel.write(fileName, DappRadarDetail.class)
-                .sheet("dappradar")
+        String realUsingFileName = "dapp_radar_rank_25_all.xlsx";
+
+        try (ExcelWriter excelWriter = EasyExcel.write(realUsingFileName, DappRadarDetail.class).build()) {
+
+            for (Map.Entry<String, List<DappRadarDetail>> entry : map.entrySet()) {
+
+                String sheetName = entry.getKey().split("\\.")[0];
+                List<DappRadarDetail> data = entry.getValue();
+
+                WriteSheet writeSheet = EasyExcel.writerSheet(sheetName).build();
+                excelWriter.write(data, writeSheet);
+            }
+        }
+
+        System.out.println("<<<<<<< finished formatting file");
+    }
+
+    private static void outputAsFile(String sheetName, List<DappRadarDetail> dappRadarDetails) throws IOException {
+        System.out.println(">>>>>>> start formatting file");
+
+        String realUsingFileName = "dapp_radar_rank_25_mix.xlsx";
+        EasyExcel.write(realUsingFileName, DappRadarDetail.class)
+                .sheet(sheetName)
                 .doWrite(dappRadarDetails);
 
-        System.out.println("<<< finished formatting file");
+        System.out.println("<<<<<<< finished formatting file");
     }
 
 
@@ -145,7 +205,7 @@ public class ParseDappRadarTest {
                     // normally, 3xx is redirect, but radar response 200 and redirect it
                     int status = conn.getResponseCode();
                     if (HttpURLConnection.HTTP_OK == status) {
-                        System.out.println("Redirected Url: " + conn.getURL().toString());
+                        System.out.println("<<<<<<<<<< Redirected Url: " + conn.getURL().toString());
                         dapp.setDeepLink(conn.getURL().toString());
                         conn.disconnect();
                     }
