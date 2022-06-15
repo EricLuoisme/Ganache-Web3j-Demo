@@ -10,9 +10,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.util.encoders.Base64;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import org.lightningj.lnd.wrapper.StatusException;
-import org.lightningj.lnd.wrapper.SynchronousLndAPI;
-import org.lightningj.lnd.wrapper.ValidationException;
+import org.lightningj.lnd.wrapper.*;
 import org.lightningj.lnd.wrapper.message.*;
 import org.web3j.utils.Numeric;
 
@@ -30,7 +28,9 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -113,11 +113,6 @@ public class PolarLightningCallingTest {
 
 //        // routing fee query, would return a route array
         // the totalAmtMst would be Amt + Fee, in Msat (/1000 = rsatoshis)
-        QueryRoutesRequest req = new QueryRoutesRequest();
-        req.setPubKey("039495ddcf05f3392ef9efbba8b71db8d3a6435c756aebd3da9cf1e7549d2e611d");
-        req.setAmt(50_000L);
-        System.out.println(synchronousLndAPI.queryRoutes(req).toJsonAsString(true));
-
     }
 
     @Test
@@ -239,14 +234,77 @@ public class PolarLightningCallingTest {
         // 	An optional memo to attach along with the invoice. Used for record keeping purposes for the invoice's creator,
         // 	and will also be set in the description field of the encoded payment request if
         // 	the description_hash field is not being used.
-        invoice.setMemo("Dave's invoice should be paid by Alice 10,000");
+        invoice.setMemo("Dave's invoice should be paid by Alice 0");
         // The value of this invoice in satoshis The fields value and value_msat are mutually exclusive.
         // if the value is smaller than node's routing policy, this invoice could not 'see' this route
-        invoice.setValue(10_000L);
+        invoice.setValue(0L);
 
         AddInvoiceResponse addInvoiceResponse = synchronousLndAPI.addInvoice(invoice);
         System.out.println(addInvoiceResponse.toJsonAsString(true));
     }
+
+    @Test
+    public void LND_DecodePayReq_ByRpcAPI() throws StatusException, SSLException, ValidationException {
+
+        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+                "127.0.0.1",
+                ALICE_GRPC_PORT,
+                new File(ALICE_CERT),
+                new File(ALICE_MACAROON));
+        System.out.println("\nAlice\n");
+
+        PayReq payReq = synchronousLndAPI.decodePayReq("lnbcrt500u1p32n8s3pp5vyjatdpp5anchryn8n2nnwvyw97k6wgrpd0kl72vkg5s0gvmcvcqdqqcqzpgsp5h0hfr9m2dgj5lt7q80qcg9sl5jy6jdl6k3qxukzmnjegu0wf4cdq9qyyssq46zempzmgz996w0kv67h6xyatemsycwywjjkl5unh0h9zqkh52mjmkrs584k05y22vqr6ju0dcvc5cpsqg7ejqw973apaj3zmavxr6cq7tnep0");
+        System.out.println(payReq.toJsonAsString(true));
+    }
+
+
+
+    @Test
+    public void LND_QueryRoute_ByRpcAPI() throws ClientSideException, SSLException {
+
+        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+                "127.0.0.1",
+                ALICE_GRPC_PORT,
+                new File(ALICE_CERT),
+                new File(ALICE_MACAROON));
+        System.out.println("\nAlice\n");
+
+        QueryRoutesRequest req = new QueryRoutesRequest();
+        req.setPubKey("039495ddcf05f3392ef9efbba8b71db8d3a6435c756aebd3da9cf1e7549d2e611d");
+        req.setAmt(50_000L);
+
+        try {
+            QueryRoutesResponse queryRoutesResponse = synchronousLndAPI.queryRoutes(req);
+            System.out.println(queryRoutesResponse.toJsonAsString(true));
+        } catch (ServerSideException e) {
+            if ("unable to find a path to destination".equals(e.getMessage())) {
+                System.out.println(e.getMessage());
+            }
+        } catch (StatusException | ValidationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    @Deprecated
+    public void LND_EstimateFee_ByRpcAPI() throws StatusException, SSLException, ValidationException {
+        SynchronousLndAPI synchronousLndAPI_Alice = new SynchronousLndAPI(
+                "127.0.0.1",
+                ALICE_GRPC_PORT,
+                new File(ALICE_CERT),
+                new File(ALICE_MACAROON));
+
+        Map<String, Long> reqMap = new HashMap<>();
+        reqMap.put("039495ddcf05f3392ef9efbba8b71db8d3a6435c756aebd3da9cf1e7549d2e611d", 50_000L);
+
+        EstimateFeeRequest request = new EstimateFeeRequest();
+        request.setAddrToAmount(reqMap);
+
+        // Estimate返回的参数并不能很好的作为参考, 而使用queryRoute反而是确切的扣除费用
+        EstimateFeeResponse estimateFeeResponse = synchronousLndAPI_Alice.estimateFee(request);
+        System.out.println(estimateFeeResponse.toJsonAsString(true));
+    }
+
 
     @Test
     public void LND_SendPayment_ByRpcAPI() throws StatusException, SSLException, ValidationException {
@@ -259,7 +317,8 @@ public class PolarLightningCallingTest {
         System.out.println("\nAlice\n");
 
         SendRequest sendRequest = new SendRequest();
-        sendRequest.setPaymentRequest("lnbcrt100u1p3g75mdpp5my0ndmtkdcw6xk5qjul7sut8zjclxfhk25um2lwycavu0zwxp0yqdzgg3shvef8wvsxjmnkda5kxefqwd5x7atvvssxyefqwpskjepqvfujqstvd93k2gp3xqkrqvpscqzpgsp5l8x3pw2q8sryzst5pqd562k070umghcul50x04xyj9srm8vnjakq9qyyssq7m7qmqjxla95p0gs83at5vnfh8z29zcardcl4evt9luz0vlppla5n58zlf3s9glxnjt0km8rg0gpqr2480zw6ccn9ds8mscu0ay583sphqhtue");
+        sendRequest.setPaymentRequest("lnbcrt1p32nzr5pp5tyu4hurg4vpd9g8p5lz225nx3j0dmskesvpuypwxe9ufgz8w2zhqdzqg3shvef8wvsxjmnkda5kxefqwd5x7atvvssxyefqwpskjepqvfujqstvd93k2gpscqzpgsp52p0vfxj27gul9937dq2sa67km8lac36rlcdusq4agfkazw6v738s9qyyssqjnhjcgsr9ftutvdtl3cqnrrcznmn290xfjjsy3nu305vdcg3g40zf79qyy82azqft6jhkeg9wdf7at5jx5f8vejc5cfs5h65chlmn2qqr9ay7l");
+        sendRequest.setAmt(100L);
 
         SendResponse sendResponse = synchronousLndAPI_Alice.sendPaymentSync(sendRequest);
         System.out.println(sendResponse.toJsonAsString(true));
@@ -296,26 +355,6 @@ public class PolarLightningCallingTest {
 
         // close stub
         synchronousLndAPI_Alice.close();
-    }
-
-
-    @Test
-    public void LND_EstimateFee_ByRpcAPI() throws StatusException, SSLException, ValidationException {
-        SynchronousLndAPI synchronousLndAPI_Alice = new SynchronousLndAPI(
-                "127.0.0.1",
-                ALICE_GRPC_PORT,
-                new File(ALICE_CERT),
-                new File(ALICE_MACAROON));
-
-        Map<String, Long> reqMap = new HashMap<>();
-        reqMap.put("039495ddcf05f3392ef9efbba8b71db8d3a6435c756aebd3da9cf1e7549d2e611d", 50_000L);
-
-        EstimateFeeRequest request = new EstimateFeeRequest();
-        request.setAddrToAmount(reqMap);
-
-        EstimateFeeResponse estimateFeeResponse = synchronousLndAPI_Alice.estimateFee(request);
-        System.out.println(estimateFeeResponse.toJsonAsString(true));
-
     }
 
 

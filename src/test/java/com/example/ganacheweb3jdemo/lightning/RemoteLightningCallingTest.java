@@ -311,12 +311,12 @@ public class RemoteLightningCallingTest {
     @Test
     public void connectTest_GRpc() throws StatusException, SSLException, ValidationException {
 
-        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
-                NODE_IP,
-                NODE_GRPC_PORT,
-                new File(CERT_PATH),
-                new File(MACAROON_PATH));
-        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+//        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+//                NODE_IP,
+//                NODE_GRPC_PORT,
+//                new File(CERT_PATH),
+//                new File(MACAROON_PATH));
+//        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
 //        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
 //        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
 
@@ -328,8 +328,8 @@ public class RemoteLightningCallingTest {
 //        connectPeerRequest.setAddr(lightningAddress);
 //        System.out.println(synchronousLndAPI.connectPeer(connectPeerRequest).toJsonAsString(true));
 
-        System.out.println("\n>>>> Second\n");
-
+//        System.out.println("\n>>>> Second\n");
+//
         SynchronousLndAPI synchronousLndAPI_2 = new SynchronousLndAPI(
                 NODE_IP_2,
                 NODE_GRPC_PORT_2,
