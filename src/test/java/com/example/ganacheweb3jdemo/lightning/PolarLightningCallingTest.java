@@ -52,7 +52,7 @@ public class PolarLightningCallingTest {
     private final static String ALICE_REST_HOST = "https://127.0.0.1:8081";
     private final static String ALICE_CERT = POLAR_MACAROON_LOC + "/alice/tls.cert";
     private final static String ALICE_MACAROON = POLAR_MACAROON_LOC + "/alice/data/chain/bitcoin/regtest/admin.macaroon";
-    private final static String ALICE_PUB_KEY = "030e7f17ec64d9bede258ec71370baaeeee2b12df6e5a664d0766b29070dd9720b";
+    private final static String ALICE_PUB_KEY = "02c94f36b8574122ecf189a90fea84f02b8b80c21577f60499a2345ae9621c9fb4";
 
     // Erin
     private final static int ERIN_GRPC_PORT = 10005;
@@ -66,7 +66,14 @@ public class PolarLightningCallingTest {
     private final static String DAVE_REST_HOST = "https://127.0.0.1:8084";
     private final static String DAVE_CERT = POLAR_MACAROON_LOC + "/dave/tls.cert";
     private final static String DAVE_MACAROON = POLAR_MACAROON_LOC + "/dave/data/chain/bitcoin/regtest/admin.macaroon";
-    private final static String DAVE_PUB_KEY = "039495ddcf05f3392ef9efbba8b71db8d3a6435c756aebd3da9cf1e7549d2e611d";
+    private final static String DAVE_PUB_KEY = "03b042a9d98111696f7aa00815dd8c740a55afb452bf89de33a3001ce8a03f8f65";
+
+    // Frank
+    private final static int FRANK_GRPC_PORT = 10006;
+    private final static String FRANK_REST_HOST = "https://127.0.0.1:8086";
+    private final static String FRANK_CERT = POLAR_MACAROON_LOC + "/frank/tls.cert";
+    private final static String FRANK_MACAROON = POLAR_MACAROON_LOC + "/frank/data/chain/bitcoin/regtest/admin.macaroon";
+    private final static String FRANK_PUB_KEY = "02ded0a280bdb225715901292bda186ef0d319c1cf3512b8626b7a72621c1aef46";
 
     // Bob - c-lightning
     private final static String BOB_REST_API = "http://127.0.0.1:8182/";
@@ -141,9 +148,10 @@ public class PolarLightningCallingTest {
                 new File(DAVE_CERT),
                 new File(DAVE_MACAROON));
         System.out.println("\nDave\n");
-        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
-        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
-        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
+//        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+//        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
+//        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
+        System.out.println(synchronousLndAPI.feeReport().toJsonAsString(true));
 //        System.out.println(synchronousLndAPI.getChanInfo(130841883770880L));
 
 //        ListInvoiceRequest listInvoiceRequest = new ListInvoiceRequest();
@@ -253,10 +261,20 @@ public class PolarLightningCallingTest {
                 new File(ALICE_MACAROON));
         System.out.println("\nAlice\n");
 
-        PayReq payReq = synchronousLndAPI.decodePayReq("lnbcrt500u1p32n8s3pp5vyjatdpp5anchryn8n2nnwvyw97k6wgrpd0kl72vkg5s0gvmcvcqdqqcqzpgsp5h0hfr9m2dgj5lt7q80qcg9sl5jy6jdl6k3qxukzmnjegu0wf4cdq9qyyssq46zempzmgz996w0kv67h6xyatemsycwywjjkl5unh0h9zqkh52mjmkrs584k05y22vqr6ju0dcvc5cpsqg7ejqw973apaj3zmavxr6cq7tnep0");
+        PayReq payReq = synchronousLndAPI.decodePayReq("lnbcrt500u1p32ckpfpp5s6lykrp86z72dn3nrkh9tm8pqswperpwrnvz8m6u6he32h4qvndsdqqcqzpgsp5mcdy5jq38xu7cnu5gztdrw2fgfzpw4kjy7shr0nyafhp2ef70s9s9qyyssqu9cs8w9pzwc49ja280l0h9mqdvdglqprd2cvdtutpalmnkcc858y0m6pj4zd6mv80y8hwjkdlj4jpcdx2j9a9f3s79ynhxtu9xafpxqq0xsmdl");
         System.out.println(payReq.toJsonAsString(true));
     }
 
+    @Test
+    public void LND_LookUpInvoice_ByRpcAPI() throws StatusException, SSLException, ValidationException {
+        // only can look-up from the invoice-creator
+        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+                "127.0.0.1",
+                DAVE_GRPC_PORT,
+                new File(DAVE_CERT),
+                new File(DAVE_MACAROON));
+        System.out.println("\nAlice\n");
+    }
 
 
     @Test
@@ -270,14 +288,16 @@ public class PolarLightningCallingTest {
         System.out.println("\nAlice\n");
 
         QueryRoutesRequest req = new QueryRoutesRequest();
-        req.setPubKey("039495ddcf05f3392ef9efbba8b71db8d3a6435c756aebd3da9cf1e7549d2e611d");
+        // destination in decode payment request
+        req.setPubKey("02ded0a280bdb225715901292bda186ef0d319c1cf3512b8626b7a72621c1aef46");
+        // numSatoshis in decode payment request
         req.setAmt(50_000L);
 
         try {
             QueryRoutesResponse queryRoutesResponse = synchronousLndAPI.queryRoutes(req);
             System.out.println(queryRoutesResponse.toJsonAsString(true));
         } catch (ServerSideException e) {
-            if ("unable to find a path to destination".equals(e.getMessage())) {
+            if ("UNKNOWN: unable to find a path to destination".equals(e.getMessage())) {
                 System.out.println(e.getMessage());
             }
         } catch (StatusException | ValidationException e) {
@@ -286,7 +306,6 @@ public class PolarLightningCallingTest {
     }
 
     @Test
-    @Deprecated
     public void LND_EstimateFee_ByRpcAPI() throws StatusException, SSLException, ValidationException {
         SynchronousLndAPI synchronousLndAPI_Alice = new SynchronousLndAPI(
                 "127.0.0.1",
@@ -295,16 +314,14 @@ public class PolarLightningCallingTest {
                 new File(ALICE_MACAROON));
 
         Map<String, Long> reqMap = new HashMap<>();
-        reqMap.put("039495ddcf05f3392ef9efbba8b71db8d3a6435c756aebd3da9cf1e7549d2e611d", 50_000L);
+        reqMap.put(FRANK_PUB_KEY, 50_000L);
 
         EstimateFeeRequest request = new EstimateFeeRequest();
         request.setAddrToAmount(reqMap);
 
-        // Estimate返回的参数并不能很好的作为参考, 而使用queryRoute反而是确切的扣除费用
         EstimateFeeResponse estimateFeeResponse = synchronousLndAPI_Alice.estimateFee(request);
         System.out.println(estimateFeeResponse.toJsonAsString(true));
     }
-
 
     @Test
     public void LND_SendPayment_ByRpcAPI() throws StatusException, SSLException, ValidationException {
@@ -316,9 +333,13 @@ public class PolarLightningCallingTest {
                 new File(ALICE_MACAROON));
         System.out.println("\nAlice\n");
 
+        FeeLimit feeLimit = new FeeLimit();
+        feeLimit.setFixedMsat(2601);
+
         SendRequest sendRequest = new SendRequest();
-        sendRequest.setPaymentRequest("lnbcrt1p32nzr5pp5tyu4hurg4vpd9g8p5lz225nx3j0dmskesvpuypwxe9ufgz8w2zhqdzqg3shvef8wvsxjmnkda5kxefqwd5x7atvvssxyefqwpskjepqvfujqstvd93k2gpscqzpgsp52p0vfxj27gul9937dq2sa67km8lac36rlcdusq4agfkazw6v738s9qyyssqjnhjcgsr9ftutvdtl3cqnrrcznmn290xfjjsy3nu305vdcg3g40zf79qyy82azqft6jhkeg9wdf7at5jx5f8vejc5cfs5h65chlmn2qqr9ay7l");
-        sendRequest.setAmt(100L);
+        sendRequest.setPaymentRequest("lnbcrt500u1p32cf83pp5lhdrsfzzq3ffytgslg3lmkrxfmxz3apnsxjhrc46prs3kxwtnphsdqqcqzpgsp56l8sqzy3g8fm5sksc9rpuct04uqjntg2hpr009lwp9vnz42enhcs9qyyssq9x6mpzyp9fzv4dyrgw72rwux4pzcke3nh9npvfw97zn4t9u765fxhg0xkx4d6jr5lww6qtrunk5cpe4zyqyqrjdnf77flyknpk23krqqr4lp5j");
+        sendRequest.setFeeLimit(feeLimit);
+        sendRequest.setAmt(40_000L);
 
         SendResponse sendResponse = synchronousLndAPI_Alice.sendPaymentSync(sendRequest);
         System.out.println(sendResponse.toJsonAsString(true));

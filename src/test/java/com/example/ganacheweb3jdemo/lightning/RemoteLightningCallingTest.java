@@ -311,11 +311,15 @@ public class RemoteLightningCallingTest {
     @Test
     public void connectTest_GRpc() throws StatusException, SSLException, ValidationException {
 
-//        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
-//                NODE_IP,
-//                NODE_GRPC_PORT,
-//                new File(CERT_PATH),
-//                new File(MACAROON_PATH));
+        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+                NODE_IP,
+                NODE_GRPC_PORT,
+                new File(CERT_PATH),
+                new File(MACAROON_PATH));
+
+//        PayReq payReq = synchronousLndAPI.decodePayReq("lntb100u1p3246p5pp54ez3vx77z0956ej6s0vtnr9ma3mjxfqrvctftuhv4z6qp0twr9dqdqqcqzpgxqyz5vqsp58dlg565vddw50sfhwmwe7wpwlzgugua4a3fkc0qndnxwrr5ytfnq9qyyssqzy86hxhps8azr96gdzqsjdxe54pjdpwvqff9m56xgqfnu98wel78zmqp7tyr7yke7m4lhqaplkw8yynjy68pphhe26k2n28eaqqx05qpdqxf8k");
+//        System.out.println(payReq.toJsonAsString(true));
+
 //        System.out.println(synchronousLndAPI.listChannels(new ListChannelsRequest()).toJsonAsString(true));
 //        System.out.println(synchronousLndAPI.walletBalance().toJsonAsString(true));
 //        System.out.println(synchronousLndAPI.channelBalance().toJsonAsString(true));
@@ -335,7 +339,10 @@ public class RemoteLightningCallingTest {
                 NODE_GRPC_PORT_2,
                 new File(CERT_PATH_2),
                 new File(MACAROON_PATH_2));
-        System.out.println(synchronousLndAPI_2.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+//        System.out.println(synchronousLndAPI_2.listChannels(new ListChannelsRequest()).toJsonAsString(true));
+        PayReq payReq = synchronousLndAPI_2.decodePayReq("lntb100u1p3246p5pp54ez3vx77z0956ej6s0vtnr9ma3mjxfqrvctftuhv4z6qp0twr9dqdqqcqzpgxqyz5vqsp58dlg565vddw50sfhwmwe7wpwlzgugua4a3fkc0qndnxwrr5ytfnq9qyyssqzy86hxhps8azr96gdzqsjdxe54pjdpwvqff9m56xgqfnu98wel78zmqp7tyr7yke7m4lhqaplkw8yynjy68pphhe26k2n28eaqqx05qpdqxf8k");
+        System.out.println(payReq.toJsonAsString(true));
+
 ////        System.out.println(synchronousLndAPI_2.pendingChannels().toJsonAsString(true));
 //        System.out.println(synchronousLndAPI_2.walletBalance().toJsonAsString(true));
 //        System.out.println(synchronousLndAPI_2.channelBalance().toJsonAsString(true));
