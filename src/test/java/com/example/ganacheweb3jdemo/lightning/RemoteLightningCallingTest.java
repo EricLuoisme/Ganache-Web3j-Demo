@@ -3,10 +3,12 @@ package com.example.ganacheweb3jdemo.lightning;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.grpc.stub.StreamObserver;
 import okhttp3.*;
 import org.apache.commons.codec.binary.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import org.lightningj.lnd.wrapper.AsynchronousLndAPI;
 import org.lightningj.lnd.wrapper.StatusException;
 import org.lightningj.lnd.wrapper.SynchronousLndAPI;
 import org.lightningj.lnd.wrapper.ValidationException;
@@ -357,7 +359,6 @@ public class RemoteLightningCallingTest {
 //        System.out.println(synchronousLndAPI_2.connectPeer(connectPeerRequest).toJsonAsString(true));
     }
 
-    // ************************************************** LND Nodes With gRpc *********************************************************
     @Test
     public void openChannel_GRpc() throws StatusException, SSLException, ValidationException {
 
@@ -394,4 +395,39 @@ public class RemoteLightningCallingTest {
         synchronousLndAPI.close();
     }
 
+
+    @Test
+    public void subscribeInvoice_GRpc() throws InterruptedException, StatusException, ValidationException, SSLException {
+        AsynchronousLndAPI asynchronousLndAPI = new AsynchronousLndAPI(
+                NODE_IP_2,
+                NODE_GRPC_PORT_2,
+                new File(CERT_PATH_2),
+                new File(MACAROON_PATH_2));
+
+        InvoiceSubscription invoiceSubscription = new InvoiceSubscription();
+        invoiceSubscription.setAddIndex(10);
+        invoiceSubscription.setSettleIndex(10);
+
+        asynchronousLndAPI.subscribeInvoices(0L, 0L, new StreamObserver<Invoice>() {
+            @Override
+            public void onNext(Invoice value) {
+                System.out.println("Next:");
+                System.out.println(value.toJsonAsString(true));
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                System.out.println("Error:");
+                System.out.println(t.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Completed");
+            }
+        });
+
+        Thread.currentThread().join();
+        System.out.println("Stop");
+    }
 }

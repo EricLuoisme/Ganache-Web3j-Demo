@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.ApplicationInterceptorImp;
 import com.example.ganacheweb3jdemo.web3j.okhttp.interceptor.LogInterceptorImp;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.grpc.stub.StreamObserver;
 import okhttp3.*;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.util.encoders.Base64;
@@ -52,6 +53,7 @@ public class PolarLightningCallingTest {
     private final static String ALICE_REST_HOST = "https://127.0.0.1:8081";
     private final static String ALICE_CERT = POLAR_MACAROON_LOC + "/alice/tls.cert";
     private final static String ALICE_MACAROON = POLAR_MACAROON_LOC + "/alice/data/chain/bitcoin/regtest/admin.macaroon";
+    private final static String ALICE_INVOICE_MACAROON = POLAR_MACAROON_LOC + "/alice/data/chain/bitcoin/regtest/invoice.macaroon";
     private final static String ALICE_PUB_KEY = "02c94f36b8574122ecf189a90fea84f02b8b80c21577f60499a2345ae9621c9fb4";
 
     // Erin
@@ -261,19 +263,59 @@ public class PolarLightningCallingTest {
                 new File(ALICE_MACAROON));
         System.out.println("\nAlice\n");
 
-        PayReq payReq = synchronousLndAPI.decodePayReq("lnbcrt500u1p32ckpfpp5s6lykrp86z72dn3nrkh9tm8pqswperpwrnvz8m6u6he32h4qvndsdqqcqzpgsp5mcdy5jq38xu7cnu5gztdrw2fgfzpw4kjy7shr0nyafhp2ef70s9s9qyyssqu9cs8w9pzwc49ja280l0h9mqdvdglqprd2cvdtutpalmnkcc858y0m6pj4zd6mv80y8hwjkdlj4jpcdx2j9a9f3s79ynhxtu9xafpxqq0xsmdl");
+        PayReq payReq = synchronousLndAPI.decodePayReq("lnbcrt500u1p3trq9ypp5m9f0rcqyx6d5e5lefs3rlck2nnqudh5dy04ngsqrlgu9urlr94pqdqqcqzpgsp5ysq44n6h5kdzmg2klph2gq0kvudr5lc5rudm4pds0gpvflrphlwq9qyyssqu5x9rg7lusm5es8y6n84qklcjdwssp2p0wg7mkn3sc67xwfsd76kgl59vhe64sgefcu69j8gzaegemscgmk323w7hrgqx59tn480pycpka9tfy");
         System.out.println(payReq.toJsonAsString(true));
     }
 
     @Test
     public void LND_LookUpInvoice_ByRpcAPI() throws StatusException, SSLException, ValidationException {
-        // only can look-up from the invoice-creator
+
+        // only can look up from the invoice-creator
         SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
                 "127.0.0.1",
-                DAVE_GRPC_PORT,
-                new File(DAVE_CERT),
-                new File(DAVE_MACAROON));
-        System.out.println("\nAlice\n");
+                ERIN_GRPC_PORT,
+                new File(ERIN_CERT),
+                new File(ERIN_MACAROON));
+        System.out.println("\nERIN\n");
+
+        PaymentHash paymentHash = new PaymentHash();
+        paymentHash.setRHashStr("d952f1e004369b4cd3f94c223fe2ca9cc1c6de8d23eb344003fa385e0fe32d42");
+
+        System.out.println(synchronousLndAPI.lookupInvoice(paymentHash).toJsonAsString(true));
+    }
+
+    @Test
+    public void LND_ListPayment_ByRpcAPI() throws StatusException, SSLException, ValidationException {
+
+        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+                "127.0.0.1",
+                ALICE_GRPC_PORT,
+                new File(ALICE_CERT),
+                new File(ALICE_MACAROON));
+        System.out.println("\nALICE\n");
+
+        ListPaymentsRequest listPaymentsRequest = new ListPaymentsRequest();
+        listPaymentsRequest.setIndexOffset(13);
+        listPaymentsRequest.setReversed(false);
+        listPaymentsRequest.setMaxPayments(5);
+
+        System.out.println(synchronousLndAPI.listPayments(listPaymentsRequest).toJsonAsString(true));
+    }
+
+    @Test
+    public void LND_ListInvoice_ByRpcAPI() throws StatusException, SSLException, ValidationException {
+        SynchronousLndAPI synchronousLndAPI = new SynchronousLndAPI(
+                "127.0.0.1",
+                ERIN_GRPC_PORT,
+                new File(ERIN_CERT),
+                new File(ERIN_MACAROON));
+        System.out.println("\nERIN\n");
+
+        ListInvoiceRequest listInvoiceRequest = new ListInvoiceRequest();
+        listInvoiceRequest.setIndexOffset(0);
+        listInvoiceRequest.setNumMaxInvoices(5);
+
+        System.out.println(synchronousLndAPI.listInvoices(listInvoiceRequest).toJsonAsString(true));
     }
 
 
@@ -337,9 +379,9 @@ public class PolarLightningCallingTest {
         feeLimit.setFixedMsat(2601);
 
         SendRequest sendRequest = new SendRequest();
-        sendRequest.setPaymentRequest("lnbcrt500u1p32cf83pp5lhdrsfzzq3ffytgslg3lmkrxfmxz3apnsxjhrc46prs3kxwtnphsdqqcqzpgsp56l8sqzy3g8fm5sksc9rpuct04uqjntg2hpr009lwp9vnz42enhcs9qyyssq9x6mpzyp9fzv4dyrgw72rwux4pzcke3nh9npvfw97zn4t9u765fxhg0xkx4d6jr5lww6qtrunk5cpe4zyqyqrjdnf77flyknpk23krqqr4lp5j");
-        sendRequest.setFeeLimit(feeLimit);
-        sendRequest.setAmt(40_000L);
+        sendRequest.setPaymentRequest("lnbcrt500u1p3trq9ypp5m9f0rcqyx6d5e5lefs3rlck2nnqudh5dy04ngsqrlgu9urlr94pqdqqcqzpgsp5ysq44n6h5kdzmg2klph2gq0kvudr5lc5rudm4pds0gpvflrphlwq9qyyssqu5x9rg7lusm5es8y6n84qklcjdwssp2p0wg7mkn3sc67xwfsd76kgl59vhe64sgefcu69j8gzaegemscgmk323w7hrgqx59tn480pycpka9tfy");
+//        sendRequest.setFeeLimit(feeLimit);
+//        sendRequest.setAmt(40_000L);
 
         SendResponse sendResponse = synchronousLndAPI_Alice.sendPaymentSync(sendRequest);
         System.out.println(sendResponse.toJsonAsString(true));
@@ -376,6 +418,42 @@ public class PolarLightningCallingTest {
 
         // close stub
         synchronousLndAPI_Alice.close();
+    }
+
+    @Deprecated
+    public void LND_SubscribeInvoices_ByRpcAPI() throws StatusException, SSLException, ValidationException, InterruptedException {
+        AsynchronousLndAPI asynchronousLndAPI = new AsynchronousLndAPI(
+                "127.0.0.1",
+                ALICE_GRPC_PORT,
+                new File(ALICE_CERT),
+                new File(ALICE_MACAROON));
+
+
+        InvoiceSubscription invoiceSubscription = new InvoiceSubscription();
+        invoiceSubscription.setAddIndex(10);
+        invoiceSubscription.setSettleIndex(10);
+
+        asynchronousLndAPI.subscribeInvoices(0L, 0L, new StreamObserver<Invoice>() {
+            @Override
+            public void onNext(Invoice value) {
+                System.out.println("Next:");
+                System.out.println(value.toJsonAsString(true));
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                System.out.println("Error:");
+                System.out.println(t.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Completed");
+            }
+        });
+
+        Thread.currentThread().join();
+        System.out.println("Stop");
     }
 
 
