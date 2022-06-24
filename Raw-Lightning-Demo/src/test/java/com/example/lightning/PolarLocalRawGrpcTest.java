@@ -1,6 +1,6 @@
-package com.example.lighting;
+package com.example.lightning;
 
-import com.example.lightning.Payment;
+import com.example.lighting.MacaroonCallCredential;
 import com.example.lightning.router.RouterGrpc;
 import com.example.lightning.router.TrackPaymentRequest;
 import com.google.protobuf.ByteString;
@@ -9,8 +9,10 @@ import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import org.apache.commons.codec.binary.Hex;
+import org.junit.Test;
 import org.web3j.utils.Numeric;
 
+import javax.net.ssl.SSLException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,12 +20,12 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 
 /**
- * Raw calling for lnd by grpc
+ * Using Raw Lightning-Grpc interact with Polar
  *
  * @author Roylic
- * 2022/6/23
+ * 2022/6/24
  */
-public class RawLightningGrpc {
+public class PolarLocalRawGrpcTest {
 
     private final static String POLAR_BASE_URL = "https://127.0.0.1:";
     private final static String POLAR_MACAROON_LOC = "/Users/pundix2022/.polar/networks/1/volumes/lnd";
@@ -51,36 +53,61 @@ public class RawLightningGrpc {
     private final static String ERIN_PUB_KEY = "034236bdc8b2b4d5ad0c3292364d514f5fc12008172531d6fe48853553a9948a7b";
 
 
-    /**
-     * Only payment has been pay (settled) from my node, could be found in this track payment request
-     */
-    public static void main(String... args) throws IOException {
-        SslContext sslContext = GrpcSslContexts.forClient().trustManager(new File(ALICE_CERT)).build();
-        NettyChannelBuilder channelBuilder = NettyChannelBuilder.forAddress("127.0.0.1", ALICE_GRPC_PORT);
-        ManagedChannel channel = channelBuilder.sslContext(sslContext).build();
-
+    @Test
+    public void decodePaymentReqTest() throws IOException {
+        ManagedChannel channel = getChannel("127.0.0.1", ALICE_CERT, ALICE_GRPC_PORT);
         String macaroon =
                 Hex.encodeHexString(
                         Files.readAllBytes(Paths.get(ALICE_MACAROON))
                 );
 
+        // stub
+        LightningGrpc.LightningBlockingStub lightningBlockingStub = LightningGrpc
+                .newBlockingStub(channel)
+                .withCallCredentials(new MacaroonCallCredential(macaroon));
 
+        // req
+        PayReqString req = PayReqString.newBuilder()
+                .setPayReq("lnbcrt500u1p3t253ypp5gt06trjpxldjtn9avwtm69h8j7gm55aue446y4puznhwu9mrkpysdqqcqzpgsp5645gphkn9445g2mmjpf5hl5mwntkpe8k6suj9fe8h94mgsv8pl9q9qyyssqspwhq0e6p7cd59vpmnhaj9jw5k27yyeedns3v5z7t8dl67849rg9ak9zdm8x0hhyqfny95narnwgyurm8d3s3v8u3xj08h6h984edvcp0jhs9z")
+                .build();
+
+        PayReq payReq = lightningBlockingStub.decodePayReq(req);
+        System.out.println(payReq.toString());
+        System.out.println(">>> Hex Payment Addr" + Hex.encodeHexString(payReq.getPaymentAddr().toByteArray()));
+    }
+
+
+    @Test
+    public void trackPaymentTest() throws IOException {
+        ManagedChannel channel = getChannel("127.0.0.1", ALICE_CERT, ALICE_GRPC_PORT);
+        String macaroon =
+                Hex.encodeHexString(
+                        Files.readAllBytes(Paths.get(ALICE_MACAROON))
+                );
+
+        // stub
         RouterGrpc.RouterBlockingStub routerBlockingStub = RouterGrpc.
                 newBlockingStub(channel)
                 .withCallCredentials(new MacaroonCallCredential(macaroon));
 
-        byte[] bytes = Numeric.hexStringToByteArray("42dfa58e4137db25ccbd6397bd16e79791ba53bccd6ba2543c14eeee1763b049");
-
-
-        TrackPaymentRequest req = TrackPaymentRequest.newBuilder().setPaymentHash(ByteString.copyFrom(bytes)).build();
+        // req
+        TrackPaymentRequest req = TrackPaymentRequest.newBuilder()
+                .setPaymentHash(
+                        ByteString.copyFrom(
+                                Numeric.hexStringToByteArray("42dfa58e4137db25ccbd6397bd16e79791ba53bccd6ba2543c14eeee1763b049")))
+                .build();
 
         Iterator<Payment> paymentIterator = routerBlockingStub.trackPaymentV2(req);
-
         while (paymentIterator.hasNext()) {
-            Payment next = paymentIterator.next();
             System.out.println(paymentIterator.next().toString());
         }
-
-
     }
+
+    // form ssl channel
+    private static ManagedChannel getChannel(String hostIp, String certPath, Integer grpcPort) throws SSLException {
+        SslContext sslContext = GrpcSslContexts.forClient().trustManager(new File(certPath)).build();
+        NettyChannelBuilder channelBuilder = NettyChannelBuilder.forAddress(hostIp, grpcPort);
+        return channelBuilder.sslContext(sslContext).build();
+    }
+
 }
