@@ -68,7 +68,7 @@ public class PolarLocalRawGrpcTest {
 
         // req
         PayReqString req = PayReqString.newBuilder()
-                .setPayReq("lnbcrt500u1p3t253ypp5gt06trjpxldjtn9avwtm69h8j7gm55aue446y4puznhwu9mrkpysdqqcqzpgsp5645gphkn9445g2mmjpf5hl5mwntkpe8k6suj9fe8h94mgsv8pl9q9qyyssqspwhq0e6p7cd59vpmnhaj9jw5k27yyeedns3v5z7t8dl67849rg9ak9zdm8x0hhyqfny95narnwgyurm8d3s3v8u3xj08h6h984edvcp0jhs9z")
+                .setPayReq("lnbcrt500u1p3ttpt4pp5l79yvv3narfv6gla9gvgfdttvf03j6s0fmqxvrnlpm6k3x76ne6sdqqcqzpgsp5y3ekzn4l9gwdupn26lusezr4eun5rkuxrluzv3ucumuq9y29xjzq9qyyssq00ytzu49tp7m3acgrq6kfx29gwncrxzmazcu0seczyg9jkvums8hdkx082klj39rej0z4mamvddzttl7vlhrf9w95tu6w26rq5sxe7cp3ukpxq")
                 .build();
 
         PayReq payReq = lightningBlockingStub.decodePayReq(req);
