@@ -263,7 +263,7 @@ public class PolarLightningCallingTest {
                 new File(ALICE_MACAROON));
         System.out.println("\nAlice\n");
 
-        PayReq payReq = synchronousLndAPI.decodePayReq("lnbcrt500u1p3trq9ypp5m9f0rcqyx6d5e5lefs3rlck2nnqudh5dy04ngsqrlgu9urlr94pqdqqcqzpgsp5ysq44n6h5kdzmg2klph2gq0kvudr5lc5rudm4pds0gpvflrphlwq9qyyssqu5x9rg7lusm5es8y6n84qklcjdwssp2p0wg7mkn3sc67xwfsd76kgl59vhe64sgefcu69j8gzaegemscgmk323w7hrgqx59tn480pycpka9tfy");
+        PayReq payReq = synchronousLndAPI.decodePayReq("lnbcrt500u1p3t253ypp5gt06trjpxldjtn9avwtm69h8j7gm55aue446y4puznhwu9mrkpysdqqcqzpgsp5645gphkn9445g2mmjpf5hl5mwntkpe8k6suj9fe8h94mgsv8pl9q9qyyssqspwhq0e6p7cd59vpmnhaj9jw5k27yyeedns3v5z7t8dl67849rg9ak9zdm8x0hhyqfny95narnwgyurm8d3s3v8u3xj08h6h984edvcp0jhs9z");
         System.out.println(payReq.toJsonAsString(true));
     }
 
