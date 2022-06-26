@@ -83,7 +83,7 @@ public class PolarLocalRawGrpcTest {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
                 POLAR_FILE_LOC_WIN, DAVE_CERT, DAVE_GRPC_PORT, DAVE_MACAROON);
 
-        String payReqStr = "lnbcrt100u1p3twdanpp5tmu6j2d9gwxuh4x5n7wktgpk8ueehjsflx50nxgzm3e40yw993vsdqqcqzpgsp5hrt93chtnummpdcsxgjmkp9vt5nux6gr4g39pkf5rr95lwmvmwps9qyyssqnypjks7p2fnt5dzcq25a9hjtgn3de8ffc5gskmvh6du90e5799l389sgmsg2cg0583lrgc03vnfs4n3z7dtjhu3hhxrdkqpsjssya4qqsd07pu";
+        String payReqStr = "lnbcrt10u1p3t0afvpp54mx8cpm97ykuc3k89n2g8f0m6gzrp4znuu9uuttv0zks9zvu2ptqdqqcqzpgsp5efr2s9mek3ug2nrd2wlu53jw0wargcfg8p3vd955ux3pnl9k4xgs9qyyssqg8ra39gaugux5zskmmjp3aa0lhneh0q208xzmqtdrr0ehgq9vlj8n583v6preg8qqus3drwkqfyvp0nrqzj3gyegx45nk3cwcs0ylqqqalw8t4";
 
         // req
         PayReqString req = PayReqString.newBuilder()
@@ -127,29 +127,32 @@ public class PolarLocalRawGrpcTest {
                 .build();
         QueryRoutesResponse queryRoutesResponse = lightningBlockingStub.queryRoutes(routeReq);
         System.out.println(">>> " + queryRoutesResponse);
-        System.out.println(">>> Hops: " + queryRoutesResponse.getRoutesList().size());
+        System.out.println(">>> Total Fees in MSat: " + queryRoutesResponse.getRoutes(0).getTotalFeesMsat());
+        System.out.println(">>> Hops: " + queryRoutesResponse.getRoutesList().get(0).getHopsCount());
     }
 
     /**
-     * Send payment synchronised, with inputs:
-     * -
+     * Send payment synchronised, if success, no creation timestamp would return
      */
     @Test
     public void sendPaymentTest() throws IOException {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
                 POLAR_FILE_LOC_WIN, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
 
-        String payReqStr = "lnbcrt100u1p3twdanpp5tmu6j2d9gwxuh4x5n7wktgpk8ueehjsflx50nxgzm3e40yw993vsdqqcqzpgsp5hrt93chtnummpdcsxgjmkp9vt5nux6gr4g39pkf5rr95lwmvmwps9qyyssqnypjks7p2fnt5dzcq25a9hjtgn3de8ffc5gskmvh6du90e5799l389sgmsg2cg0583lrgc03vnfs4n3z7dtjhu3hhxrdkqpsjssya4qqsd07pu";
+        String payReqStr = "lnbcrt10u1p3t0afvpp54mx8cpm97ykuc3k89n2g8f0m6gzrp4znuu9uuttv0zks9zvu2ptqdqqcqzpgsp5efr2s9mek3ug2nrd2wlu53jw0wargcfg8p3vd955ux3pnl9k4xgs9qyyssqg8ra39gaugux5zskmmjp3aa0lhneh0q208xzmqtdrr0ehgq9vlj8n583v6preg8qqus3drwkqfyvp0nrqzj3gyegx45nk3cwcs0ylqqqalw8t4";
         SendRequest req = SendRequest.newBuilder()
                 .setPaymentRequest(payReqStr)
                 .setFeeLimit(
                         FeeLimit.newBuilder()
-                                .setFixedMsat(1010)
+                                .setFixedMsat(3030)
                                 .build())
                 .build();
 
         SendResponse sendResponse = lightningBlockingStub.sendPaymentSync(req);
         System.out.println(sendResponse.toString());
+        System.out.println(">>> Real Total Amt in MSat: " + sendResponse.getPaymentRoute().getTotalAmtMsat());
+        System.out.println(">>> Real Total Fees in MSat: " + sendResponse.getPaymentRoute().getTotalFeesMsat());
+        System.out.println(">>> Real Hops: " + sendResponse.getPaymentRoute().getHopsCount());
     }
 
 
@@ -159,24 +162,28 @@ public class PolarLocalRawGrpcTest {
      */
     @Test
     public void trackPaymentTest() throws IOException {
-        RouterBlockingStub routerBlockingStub = getRouterBlockingStub(
-                POLAR_FILE_LOC_WIN, ERIN_CERT, ERIN_GRPC_PORT, ERIN_MACAROON);
-
 //        RouterBlockingStub routerBlockingStub = getRouterBlockingStub(
-//                POLAR_FILE_LOC_WIN, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
+//                POLAR_FILE_LOC_WIN, ERIN_CERT, ERIN_GRPC_PORT, ERIN_MACAROON);
+
+        RouterBlockingStub routerBlockingStub = getRouterBlockingStub(
+                POLAR_FILE_LOC_WIN, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
 
         // req
         TrackPaymentRequest req = TrackPaymentRequest.newBuilder()
                 .setPaymentHash(
                         ByteString.copyFrom(
-                                Numeric.hexStringToByteArray("5ef9a929a5438dcbd4d49f9d65a0363f339bca09f9a8f99902dc735791c52c59")))
+                                Numeric.hexStringToByteArray("aecc7c0765f12dcc46c72cd483a5fbd20430d453e70bce2d6c78ad02899c5056")))
                 .build();
 
         try {
             Iterator<Payment> paymentIterator = routerBlockingStub.trackPaymentV2(req);
             while (paymentIterator.hasNext()) {
                 System.out.println(">>> Got an update");
-                System.out.println(paymentIterator.next().toString());
+                Payment payment = paymentIterator.next();
+                System.out.println(">>> Real Hops: " + payment.getHtlcsList().get(0).getRoute().getHopsCount());
+                System.out.println(">>> Real Fee in MSat: " + payment.getFeeMsat());
+                System.out.println(">>> Status: " + payment.getStatus().name());
+                System.out.println(">>> Creation Data: " + payment.getCreationTimeNs());
             }
         } catch (StatusRuntimeException e) {
             // catch grpc exceptions
@@ -191,6 +198,10 @@ public class PolarLocalRawGrpcTest {
     }
 
 
+    /**
+     * Would get notification from:
+     * - created an invoice & received an payment of invoice
+     */
     @Test
     public void subscribeInvoice() throws IOException {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
