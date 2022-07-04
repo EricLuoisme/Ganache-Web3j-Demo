@@ -2,8 +2,11 @@ package com.example.lightning;
 
 import com.example.lighting.MacaroonCallCredential;
 import com.example.lightning.LightningGrpc.LightningBlockingStub;
-import com.example.lightning.router.*;
+import com.example.lightning.router.RouteFeeRequest;
+import com.example.lightning.router.RouteFeeResponse;
+import com.example.lightning.router.RouterGrpc;
 import com.example.lightning.router.RouterGrpc.RouterBlockingStub;
+import com.example.lightning.router.TrackPaymentRequest;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
@@ -11,9 +14,7 @@ import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Test;
-import org.openjdk.jmh.annotations.Benchmark;
 import org.web3j.utils.Numeric;
 
 import javax.net.ssl.SSLException;
@@ -22,7 +23,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Using Raw Lightning-Grpc interact with Polar
@@ -33,29 +33,30 @@ import java.util.concurrent.TimeUnit;
 public class PolarLocalRawGrpcTest {
 
     private final static String POLAR_BASE_URL = "https://127.0.0.1:";
-    private final static String POLAR_MACAROON_LOC = "/Users/pundix2022/.polar/networks/1/volumes/lnd";
+    private final static String POLAR_FILE_LOC_MAC = "/Users/pundix2022/.polar/networks/1/volumes/lnd";
     private final static String POLAR_FILE_LOC_WIN = "C:\\Users\\lykis\\.polar\\networks\\1\\volumes\\lnd";
+    private final static String POLAR_FILE_LOC = POLAR_FILE_LOC_MAC;
 
     // Alice
     private final static int ALICE_GRPC_PORT = 10001;
     private final static String ALICE_REST_HOST = "https://127.0.0.1:8081";
     private final static String ALICE_CERT = "/alice/tls.cert";
     private final static String ALICE_MACAROON = "/alice/data/chain/bitcoin/regtest/admin.macaroon";
-    private final static String ALICE_PUB_KEY = "0226feae41cc2eb18455df8707c6e005ec3ac2c8e64c3039b1409800995daea2be";
+    private final static String ALICE_PUB_KEY = "02d2e44b74742b38611971dc859ac2dd4a7566caf57f45fafab6c27b921ff8c64e";
 
     // Dave
     private final static int DAVE_GRPC_PORT = 10004;
     private final static String DAVE_REST_HOST = "https://127.0.0.1:8084";
     private final static String DAVE_CERT = "/dave/tls.cert";
     private final static String DAVE_MACAROON = "/dave/data/chain/bitcoin/regtest/admin.macaroon";
-    private final static String DAVE_PUB_KEY = "036d42b106e8813f9bca46c507c3d540ef944bc99b94ab3e1a388eee61a9d90948";
+    private final static String DAVE_PUB_KEY = "02a54fe7062e8c2ecc16829bd441418de1fbd58ba0dced42c966c37a7cb7bfceb0";
 
     // Erin
     private final static int ERIN_GRPC_PORT = 10005;
     private final static String ERIN_REST_HOST = "https://127.0.0.1:8085";
     private final static String ERIN_CERT = "/erin/tls.cert";
     private final static String ERIN_MACAROON = "/erin/data/chain/bitcoin/regtest/admin.macaroon";
-    private final static String ERIN_PUB_KEY = "03d6714b621817ebe8bfcfffe302a3d0d885129e9b3a3a140cf17b6114dd480aad";
+    private final static String ERIN_PUB_KEY = "037129aab2d88801a28c2acf53d11cea9454fdaa7809ed02b1b303ce9487ca2dac";
 
 //    // for bench mark testing
 //    public static void main(String[] args) throws Exception {
@@ -65,9 +66,23 @@ public class PolarLocalRawGrpcTest {
     @Test
     public void connectionTest() throws IOException {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
-                POLAR_FILE_LOC_WIN, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
+                POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
         WalletBalanceResponse walletBalanceResponse = lightningBlockingStub.walletBalance(WalletBalanceRequest.newBuilder().build());
         System.out.println(walletBalanceResponse.toString());
+    }
+
+    @Test
+    public void createInvoiceTest() throws IOException {
+        LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
+                POLAR_FILE_LOC, ERIN_CERT, ERIN_GRPC_PORT, ERIN_MACAROON);
+
+        Invoice req = Invoice.newBuilder()
+                .setValueMsat(1_000_000L)
+                .setExpiry(3600 * 48)
+                .build();
+
+        AddInvoiceResponse addInvoiceResponse = lightningBlockingStub.addInvoice(req);
+        System.out.println(addInvoiceResponse);
     }
 
 
@@ -81,9 +96,9 @@ public class PolarLocalRawGrpcTest {
     public void decodePaymentReqTest() throws IOException {
         // stub
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
-                POLAR_FILE_LOC_WIN, DAVE_CERT, DAVE_GRPC_PORT, DAVE_MACAROON);
+                POLAR_FILE_LOC, DAVE_CERT, DAVE_GRPC_PORT, DAVE_MACAROON);
 
-        String payReqStr = "lnbcrt10u1p3t0afvpp54mx8cpm97ykuc3k89n2g8f0m6gzrp4znuu9uuttv0zks9zvu2ptqdqqcqzpgsp5efr2s9mek3ug2nrd2wlu53jw0wargcfg8p3vd955ux3pnl9k4xgs9qyyssqg8ra39gaugux5zskmmjp3aa0lhneh0q208xzmqtdrr0ehgq9vlj8n583v6preg8qqus3drwkqfyvp0nrqzj3gyegx45nk3cwcs0ylqqqalw8t4";
+        String payReqStr = "lnbcrt10n1p3v926rpp5ju7fqww5tmtsl67486yauv38gecctuut90x6q8cmmr3v9cjehsrqdqqcqzpgxqy9gcqsp5h6yvf8q7lzxtsd5hjuq5dx2judlnw53r3q5rs4sj7qmk8kr78r7s9qyyssqg2jnu6ff34p9vqykjq0wemhvc780zm2psh8q377dlt7k8ddwdq2plh8p55z6xdnen6ahn9y283vg8wdcyrefy9tz5hpy3q3y9cz4xrcqakruzw";
 
         // req
         PayReqString req = PayReqString.newBuilder()
@@ -103,7 +118,7 @@ public class PolarLocalRawGrpcTest {
     public void estimateRouteFee() throws IOException {
         // stub
         RouterBlockingStub routerBlockingStub = getRouterBlockingStub(
-                POLAR_FILE_LOC_WIN, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
+                POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
         RouteFeeRequest req = RouteFeeRequest.newBuilder()
                 .setAmtSat(10000)
                 .setDest(ByteString.copyFrom(Numeric.hexStringToByteArray(ERIN_PUB_KEY)))
@@ -116,7 +131,7 @@ public class PolarLocalRawGrpcTest {
     @Test
     public void routeQuery() throws IOException {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
-                POLAR_FILE_LOC_WIN, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
+                POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
         QueryRoutesRequest routeReq = QueryRoutesRequest.newBuilder()
                 .setAmt(10000)
                 .setFeeLimit(
@@ -137,14 +152,14 @@ public class PolarLocalRawGrpcTest {
     @Test
     public void sendPaymentTest() throws IOException {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
-                POLAR_FILE_LOC_WIN, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
+                POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
 
-        String payReqStr = "lnbcrt10u1p3t0afvpp54mx8cpm97ykuc3k89n2g8f0m6gzrp4znuu9uuttv0zks9zvu2ptqdqqcqzpgsp5efr2s9mek3ug2nrd2wlu53jw0wargcfg8p3vd955ux3pnl9k4xgs9qyyssqg8ra39gaugux5zskmmjp3aa0lhneh0q208xzmqtdrr0ehgq9vlj8n583v6preg8qqus3drwkqfyvp0nrqzj3gyegx45nk3cwcs0ylqqqalw8t4";
+        String payReqStr = "lnbcrt10u1p3tcrv5pp5h580aa6xgwpppykywujkzz3fkq9jm8ge7r3rlxld32re86nyxf7qdqqcqzpgsp5z6wx92dggh02tudmgmmceujs75qdc35u2qpv0c3kd63rhezenu4s9qyyssqa7tpyl02rkc9cfchwakjqlpjfdyya5pa9mufsq34ta65454uv45jge8zjfdd4ep6rzgmg4eu8fmff4ct5kl0ekfmv9dkqr6qjmzrqccpxsg7p8";
         SendRequest req = SendRequest.newBuilder()
                 .setPaymentRequest(payReqStr)
                 .setFeeLimit(
                         FeeLimit.newBuilder()
-                                .setFixedMsat(3030)
+                                .setFixedMsat(1010)
                                 .build())
                 .build();
 
@@ -166,13 +181,13 @@ public class PolarLocalRawGrpcTest {
 //                POLAR_FILE_LOC_WIN, ERIN_CERT, ERIN_GRPC_PORT, ERIN_MACAROON);
 
         RouterBlockingStub routerBlockingStub = getRouterBlockingStub(
-                POLAR_FILE_LOC_WIN, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
+                POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
 
         // req
         TrackPaymentRequest req = TrackPaymentRequest.newBuilder()
                 .setPaymentHash(
                         ByteString.copyFrom(
-                                Numeric.hexStringToByteArray("aecc7c0765f12dcc46c72cd483a5fbd20430d453e70bce2d6c78ad02899c5056")))
+                                Numeric.hexStringToByteArray("ee47ac82765bf05959bfc3899dd5c7e3e8eeb76d3eb7203a2290cce9ec533281")))
                 .build();
 
         try {
@@ -184,6 +199,9 @@ public class PolarLocalRawGrpcTest {
                 System.out.println(">>> Real Fee in MSat: " + payment.getFeeMsat());
                 System.out.println(">>> Status: " + payment.getStatus().name());
                 System.out.println(">>> Creation Data: " + payment.getCreationTimeNs());
+                System.out.println();
+                System.out.println();
+                System.out.println(payment.toString());
             }
         } catch (StatusRuntimeException e) {
             // catch grpc exceptions
@@ -205,7 +223,7 @@ public class PolarLocalRawGrpcTest {
     @Test
     public void subscribeInvoice() throws IOException {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
-                POLAR_FILE_LOC_WIN, ERIN_CERT, ERIN_GRPC_PORT, ERIN_MACAROON);
+                POLAR_FILE_LOC, ERIN_CERT, ERIN_GRPC_PORT, ERIN_MACAROON);
 
         Iterator<Invoice> invoiceIterator = lightningBlockingStub.subscribeInvoices(InvoiceSubscription.newBuilder().build());
         while (invoiceIterator.hasNext()) {
