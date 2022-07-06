@@ -77,7 +77,7 @@ public class PolarLocalRawGrpcTest {
                 POLAR_FILE_LOC, ERIN_CERT, ERIN_GRPC_PORT, ERIN_MACAROON);
 
         Invoice req = Invoice.newBuilder()
-                .setValueMsat(1_000_000L)
+                .setValueMsat(1_000L)
                 .setExpiry(3600 * 48)
                 .build();
 
@@ -98,7 +98,7 @@ public class PolarLocalRawGrpcTest {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
                 POLAR_FILE_LOC, DAVE_CERT, DAVE_GRPC_PORT, DAVE_MACAROON);
 
-        String payReqStr = "lnbcrt10n1p3v926rpp5ju7fqww5tmtsl67486yauv38gecctuut90x6q8cmmr3v9cjehsrqdqqcqzpgxqy9gcqsp5h6yvf8q7lzxtsd5hjuq5dx2judlnw53r3q5rs4sj7qmk8kr78r7s9qyyssqg2jnu6ff34p9vqykjq0wemhvc780zm2psh8q377dlt7k8ddwdq2plh8p55z6xdnen6ahn9y283vg8wdcyrefy9tz5hpy3q3y9cz4xrcqakruzw";
+        String payReqStr = "lnbcrt10n1p3v8wynpp5ypmnq8rud4aj90cekj3ywa7k4z3x8k6va2slrqc4cpm6c54uwpdqdqqcqzpgxqy9gcqsp594xsn9thughp0h0ca4a0lzdpxmr23dc2adumm8gtja8lt7ru8v6s9qyyssqxqa96vcttygl9va7e097pe6jtperdhj4c9m2465djhd52wadwcakut0wp088p6vrxrsu9lm3ana9e7v6a4gfaja4w55z0hkfpf0swfcp4g2g4s";
 
         // req
         PayReqString req = PayReqString.newBuilder()
@@ -120,7 +120,7 @@ public class PolarLocalRawGrpcTest {
         RouterBlockingStub routerBlockingStub = getRouterBlockingStub(
                 POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
         RouteFeeRequest req = RouteFeeRequest.newBuilder()
-                .setAmtSat(10000)
+                .setAmtSat(1)
                 .setDest(ByteString.copyFrom(Numeric.hexStringToByteArray(ERIN_PUB_KEY)))
                 .build();
         RouteFeeResponse routeFeeResponse = routerBlockingStub.estimateRouteFee(req);
@@ -133,11 +133,11 @@ public class PolarLocalRawGrpcTest {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
                 POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
         QueryRoutesRequest routeReq = QueryRoutesRequest.newBuilder()
-                .setAmt(10000)
-                .setFeeLimit(
-                        FeeLimit.newBuilder()
-//                                .setFixedMsat(1000)
-                                .build())
+                .setAmtMsat(2000)
+//                .setFeeLimit(
+//                        FeeLimit.newBuilder()
+////                                .setFixedMsat(1000)
+//                                .build())
                 .setPubKey(ERIN_PUB_KEY)
                 .build();
         QueryRoutesResponse queryRoutesResponse = lightningBlockingStub.queryRoutes(routeReq);
@@ -187,7 +187,7 @@ public class PolarLocalRawGrpcTest {
         TrackPaymentRequest req = TrackPaymentRequest.newBuilder()
                 .setPaymentHash(
                         ByteString.copyFrom(
-                                Numeric.hexStringToByteArray("ee47ac82765bf05959bfc3899dd5c7e3e8eeb76d3eb7203a2290cce9ec533281")))
+                                Numeric.hexStringToByteArray("3d31ffe9d6ce60122e75328649e97084ec1897acb08ad0e4350509976b301e84")))
                 .build();
 
         try {
