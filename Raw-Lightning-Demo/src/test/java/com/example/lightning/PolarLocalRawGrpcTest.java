@@ -74,7 +74,7 @@ public class PolarLocalRawGrpcTest {
     @Test
     public void createInvoiceTest() throws IOException {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
-                POLAR_FILE_LOC, ERIN_CERT, ERIN_GRPC_PORT, ERIN_MACAROON);
+                POLAR_FILE_LOC, DAVE_CERT, DAVE_GRPC_PORT, DAVE_MACAROON);
 
         Invoice req = Invoice.newBuilder()
                 .setValueMsat(1_000L)
@@ -83,6 +83,7 @@ public class PolarLocalRawGrpcTest {
 
         AddInvoiceResponse addInvoiceResponse = lightningBlockingStub.addInvoice(req);
         System.out.println(addInvoiceResponse);
+        System.out.println(Numeric.toHexString(addInvoiceResponse.getRHash().toByteArray()));
     }
 
 
@@ -98,7 +99,7 @@ public class PolarLocalRawGrpcTest {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
                 POLAR_FILE_LOC, DAVE_CERT, DAVE_GRPC_PORT, DAVE_MACAROON);
 
-        String payReqStr = "lnbcrt10n1p3v8wynpp5ypmnq8rud4aj90cekj3ywa7k4z3x8k6va2slrqc4cpm6c54uwpdqdqqcqzpgxqy9gcqsp594xsn9thughp0h0ca4a0lzdpxmr23dc2adumm8gtja8lt7ru8v6s9qyyssqxqa96vcttygl9va7e097pe6jtperdhj4c9m2465djhd52wadwcakut0wp088p6vrxrsu9lm3ana9e7v6a4gfaja4w55z0hkfpf0swfcp4g2g4s";
+        String payReqStr = "lnbcrt20n1p3v6ntwpp5aac09hfzunkuwy33hj5t8hgxgq8g6tugt9jesdkzm4cnhzwjmzjqdqqcqzpgsp5nd8207lap4tzp5x33h50hvxjnpa32z3le9uthrpkwxsk3d5z9rqs9qyyssqfqx9l54jsmsrnnl22mddkztnq6xpw7648mf925uz0zjuqlhxw3t46cxacspsc67ppfldkhy2600cnp9fzg58qh9uwhdt59vgw5nx3cqq8xxce3";
 
         // req
         PayReqString req = PayReqString.newBuilder()
@@ -234,6 +235,24 @@ public class PolarLocalRawGrpcTest {
             }
         }
     }
+
+
+    /**
+     * Recovered judging
+     */
+    @Test
+    public void lookupInvoice() throws IOException {
+        LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(POLAR_FILE_LOC, DAVE_CERT, DAVE_GRPC_PORT, DAVE_MACAROON);
+        PaymentHash req = PaymentHash.newBuilder()
+                .setRHash(
+                        ByteString.copyFrom(
+                                Numeric.hexStringToByteArray("097ed5b3c54cec73bd27c6d9950589e087e4277a34cbdeea6ade07840fe0c54f")))
+                .build();
+        Invoice invoice = lightningBlockingStub.lookupInvoice(req);
+        System.out.println(invoice.toString());
+        System.out.println("Invoice Status:" + invoice.getState().name() + ", with code:" + invoice.getState().getNumber());
+    }
+
 
     private static LightningBlockingStub getLightningBlockingStub(String filePath, String certPath, Integer grpcPort, String macaroonPath) throws IOException {
         ManagedChannel channel = getChannel("127.0.0.1", filePath + certPath, grpcPort);

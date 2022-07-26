@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class RemoteLightningCallingTest {
 
+    // lnd with LndHub
     private final static String NODE_IP = "18.139.32.218";
     private final static int NODE_GRPC_PORT = 10009;
     private final static int NODE_REST_PORT = 8080;
@@ -51,7 +52,7 @@ public class RemoteLightningCallingTest {
     private final static String CERT_PATH = FILE_BASE_PATH + "tls.cert";
     private final static String MACAROON_PATH = FILE_BASE_PATH + "admin.macaroon";
 
-
+    // pure lnd
     private final static String NODE_IP_2 = "18.140.86.31";
     private final static int NODE_GRPC_PORT_2 = 10009;
     private final static int NODE_REST_PORT_2 = 8080;
@@ -342,7 +343,7 @@ public class RemoteLightningCallingTest {
                 new File(CERT_PATH_2),
                 new File(MACAROON_PATH_2));
 //        System.out.println(synchronousLndAPI_2.listChannels(new ListChannelsRequest()).toJsonAsString(true));
-        PayReq payReq = synchronousLndAPI_2.decodePayReq("lntb100u1p3246p5pp54ez3vx77z0956ej6s0vtnr9ma3mjxfqrvctftuhv4z6qp0twr9dqdqqcqzpgxqyz5vqsp58dlg565vddw50sfhwmwe7wpwlzgugua4a3fkc0qndnxwrr5ytfnq9qyyssqzy86hxhps8azr96gdzqsjdxe54pjdpwvqff9m56xgqfnu98wel78zmqp7tyr7yke7m4lhqaplkw8yynjy68pphhe26k2n28eaqqx05qpdqxf8k");
+        PayReq payReq = synchronousLndAPI_2.decodePayReq("lntb1u1p3d7jvgpp5wdxj826k0hqxf053lm079nur2zhqv9m0wgrs49j6ef2tzmmz95wqdqqcqzpgxqrrsssp50phxmeaknhmywefvwceg65flaklczfkvn4weznx2g9ndj3zxt2as9qyyssqjj2946f0qmh7vpgakm2ckrcfmdz69295jnqk6ja099r0nnuhfqq565axfjmmree0zcrgculjcg678hxrkj3nh4vtnfnt97zd98j07uspnv9ehe");
         System.out.println(payReq.toJsonAsString(true));
 
 ////        System.out.println(synchronousLndAPI_2.pendingChannels().toJsonAsString(true));
