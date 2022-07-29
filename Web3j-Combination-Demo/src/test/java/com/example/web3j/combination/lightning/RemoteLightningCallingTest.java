@@ -343,7 +343,7 @@ public class RemoteLightningCallingTest {
                 new File(CERT_PATH_2),
                 new File(MACAROON_PATH_2));
 //        System.out.println(synchronousLndAPI_2.listChannels(new ListChannelsRequest()).toJsonAsString(true));
-        PayReq payReq = synchronousLndAPI_2.decodePayReq("lntb1u1p3d7jvgpp5wdxj826k0hqxf053lm079nur2zhqv9m0wgrs49j6ef2tzmmz95wqdqqcqzpgxqrrsssp50phxmeaknhmywefvwceg65flaklczfkvn4weznx2g9ndj3zxt2as9qyyssqjj2946f0qmh7vpgakm2ckrcfmdz69295jnqk6ja099r0nnuhfqq565axfjmmree0zcrgculjcg678hxrkj3nh4vtnfnt97zd98j07uspnv9ehe");
+        PayReq payReq = synchronousLndAPI_2.decodePayReq("lnbc1u1p3wydqtpp5702rtes2sfwvevk89mv2g7qs7mxnqxhzl8etwfnyqjt5gutx9j9qdqqcqzpgxqyz5vqsp53ajn7j8jp790evdnsj0dd6z3a94p6zrm3gcdnls3syydxsp0jdys9qyyssqwpwcatus9vd4vxapnctae8uu0v849lpezgmy54005d98x8rm0nn5xrxuvj0xnkwvxx6kjgzzhwaa08y04et5xc3mu6hfrnx7uscgyrqqkmt7nj");
         System.out.println(payReq.toJsonAsString(true));
 
 ////        System.out.println(synchronousLndAPI_2.pendingChannels().toJsonAsString(true));

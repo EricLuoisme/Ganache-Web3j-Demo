@@ -1,4 +1,4 @@
-package com.example.web3j.combination;
+package com.example.web3j.combination.eth;
 
 import com.example.web3j.combination.web3j.EthEventTopics;
 import org.assertj.core.util.Lists;
