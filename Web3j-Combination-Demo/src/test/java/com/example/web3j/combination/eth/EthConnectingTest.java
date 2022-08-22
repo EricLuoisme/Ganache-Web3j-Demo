@@ -1,4 +1,4 @@
-package com.example.web3j.combination.bsc;
+package com.example.web3j.combination.eth;
 
 import org.junit.jupiter.api.Test;
 import org.web3j.protocol.Web3j;
@@ -15,11 +15,11 @@ import java.io.IOException;
  * @author Roylic
  * 2022/8/19
  */
-public class BscConnectingTest {
+public class EthConnectingTest {
 
     public static final Web3j web3j
-            = Web3j.build(new HttpService("https://data-seed-prebsc-1-s1.binance.org:8545/"));
-//            = Web3j.build(new HttpService("http://testnet-bsc-dataseed1.functionx.io:8545"));
+            = Web3j.build(new HttpService("https://kovan.infura.io/v3/f1836cc85b4b4752adc841cc59eeb0c6"));
+//            = Web3j.build(new HttpService("https://eth-kovan.alchemyapi.io/v2/IyfMvMw8kE7X3KvFOwoTlAvDB2QaEVoD"));
 
     @Test
     public void testConnection() {
