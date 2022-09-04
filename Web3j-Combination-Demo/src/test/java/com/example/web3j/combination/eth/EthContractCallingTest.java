@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 public class EthContractCallingTest {
 
     public static final String INFURA_KOVAN_NODE_HTTP_LINK
-            = "https://kovan.infura.io/v3/f1836cc85b4b4752adc841cc59eeb0c6";
+            = "https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467";
 
     public static final Web3j web3j
             = Web3j.build(new HttpService(INFURA_KOVAN_NODE_HTTP_LINK));

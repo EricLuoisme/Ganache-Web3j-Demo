@@ -18,7 +18,7 @@ import java.io.IOException;
 public class EthConnectingTest {
 
     public static final Web3j web3j
-            = Web3j.build(new HttpService("https://kovan.infura.io/v3/f1836cc85b4b4752adc841cc59eeb0c6"));
+            = Web3j.build(new HttpService("https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467"));
 //            = Web3j.build(new HttpService("https://eth-kovan.alchemyapi.io/v2/IyfMvMw8kE7X3KvFOwoTlAvDB2QaEVoD"));
 
     @Test
