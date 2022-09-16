@@ -242,11 +242,11 @@ public class PolarLocalRawGrpcTest {
      */
     @Test
     public void lookupInvoice() throws IOException {
-        LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(POLAR_FILE_LOC, DAVE_CERT, DAVE_GRPC_PORT, DAVE_MACAROON);
+        LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
         PaymentHash req = PaymentHash.newBuilder()
                 .setRHash(
                         ByteString.copyFrom(
-                                Numeric.hexStringToByteArray("097ed5b3c54cec73bd27c6d9950589e087e4277a34cbdeea6ade07840fe0c54f")))
+                                Numeric.hexStringToByteArray("0x522e42c9608637c14acbf53ca2b7ed98e92a990272145c76c75bc545fd4ab161")))
                 .build();
         Invoice invoice = lightningBlockingStub.lookupInvoice(req);
         System.out.println(invoice.toString());

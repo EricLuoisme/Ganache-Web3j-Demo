@@ -11,9 +11,9 @@ import java.io.IOException;
 
 public class EthV2ConnectionTest {
 
+    private static final String web3Url = "https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467";
 
-    public static final Web3j web3j = Web3j.build(
-            new HttpService("https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467"));
+    public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
     @Test
     public void testConnection() {
