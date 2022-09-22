@@ -108,7 +108,9 @@ public class PolarLocalRawGrpcTest {
         PayReq payReq = lightningBlockingStub.decodePayReq(req);
         System.out.println(payReq.toString());
         System.out.println(">>> Payment Hash: " + payReq.getPaymentHash());
-//        System.out.println(">>> Hex Payment Addr: " + Hex.encodeHexString(payReq.getPaymentAddr().toByteArray()));
+        System.out.println(">>> Hex Payment Addr: " + Hex.encodeHexString(payReq.getPaymentAddr().toByteArray()));
+
+        System.out.println();
     }
 
     /**
