@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class ApiCallingTest {
 
     private static final String OPENSEA_BASE_URL = "https://api.opensea.io/api/v1/";
+    private static final String OPENSEA_TESTNET_BASE_URL = "https://testnets-api.opensea.io/api/v1/";
 
     private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .readTimeout(10, TimeUnit.SECONDS)
