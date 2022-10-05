@@ -46,7 +46,8 @@ import java.util.concurrent.TimeUnit;
 public class PolarLightningCallingTest {
 
     private final static String POLAR_BASE_URL = "https://127.0.0.1:";
-    private final static String POLAR_MACAROON_LOC = "/Users/pundix2022/.polar/networks/1/volumes/lnd";
+    //    private final static String POLAR_MACAROON_LOC = "/Users/pundix2022/.polar/networks/1/volumes/lnd";
+    private final static String POLAR_MACAROON_LOC = "/Users/roylic/.polar/networks/1/volumes/lnd/";
 
     // Alice
     private final static int ALICE_GRPC_PORT = 10001;
@@ -54,7 +55,7 @@ public class PolarLightningCallingTest {
     private final static String ALICE_CERT = POLAR_MACAROON_LOC + "/alice/tls.cert";
     private final static String ALICE_MACAROON = POLAR_MACAROON_LOC + "/alice/data/chain/bitcoin/regtest/admin.macaroon";
     private final static String ALICE_INVOICE_MACAROON = POLAR_MACAROON_LOC + "/alice/data/chain/bitcoin/regtest/invoice.macaroon";
-    private final static String ALICE_PUB_KEY = "02c94f36b8574122ecf189a90fea84f02b8b80c21577f60499a2345ae9621c9fb4";
+    private final static String ALICE_PUB_KEY = "02b699dfe2fa1a4438877602178d38356343318e6d443da9e4e7b7fa48ff112067";
 
     // Erin
     private final static int ERIN_GRPC_PORT = 10005;
@@ -419,29 +420,29 @@ public class PolarLightningCallingTest {
         synchronousLndAPI_Alice.close();
     }
 
-    @Deprecated
-    public void LND_SubscribeInvoices_ByRpcAPI() throws StatusException, SSLException, ValidationException, InterruptedException {
+    @Test
+    public void LND_SubscribeInvoices_ByRpcAPI_Async() throws StatusException, SSLException, ValidationException, InterruptedException {
+
         AsynchronousLndAPI asynchronousLndAPI = new AsynchronousLndAPI(
                 "127.0.0.1",
                 ALICE_GRPC_PORT,
                 new File(ALICE_CERT),
                 new File(ALICE_MACAROON));
 
-
         InvoiceSubscription invoiceSubscription = new InvoiceSubscription();
-        invoiceSubscription.setAddIndex(10);
-        invoiceSubscription.setSettleIndex(10);
+        invoiceSubscription.setSettleIndex(1);
 
+        System.out.println("Start Subscription");
         asynchronousLndAPI.subscribeInvoices(0L, 0L, new StreamObserver<Invoice>() {
             @Override
             public void onNext(Invoice value) {
-                System.out.println("Next:");
+                System.out.println("\n\nNext:");
                 System.out.println(value.toJsonAsString(true));
             }
 
             @Override
             public void onError(Throwable t) {
-                System.out.println("Error:");
+                System.out.println("\n\nError:");
                 System.out.println(t.getMessage());
             }
 
@@ -457,7 +458,6 @@ public class PolarLightningCallingTest {
 
 
     // ************************************************** Rest Request **************************************************
-
 
     @Test
     public void LND_SyncRestTest() throws IOException, NoSuchAlgorithmException, KeyManagementException, CertificateException, InterruptedException {
@@ -498,11 +498,8 @@ public class PolarLightningCallingTest {
         Thread.currentThread().join();
     }
 
-    /**
-     * 真正请求, 异步方式
-     */
-    private String LND_FormatRestReq_Async(Request request, Certificate certificate)
-            throws NoSuchAlgorithmException, KeyManagementException {
+    // 异步方式
+    private String LND_FormatRestReq_Async(Request request, Certificate certificate) throws NoSuchAlgorithmException, KeyManagementException {
 
         // For TrustManager
         X509TrustManager TRUST_FILES_CERTS = generateTrustManagerByFile(certificate);
@@ -531,12 +528,8 @@ public class PolarLightningCallingTest {
         return ">>>> Request sending";
     }
 
-
-    /**
-     * 真正请求, 同步方式
-     */
-    private ResponseBody LND_FormatRestReq_Sync(Request request, Certificate certificate)
-            throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    // 同步方式
+    private ResponseBody LND_FormatRestReq_Sync(Request request, Certificate certificate) throws IOException, NoSuchAlgorithmException, KeyManagementException {
 
         //        // encode binary macaroon into hex string
 //        String macaroonHexStr = Hex.encodeHexString(Files.readAllBytes(Paths.get(who_macaroon)));
@@ -592,7 +585,6 @@ public class PolarLightningCallingTest {
         };
     }
 
-
     /**
      * c-lightning test
      */
@@ -626,14 +618,6 @@ public class PolarLightningCallingTest {
             System.out.println(body.string());
             System.out.println();
         }
-    }
-
-
-
-    // ************************************************** Raw Lightning Grpc Request  **************************************************
-    @Test
-    public void LND_RAW_Test() {
-
     }
 
 }
