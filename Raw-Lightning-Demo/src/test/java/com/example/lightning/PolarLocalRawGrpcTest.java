@@ -241,7 +241,7 @@ public class PolarLocalRawGrpcTest {
             // should put it into thread-pool, making it asynchronous
             Invoice next = invoiceIterator.next();
             System.out.println("This Invoice Status: " + next.getState().name());
-            if (next.getState().getNumber() == 1) {
+            if (next.getStateValue() == 1) {
                 System.out.println("Detail for this Settled Invoice: " + next.toString());
             }
         }
