@@ -226,15 +226,19 @@ public class PolarLocalRawGrpcTest {
      */
     @Test
     public void subscribeInvoice() throws IOException {
+        // normal common needed
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
                 POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
 
+        // request construction
         Iterator<Invoice> invoiceIterator = lightningBlockingStub.subscribeInvoices(
                 InvoiceSubscription.newBuilder()
                         .setSettleIndex(0)
                         .build());
+
         System.out.println("Start subscription");
         while (invoiceIterator.hasNext()) {
+            // should put it into thread-pool, making it asynchronous
             Invoice next = invoiceIterator.next();
             System.out.println("This Invoice Status: " + next.getState().name());
             if (next.getState().getNumber() == 1) {
