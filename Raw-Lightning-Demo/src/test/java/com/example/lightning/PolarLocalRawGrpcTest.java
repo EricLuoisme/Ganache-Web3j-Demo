@@ -33,7 +33,8 @@ import java.util.Iterator;
 public class PolarLocalRawGrpcTest {
 
     private final static String POLAR_BASE_URL = "https://127.0.0.1:";
-    private final static String POLAR_FILE_LOC_MAC = "/Users/pundix2022/.polar/networks/1/volumes/lnd";
+//    private final static String POLAR_FILE_LOC_MAC = "/Users/pundix2022/.polar/networks/1/volumes/lnd";
+    private final static String POLAR_FILE_LOC_MAC = "/Users/roylic/.polar/networks/1/volumes/lnd";
     private final static String POLAR_FILE_LOC_WIN = "C:\\Users\\lykis\\.polar\\networks\\1\\volumes\\lnd";
     private final static String POLAR_FILE_LOC = POLAR_FILE_LOC_MAC;
 
@@ -225,14 +226,22 @@ public class PolarLocalRawGrpcTest {
      */
     @Test
     public void subscribeInvoice() throws IOException {
+        // normal common needed
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
-                POLAR_FILE_LOC, ERIN_CERT, ERIN_GRPC_PORT, ERIN_MACAROON);
+                POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
 
-        Iterator<Invoice> invoiceIterator = lightningBlockingStub.subscribeInvoices(InvoiceSubscription.newBuilder().build());
+        // request construction
+        Iterator<Invoice> invoiceIterator = lightningBlockingStub.subscribeInvoices(
+                InvoiceSubscription.newBuilder()
+                        .setSettleIndex(0)
+                        .build());
+
+        System.out.println("Start subscription");
         while (invoiceIterator.hasNext()) {
+            // should put it into thread-pool, making it asynchronous
             Invoice next = invoiceIterator.next();
             System.out.println("This Invoice Status: " + next.getState().name());
-            if (next.getState().getNumber() == 1) {
+            if (next.getStateValue() == 1) {
                 System.out.println("Detail for this Settled Invoice: " + next.toString());
             }
         }
