@@ -3,6 +3,7 @@ package com.example.web3j.combination.ethw;
 import org.junit.jupiter.api.Test;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
@@ -19,7 +20,7 @@ public class EthWTest {
 
 
     private static final String web3Url = "https://iceberg.ethereumpow.org";
-    private static final String local_web3Url = "http://127.0.0.1:8545";
+    private static final String local_web3Url = "http://18.213.209.187:8545";
     private static final String local_wss = "ws://127.0.0.1:8551";
 
     public static final Web3j web3j = Web3j.build(new HttpService(local_web3Url));
@@ -41,8 +42,9 @@ public class EthWTest {
     }
 
     @Test
-    public void getBlock() {
-
+    public void getBlock() throws IOException {
+        EthBlock block = web3j.ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false).send();
+        System.out.println(block.getBlock().getNumber());
     }
 
 
