@@ -20,10 +20,11 @@ public class EthWTest {
 
 
     private static final String web3Url = "https://iceberg.ethereumpow.org";
+    private static final String web3_nodeReal = "https://ethw-mainnet.nodereal.io/v1/28cb8f37d7c04e0097fc3cdbc84ee16f";
     private static final String local_web3Url = "http://18.213.209.187:8545";
     private static final String local_wss = "ws://127.0.0.1:8551";
 
-    public static final Web3j web3j = Web3j.build(new HttpService(local_web3Url));
+    public static final Web3j web3j = Web3j.build(new HttpService(web3_nodeReal));
 
     private static final String address = "0xe10eE98bB84B2073B88353e3AB4433916205DF40";
 
