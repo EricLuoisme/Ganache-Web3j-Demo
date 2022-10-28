@@ -27,7 +27,7 @@ public class GoerliGasFeeTest {
                 .addHeader("X-API-KEY", "BQYUQ8HSyhhY0c7h2D5Pz1E9vB4a2WtL")
                 .build();
         Response response = client.newCall(request).execute();
-        System.out.println();
+        System.out.println(response.body().string());
     }
 
 }
