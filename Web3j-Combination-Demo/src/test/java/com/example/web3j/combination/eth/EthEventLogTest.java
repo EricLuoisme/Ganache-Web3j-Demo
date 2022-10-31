@@ -1,6 +1,6 @@
 package com.example.web3j.combination.eth;
 
-import com.example.web3j.combination.web3j.EthEventTopics;
+import com.example.web3j.combination.web3j.EthLogConstants;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionReturnDecoder;
@@ -160,7 +160,7 @@ public class EthEventLogTest {
         EthTransaction transactionResult = web3j.ethGetTransactionByBlockHashAndIndex(logObject_1155_single.getBlockHash(), logObject_1155_single.getTransactionIndex()).send();
 
 
-        List<TypeReference<Type>> nonIndexedParameters = EthEventTopics.TRANSFER_TOPIC_ERC_1155_SINGLE.event.getNonIndexedParameters();
+        List<TypeReference<Type>> nonIndexedParameters = EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_1155_SINGLE.event.getNonIndexedParameters();
         List<Type> decode = FunctionReturnDecoder.decode(logObject_1155_single.getData(), nonIndexedParameters);
 
         Uint256 tokenId = (Uint256) decode.get(0);
@@ -178,7 +178,7 @@ public class EthEventLogTest {
         Web3j web3j_functionx = Web3j.build(new HttpService("http://testnet-bsc-dataseed2.functionx.io:8545"));
         EthTransaction tra = web3j_functionx.ethGetTransactionByHash(logObject_1155_batch.getTransactionHash()).send();
 
-        List<TypeReference<Type>> nonIndexedParameters = EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH.event.getNonIndexedParameters();
+        List<TypeReference<Type>> nonIndexedParameters = EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH.event.getNonIndexedParameters();
         List<Type> decodeArr = FunctionReturnDecoder.decode(logObject_1155_batch.getData(), nonIndexedParameters);
 
         // List <transferred token id>

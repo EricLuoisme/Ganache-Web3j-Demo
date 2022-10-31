@@ -1,6 +1,6 @@
 package com.example.web3j.combination.eth;
 
-import com.example.web3j.combination.web3j.EthEventTopics;
+import com.example.web3j.combination.web3j.EthLogConstants;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionEncoder;
@@ -214,7 +214,7 @@ public class EthContractCallingTest {
 
     private String callGetErc1155SingleUri(EthLog.LogObject logObject) throws IOException {
         // decode token id
-        List<TypeReference<Type>> nonIndexedParameters = EthEventTopics.TRANSFER_TOPIC_ERC_1155_SINGLE.event.getNonIndexedParameters();
+        List<TypeReference<Type>> nonIndexedParameters = EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_1155_SINGLE.event.getNonIndexedParameters();
         List<Type> decode = FunctionReturnDecoder.decode(logObject.getData(), nonIndexedParameters);
         Uint256 tokenId = (Uint256) decode.get(0);
 
@@ -239,7 +239,7 @@ public class EthContractCallingTest {
 
     private List<String> callGetErc1155BatchUri(EthLog.LogObject logObject) throws IOException {
         // decode and get token ids (no need for amounts)
-        List<TypeReference<Type>> nonIndexedParameters = EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH.event.getNonIndexedParameters();
+        List<TypeReference<Type>> nonIndexedParameters = EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH.event.getNonIndexedParameters();
         List<Type> decodeArr = FunctionReturnDecoder.decode(logObject.getData(), nonIndexedParameters);
 
         DynamicArray<Uint256> tokenIdDyArr = (DynamicArray<Uint256>) decodeArr.get(0);

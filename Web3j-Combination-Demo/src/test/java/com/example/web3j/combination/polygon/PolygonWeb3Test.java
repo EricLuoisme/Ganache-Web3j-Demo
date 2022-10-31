@@ -1,6 +1,6 @@
 package com.example.web3j.combination.polygon;
 
-import com.example.web3j.combination.web3j.EthEventTopics;
+import com.example.web3j.combination.web3j.EthLogConstants;
 import org.junit.jupiter.api.Test;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
@@ -62,9 +62,9 @@ public class PolygonWeb3Test {
                 DefaultBlockParameter.valueOf(blockNum.add(BigInteger.ONE)),
                 Collections.emptyList());
 
-        filter.addOptionalTopics(EthEventTopics.getTopicStr(EthEventTopics.TRANSFER_TOPIC_ERC_20_721));
-        filter.addOptionalTopics(EthEventTopics.getTopicStr(EthEventTopics.TRANSFER_TOPIC_ERC_1155_SINGLE));
-        filter.addOptionalTopics(EthEventTopics.getTopicStr(EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH));
+        filter.addOptionalTopics(EthLogConstants.EthEventTopics.getTopicStr(EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_20_721));
+        filter.addOptionalTopics(EthLogConstants.EthEventTopics.getTopicStr(EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_1155_SINGLE));
+        filter.addOptionalTopics(EthLogConstants.EthEventTopics.getTopicStr(EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH));
 
         web3j.ethLogFlowable(filter).subscribe(log -> {
 
