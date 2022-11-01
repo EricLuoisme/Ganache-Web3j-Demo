@@ -1,14 +1,20 @@
 package com.example.web3j.combination.eth;
 
 import com.example.web3j.combination.web3j.EthLogConstants;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
+import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
+import org.web3j.abi.TypeReference;
 import org.web3j.abi.Utils;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.*;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.request.Transaction;
+import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.EthTransaction;
 import org.web3j.protocol.http.HttpService;
@@ -108,6 +114,96 @@ public class EthDecodeTransactionTest {
 
             System.out.println();
         });
+    }
+
+
+    @Test
+    public void decodeErc1155TokenUri() throws IOException {
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(7864400L)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(7864400L)),
+                Collections.emptyList());
+
+        filter.addOptionalTopics(EthLogConstants.EthEventTopics.getTopicStr(EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_1155_SINGLE));
+        EthLog logs = web3j.ethGetLogs(filter).send();
+        logs.getLogs().forEach(sinEthLog -> System.out.println(callGetErc1155SingleUri((EthLog.LogObject) sinEthLog)));
+
+    }
+
+    private String callGetErc1155SingleUri(EthLog.LogObject logObject) {
+        // decode token id
+        List<TypeReference<Type>> nonIndexedParameters = EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_1155_SINGLE.event.getNonIndexedParameters();
+        List<Type> decode = FunctionReturnDecoder.decode(logObject.getData(), nonIndexedParameters);
+        Uint256 tokenId = (Uint256) decode.get(0);
+
+        Function uriFunc = new Function(
+                "uri",
+                Collections.singletonList(tokenId),
+                Collections.singletonList(TypeReference.create(Utf8String.class))
+        );
+        String encode = FunctionEncoder.encode(uriFunc);
+
+        Transaction reqTxn = Transaction.createEthCallTransaction(logObject.getAddress(), logObject.getAddress(), encode);
+        EthCall callResult = null;
+        try {
+            callResult = web3j.ethCall(reqTxn, DefaultBlockParameterName.LATEST).send();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // decode uri
+        List<Type> uriDecoded = FunctionReturnDecoder.decode(callResult.getValue(), uriFunc.getOutputParameters());
+        Utf8String uri = (Utf8String) uriDecoded.get(0);
+
+        // replace {id} with real token id
+        String url = uri.getValue();
+        return url.replaceAll("\\{id}", tokenId.getValue().toString());
+    }
+
+
+    private List<String> callGetErc1155BatchUri(EthLog.LogObject logObject) {
+        // decode and get token ids (no need for amounts)
+        List<TypeReference<Type>> nonIndexedParameters = EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH.event.getNonIndexedParameters();
+        List<Type> decodeArr = FunctionReturnDecoder.decode(logObject.getData(), nonIndexedParameters);
+
+        DynamicArray<Uint256> tokenIdDyArr = (DynamicArray<Uint256>) decodeArr.get(0);
+        List<Uint256> tokenId = tokenIdDyArr.getValue();
+
+        List<String> urlList = Lists.newArrayList();
+
+        tokenId.stream().forEach(id -> {
+            try {
+                String realUrl = callOnce(id, logObject.getAddress());
+                urlList.add(realUrl);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        return urlList;
+    }
+da
+    private String callOnce(Uint256 tokenId, String contractAddress) throws IOException {
+        Function uriFunc = new Function(
+                "uri",
+                Collections.singletonList(tokenId),
+                Collections.singletonList(TypeReference.create(Utf8String.class))
+        );
+        String encode = FunctionEncoder.encode(uriFunc);
+
+        System.out.println("ERC-1155-Code>>>" + encode);
+
+        Transaction reqTxn = Transaction.createEthCallTransaction(contractAddress, contractAddress, encode);
+        EthCall callResult = web3j.ethCall(reqTxn, DefaultBlockParameterName.LATEST).send();
+
+        List<Type> uriDecoded = FunctionReturnDecoder.decode(callResult.getValue(), uriFunc.getOutputParameters());
+        Utf8String uri = (Utf8String) uriDecoded.get(0);
+
+        // replace {id} with real token id
+        String url = uri.getValue();
+        System.out.println();
+        System.out.println(">>> Raw Url >>> " + url);
+
+        return url.replaceAll("\\{id}", tokenId.getValue().toString());
     }
 
 }
