@@ -102,6 +102,7 @@ public class PolarChannelRawGrpcTest {
             System.out.println("Remote Balance: " + channel.getRemoteBalance());
             System.out.println("Total Satoshi Sent: " + channel.getTotalSatoshisSent());
             System.out.println("Total Satoshi Received: " + channel.getTotalSatoshisReceived());
+            System.out.println();
         });
 
         System.out.println();
