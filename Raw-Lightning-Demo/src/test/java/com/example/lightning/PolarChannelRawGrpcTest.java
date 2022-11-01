@@ -4,6 +4,7 @@ import com.example.lighting.MacaroonCallCredential;
 import com.example.lightning.LightningGrpc.LightningBlockingStub;
 import com.example.lightning.router.RouterGrpc;
 import com.example.lightning.router.RouterGrpc.RouterBlockingStub;
+import com.example.lightning.router.TrackPaymentRequest;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.GrpcSslContexts;
@@ -11,6 +12,7 @@ import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
+import org.web3j.utils.Numeric;
 
 import javax.net.ssl.SSLException;
 import java.io.File;
@@ -28,8 +30,8 @@ import java.util.List;
 public class PolarChannelRawGrpcTest {
 
     private final static String POLAR_BASE_URL = "https://127.0.0.1:";
-    private final static String POLAR_FILE_LOC_MAC = "/Users/pundix2022/.polar/networks/1/volumes/lnd";
-    //    private final static String POLAR_FILE_LOC_MAC = "/Users/roylic/.polar/networks/1/volumes/lnd";
+    //    private final static String POLAR_FILE_LOC_MAC = "/Users/pundix2022/.polar/networks/1/volumes/lnd";
+    private final static String POLAR_FILE_LOC_MAC = "/Users/roylic/.polar/networks/1/volumes/lnd";
     private final static String POLAR_FILE_LOC_WIN = "C:\\Users\\lykis\\.polar\\networks\\1\\volumes\\lnd";
     private final static String POLAR_FILE_LOC = POLAR_FILE_LOC_MAC;
 
@@ -65,19 +67,54 @@ public class PolarChannelRawGrpcTest {
         ListChannelsResponse listChannels = lightningBlockingStub.listChannels(channelsRequest);
         List<Channel> channelsList = listChannels.getChannelsList();
 
-        ListChannelsRequest channelsRequest_single = ListChannelsRequest.newBuilder()
-                .setPeer(ByteString.copyFromUtf8("024dad4a4294c2e544b25df4ff51fd9019a30f96663cddf4795bd5973461e2edb7")).build();
-        lightningBlockingStub.listChannels(channelsRequest_single);
-
-
+        channelsList.forEach(channel ->
+                System.out.println("Channel with Id: " + channel.getChanId()));
 
         ChanInfoRequest chanInfoRequest = ChanInfoRequest.newBuilder()
-                .setChanId(282574488403969L)
+                .setChanId(164926744231937L)
 //                .setChanId(172623325626369L)
                 .build();
         ChannelEdge chanInfo = lightningBlockingStub.getChanInfo(chanInfoRequest);
+        System.out.println("ChannelId: " + chanInfo.getChannelId());
+        System.out.println(chanInfo.getChannelId());
 
 
+        System.out.println();
+    }
+
+
+    @Test
+    public void getChannelBalance() throws IOException {
+        LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
+                POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
+
+        ListChannelsRequest channelsRequest = ListChannelsRequest.newBuilder().build();
+        ListChannelsResponse listChannels = lightningBlockingStub.listChannels(channelsRequest);
+        List<Channel> channelsList = listChannels.getChannelsList();
+
+        channelsList.forEach(channel -> {
+            // ps: all in unit of Sat, not mSat
+            System.out.println("Channel with Id: " + channel.getChanId());
+            System.out.println("Remote PubKey: " + channel.getRemotePubkey());
+            System.out.println("Channel Status: " + channel.getActive());
+            System.out.println("Capacity: " + channel.getCapacity());
+            System.out.println("Local Balance: " + channel.getLocalBalance());
+            System.out.println("Remote Balance: " + channel.getRemoteBalance());
+            System.out.println("Total Satoshi Sent: " + channel.getTotalSatoshisSent());
+            System.out.println("Total Satoshi Received: " + channel.getTotalSatoshisReceived());
+        });
+
+        System.out.println();
+    }
+
+
+    @Test
+    public void getInfo() throws IOException {
+
+        LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
+                POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
+
+        GetInfoResponse info = lightningBlockingStub.getInfo(GetInfoRequest.newBuilder().build());
         System.out.println();
     }
 
