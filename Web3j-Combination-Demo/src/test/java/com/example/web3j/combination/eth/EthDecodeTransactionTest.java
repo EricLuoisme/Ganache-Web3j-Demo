@@ -181,7 +181,7 @@ public class EthDecodeTransactionTest {
         });
         return urlList;
     }
-da
+
     private String callOnce(Uint256 tokenId, String contractAddress) throws IOException {
         Function uriFunc = new Function(
                 "uri",
