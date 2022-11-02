@@ -4,15 +4,12 @@ import com.example.lighting.MacaroonCallCredential;
 import com.example.lightning.LightningGrpc.LightningBlockingStub;
 import com.example.lightning.router.RouterGrpc;
 import com.example.lightning.router.RouterGrpc.RouterBlockingStub;
-import com.example.lightning.router.TrackPaymentRequest;
-import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
-import org.web3j.utils.Numeric;
 
 import javax.net.ssl.SSLException;
 import java.io.File;
@@ -102,6 +99,7 @@ public class PolarChannelRawGrpcTest {
             System.out.println("Remote Balance: " + channel.getRemoteBalance());
             System.out.println("Total Satoshi Sent: " + channel.getTotalSatoshisSent());
             System.out.println("Total Satoshi Received: " + channel.getTotalSatoshisReceived());
+            System.out.println("Life Time: " + channel.getLifetime() + " s");
             System.out.println();
         });
 
