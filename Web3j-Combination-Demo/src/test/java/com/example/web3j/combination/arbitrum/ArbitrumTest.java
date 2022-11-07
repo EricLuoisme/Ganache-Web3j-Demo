@@ -2,12 +2,17 @@ package com.example.web3j.combination.arbitrum;
 
 import org.junit.jupiter.api.Test;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Arbitrum
@@ -17,9 +22,10 @@ import java.io.IOException;
  */
 public class ArbitrumTest {
 
-
+    private static final String web3Url_l1 = "https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467";
     private static final String web3Url = "https://arb-goerli.g.alchemy.com/v2/OYmX5E0ny2dezNXeETpswUgDXzuZdE8w";
 
+    public static final Web3j web3j_l1 = Web3j.build(new HttpService(web3Url_l1));
     public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
     private static final String address = "0xe10eE98bB84B2073B88353e3AB4433916205DF40";
@@ -45,5 +51,29 @@ public class ArbitrumTest {
         System.out.println(balance.getBalance());
 
     }
+
+
+    @Test
+    public void decodeBlockTxnOnL2() throws IOException {
+        // by using the example on Op-Goerli, https://goerli-optimism.etherscan.io/tx/0x5d0eecd491ac48e19af97197e9991fc488850072b7dc7c30f15c3c3adedcbf9b
+        // for optimism, it's block = txn, one block would only contain one txn
+        EthBlock ethBlock = web3j.ethGetBlockByNumber(
+                DefaultBlockParameter.valueOf(new BigInteger("1081618")), true).send();
+
+        // multiple txn would become a batch, put into the L1-Ethereum
+        // with txHash: 0x6878c0e3ce41faefa42bfd35bd14748b116ef9602b3799b13e6d1c3415e671b4
+        EthBlock ethBlock_l1 = web3j_l1.ethGetBlockByNumber(
+                DefaultBlockParameter.valueOf(new BigInteger("7906585")), true).send();
+
+        List<EthBlock.TransactionResult> transactions = ethBlock_l1.getBlock().getTransactions();
+        List<EthBlock.TransactionResult> batchInSingleTxn = transactions.stream().filter(txn -> {
+            EthBlock.TransactionObject obj = (EthBlock.TransactionObject) txn;
+            return "0x6878c0e3ce41faefa42bfd35bd14748b116ef9602b3799b13e6d1c3415e671b4".equals(obj.get().getHash());
+        }).collect(Collectors.toList());
+
+        System.out.println();
+    }
+
+
 
 }

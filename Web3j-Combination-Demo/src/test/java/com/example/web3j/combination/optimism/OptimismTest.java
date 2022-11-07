@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 public class OptimismTest {
 
     private static final String web3Url_l1 = "https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467";
-
     private static final String web3Url = "https://opt-goerli.g.alchemy.com/v2/h_8ml7t3FxTmkRzww_NvLqiw0ZbusFwN";
 
     public static final Web3j web3j_l1 = Web3j.build(new HttpService(web3Url_l1));
