@@ -27,8 +27,8 @@ import java.util.List;
 public class PolarChannelRawGrpcTest {
 
     private final static String POLAR_BASE_URL = "https://127.0.0.1:";
-    //    private final static String POLAR_FILE_LOC_MAC = "/Users/pundix2022/.polar/networks/1/volumes/lnd";
-    private final static String POLAR_FILE_LOC_MAC = "/Users/roylic/.polar/networks/1/volumes/lnd";
+        private final static String POLAR_FILE_LOC_MAC = "/Users/pundix2022/.polar/networks/1/volumes/lnd";
+//    private final static String POLAR_FILE_LOC_MAC = "/Users/roylic/.polar/networks/1/volumes/lnd";
     private final static String POLAR_FILE_LOC_WIN = "C:\\Users\\lykis\\.polar\\networks\\1\\volumes\\lnd";
     private final static String POLAR_FILE_LOC = POLAR_FILE_LOC_MAC;
 
@@ -114,9 +114,16 @@ public class PolarChannelRawGrpcTest {
                 POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
 
         GetInfoResponse info = lightningBlockingStub.getInfo(GetInfoRequest.newBuilder().build());
-        System.out.println();
+        System.out.println(info);
     }
 
+    @Test
+    public void getNetworkInfo() throws IOException {
+        LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
+                POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
+        NetworkInfo networkInfo = lightningBlockingStub.getNetworkInfo(NetworkInfoRequest.newBuilder().build());
+        System.out.println(networkInfo);
+    }
 
     private static LightningBlockingStub getLightningBlockingStub(String filePath, String certPath, Integer grpcPort, String macaroonPath) throws IOException {
         ManagedChannel channel = getChannel("127.0.0.1", filePath + certPath, grpcPort);
