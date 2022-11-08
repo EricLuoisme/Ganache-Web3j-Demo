@@ -12,12 +12,6 @@ public class DirectlyCallingTest {
 
     private static final String baseUrl = "https://mobiletest.mbayar.co.id/switching";
 
-
-    @Test
-    public void getHostAccessToken() {
-
-    }
-
     @Test
     public void md5Test() throws NoSuchAlgorithmException {
 
@@ -26,7 +20,6 @@ public class DirectlyCallingTest {
 
         md5.update(test.getBytes(StandardCharsets.UTF_8));
         byte[] digest = md5.digest();
-
 
         String s = DatatypeConverter.printHexBinary(digest).toUpperCase(Locale.ROOT);
         System.out.println(s);
