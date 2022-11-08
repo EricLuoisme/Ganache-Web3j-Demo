@@ -6,6 +6,7 @@ import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
+import org.web3j.protocol.core.methods.response.EthTransaction;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 
@@ -74,6 +75,13 @@ public class ArbitrumTest {
         System.out.println();
     }
 
+
+    @Test
+    public void queryTxnHash() throws IOException {
+        String txHash = "0x0e6aed31cfba2483d495eeba20e2cf942c22f31d2dd0e7e1c705f03e05541d78";
+        EthTransaction txn = web3j.ethGetTransactionByHash(txHash).send();
+        System.out.println();
+    }
 
 
 }
