@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Using Raw Lightning-Grpc interact with Polar
@@ -113,7 +114,7 @@ public class PolarChannelRawGrpcTest {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
                 POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
 
-        GetInfoResponse info = lightningBlockingStub.getInfo(GetInfoRequest.newBuilder().build());
+        GetInfoResponse info = lightningBlockingStub.withDeadlineAfter(10, TimeUnit.SECONDS).getInfo(GetInfoRequest.newBuilder().build());
         System.out.println(info);
     }
 
@@ -121,7 +122,7 @@ public class PolarChannelRawGrpcTest {
     public void getNetworkInfo() throws IOException {
         LightningBlockingStub lightningBlockingStub = getLightningBlockingStub(
                 POLAR_FILE_LOC, ALICE_CERT, ALICE_GRPC_PORT, ALICE_MACAROON);
-        NetworkInfo networkInfo = lightningBlockingStub.getNetworkInfo(NetworkInfoRequest.newBuilder().build());
+        NetworkInfo networkInfo = lightningBlockingStub.withDeadlineAfter(10, TimeUnit.SECONDS).getNetworkInfo(NetworkInfoRequest.newBuilder().build());
         System.out.println(networkInfo);
     }
 
