@@ -1,12 +1,23 @@
 package com.example.web3j.combination.web3j;
 
+import org.web3j.abi.EventEncoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Event;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.http.HttpService;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class LocalGanacheSubscribeTest {
@@ -35,50 +46,49 @@ public class LocalGanacheSubscribeTest {
         Web3j web3j = Web3j.build(new HttpService(GANACHE_ETH_ADDRESS));
 
 
-
         // subscribe pending txn, keep sending request
-//        web3j.pendingTransactionFlowable().subscribe(tx -> {
-//            System.out.println("Transfer : ");
-//            System.out.println("From : " + tx.getFrom());
-//            System.out.println("To : " + tx.getTo());
-//            System.out.println("Amount : " + tx.getValue());
-//        });
-//
-//        // subscribe all new block
-//        web3j.blockFlowable(false).subscribe(ethBlock -> {
-//            System.out.println("New Block Num : " + ethBlock.getBlock().getNumber());
-//        });
-//
-//        // subscribe all new Txn in one new chaining block
-//        web3j.transactionFlowable().subscribe(transaction -> {
-//            System.out.println("Amount : " + transaction.getValue());
-//        });
+        web3j.pendingTransactionFlowable().subscribe(tx -> {
+            System.out.println("Transfer : ");
+            System.out.println("From : " + tx.getFrom());
+            System.out.println("To : " + tx.getTo());
+            System.out.println("Amount : " + tx.getValue());
+        });
+
+        // subscribe all new block
+        web3j.blockFlowable(false).subscribe(ethBlock -> {
+            System.out.println("New Block Num : " + ethBlock.getBlock().getNumber());
+        });
+
+        // subscribe all new Txn in one new chaining block
+        web3j.transactionFlowable().subscribe(transaction -> {
+            System.out.println("Amount : " + transaction.getValue());
+        });
 
         // subscribe the eth-logs
-//        web3j.ethLogFlowable(new EthFilter(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST, Collections.emptyList()))
-//                .subscribe(log -> {
-//                    System.out.println();
-//                    System.out.println("Log - Block Num : " + log.getBlockNumber());
-//                    System.out.println();
-//                });
+        web3j.ethLogFlowable(new EthFilter(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST, Collections.emptyList()))
+                .subscribe(log -> {
+                    System.out.println();
+                    System.out.println("Log - Block Num : " + log.getBlockNumber());
+                    System.out.println();
+                });
 
-//        Event transferEvent = new Event("Transfer",
-//                Arrays.asList(
-//                        // from
-//                        TypeReference.create(Address.class),
-//                        // to
-//                        TypeReference.create(Address.class),
-//                        // amount / tokenId
-//                        TypeReference.create(Uint256.class)
-//                ));
-//        // encode event to topic
-//        String transferTopic = EventEncoder.encode(transferEvent);
-//        // add topic into filter
-//        EthFilter ethFilter = new EthFilter(new DefaultBlockParameterNumber(89L), new DefaultBlockParameterNumber(89L), Collections.emptyList());
-//        ethFilter.addOptionalTopics(transferTopic);
-//        // send request
-//        EthLog logResult = web3j.ethGetLogs(ethFilter).send();
-//        System.out.println(logResult);
+        Event transferEvent = new Event("Transfer",
+                Arrays.asList(
+                        // from
+                        TypeReference.create(Address.class),
+                        // to
+                        TypeReference.create(Address.class),
+                        // amount / tokenId
+                        TypeReference.create(Uint256.class)
+                ));
+        // encode event to topic
+        String transferTopic = EventEncoder.encode(transferEvent);
+        // add topic into filter
+        EthFilter ethFilter = new EthFilter(new DefaultBlockParameterNumber(89L), new DefaultBlockParameterNumber(89L), Collections.emptyList());
+        ethFilter.addOptionalTopics(transferTopic);
+        // send request
+        EthLog logResult = web3j.ethGetLogs(ethFilter).send();
+        System.out.println(logResult);
 
 
 //        try {
