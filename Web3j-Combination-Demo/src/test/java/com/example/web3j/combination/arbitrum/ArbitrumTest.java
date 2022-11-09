@@ -114,13 +114,10 @@ public class ArbitrumTest {
 
     @Test
     public void subscribeBlockTest() throws IOException, InterruptedException {
-
         WebSocketService socketService = new WebSocketService(web3_wss, false);
         Web3j wss = Web3j.build(socketService);
-
         // start connect
         socketService.connect();
-
         // listen to specific address's txn (also slow)
         wss.blockFlowable(true).subscribe(block -> {
             List<EthBlock.TransactionResult> transactions = block.getBlock().getTransactions();
@@ -135,10 +132,6 @@ public class ArbitrumTest {
                 }
             });
         });
-
-
         Thread.currentThread().join();
     }
-
-
 }
