@@ -1,14 +1,16 @@
 package com.example.web3j.combination.wss;
 
+import com.alibaba.fastjson2.JSONObject;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.EventEncoder;
 import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Event;
 import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Event;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.protocol.core.methods.response.EthLog;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +38,7 @@ public class OkhttpWssTest {
     private static final String wssPolygon = "wss://polygon-mumbai.g.alchemy.com/v2/0AvU4bENYqbsSI6km3CEwrgBbyFY_NZX";
 
 
-    private final static Request request = new Request.Builder().url(wssGoerli).build();
+    private final static Request request = new Request.Builder().url(wssPolygon).build();
 
 
     @Test
@@ -78,7 +80,12 @@ public class OkhttpWssTest {
 
             @Override
             public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
-                System.out.println("text: " + text);
+                System.out.println("received event: " + text);
+                if (JSONObject.parseObject(text).getOrDefault("method", "").equals("eth_subscription")) {
+                    JSONObject contractEventJsonObj = JSONObject.parseObject(text).getJSONObject("params").getJSONObject("result");
+                    EthLog.LogObject logObject = JSONObject.parseObject(contractEventJsonObj.toJSONString(), EthLog.LogObject.class);
+                    System.out.println("txnHash:" + logObject.getTransactionHash());
+                }
             }
 
             @Override
