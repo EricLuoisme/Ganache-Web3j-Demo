@@ -18,6 +18,7 @@ import org.web3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Locale;
+import java.util.Scanner;
 
 /**
  * @author Roylic
@@ -49,8 +50,13 @@ public class EthTransferTest {
 
     @Test
     public void startTransfer() throws IOException {
+
+        Scanner in = new Scanner(System.in);
+        System.out.println("PriKey: ");
+        String priKeyUsing = in.nextLine();
+
         // address exactly the same as ADDRESS_0
-        Credentials credentials = Credentials.create(priKey);
+        Credentials credentials = Credentials.create(priKeyUsing);
 
         // get the next available nonce
         EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(address, DefaultBlockParameterName.LATEST).send();
