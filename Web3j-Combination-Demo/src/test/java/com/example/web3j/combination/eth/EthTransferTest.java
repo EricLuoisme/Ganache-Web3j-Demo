@@ -25,7 +25,7 @@ import java.util.Locale;
 public class EthTransferTest {
 
     private String address = "0xb3E21a30506E0a08279BFEB666029c8dDA889505";
-    private String priKey = "a799c85a9aa523774438da42906b1eba18ce52437d4e98a75f911ee9d24fa3c6";
+    private String priKey = "";
 
     public static final Web3j web3j = Web3j.build(new HttpService("https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467"));
 
