@@ -7,6 +7,7 @@ import org.web3j.crypto.RawTransaction;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.EthGetBalance;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.EthTransaction;
@@ -24,10 +25,18 @@ import java.util.Locale;
  */
 public class EthTransferTest {
 
-    private String address = "0xb3E21a30506E0a08279BFEB666029c8dDA889505";
-    private String priKey = "";
+    private String address = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+    private String priKey = "1235b980ac298e1f2228b3b3ca3593df89s07813s231ab0c0879dc6768992a767";
+
 
     public static final Web3j web3j = Web3j.build(new HttpService("https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467"));
+
+
+    @Test
+    public void checkBalance() throws IOException {
+        EthGetBalance send = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
+        System.out.println(send.getBalance());
+    }
 
 
     @Test
