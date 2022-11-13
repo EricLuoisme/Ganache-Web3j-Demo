@@ -7,15 +7,15 @@ import org.web3j.crypto.RawTransaction;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.response.EthGetBalance;
-import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
-import org.web3j.protocol.core.methods.response.EthSendTransaction;
-import org.web3j.protocol.core.methods.response.EthTransaction;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.Transfer;
+import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Locale;
 import java.util.Scanner;
@@ -80,5 +80,18 @@ public class EthTransferTest {
         System.out.println("OnChain txHash: " + ethSendTransaction.getTransactionHash());
     }
 
+    @Test
+    public void startTransfer_Eip1559() throws Exception {
+        Scanner in = new Scanner(System.in);
+        System.out.println("PriKey: ");
+        String priKeyUsing = in.nextLine();
+
+        Credentials credentials = Credentials.create(priKeyUsing);
+        TransactionReceipt transactionReceipt = Transfer.sendFundsEIP1559(web3j, credentials, "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5",
+                new BigDecimal("10086"), Convert.Unit.GWEI,
+                BigInteger.valueOf(8_000_000L), DefaultGasProvider.GAS_LIMIT, BigInteger.valueOf(3_100_000_000L)).send();
+
+        System.out.println();
+    }
 
 }
