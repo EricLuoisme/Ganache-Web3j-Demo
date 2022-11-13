@@ -87,11 +87,12 @@ public class EthTransferTest {
         String priKeyUsing = in.nextLine();
 
         Credentials credentials = Credentials.create(priKeyUsing);
-        TransactionReceipt transactionReceipt = Transfer.sendFundsEIP1559(web3j, credentials, "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5",
-                new BigDecimal("10086"), Convert.Unit.GWEI,
-                BigInteger.valueOf(8_000_000L), DefaultGasProvider.GAS_LIMIT, BigInteger.valueOf(3_100_000_000L)).send();
+        TransactionReceipt transactionReceipt = Transfer.sendFundsEIP1559(web3j, credentials,
+                "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5",
+                new BigDecimal("10086"), Convert.Unit.GWEI, BigInteger.valueOf(21000L),
+                BigInteger.valueOf(2_000_000_000L), BigInteger.valueOf(10_000_000_000L)).send();
 
-        System.out.println();
+        System.out.println(transactionReceipt.getTransactionHash());
     }
 
 }
