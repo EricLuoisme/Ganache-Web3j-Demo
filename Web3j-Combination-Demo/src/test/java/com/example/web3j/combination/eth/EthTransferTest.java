@@ -92,7 +92,7 @@ public class EthTransferTest {
                 new BigDecimal("10086"), Convert.Unit.GWEI, BigInteger.valueOf(21000L),
                 BigInteger.valueOf(2_000_000_000L), BigInteger.valueOf(10_000_000_000L)).send();
 
-        System.out.println(transactionReceipt.getTransactionHash());
+        System.out.println("Transaction hash: " + transactionReceipt.getTransactionHash());
     }
 
 }
