@@ -37,6 +37,69 @@ public class GoerliContractCallingTest {
 
 
     @Test
+    public void decode1155Single() throws IOException {
+
+        long blockHeight = 7962780L;
+
+        // filter for event
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(blockHeight)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(blockHeight)),
+                Collections.emptyList());
+
+        Event transferSingle = new Event("TransferSingle",
+                Arrays.asList(
+                        TypeReference.create(Address.class, true),
+                        TypeReference.create(Address.class, true),
+                        TypeReference.create(Address.class, true),
+                        TypeReference.create(Uint256.class),
+                        TypeReference.create(Uint256.class))
+        );
+
+        // add into filter
+        String topicStr = EventEncoder.encode(transferSingle);
+        filter.addOptionalTopics(topicStr);
+
+        // decode
+        EthLog ethLogResp = web3j.ethGetLogs(filter).send();
+        ethLogResp.getLogs().forEach(ethLog -> {
+            EthLog.LogObject logObject = (EthLog.LogObject) ethLog;
+            List<TypeReference<Type>> nonIndexedParameters = transferSingle.getNonIndexedParameters();
+            List<Type> decode = FunctionReturnDecoder.decode(logObject.getData(), nonIndexedParameters);
+            Uint256 tokenId = (Uint256) decode.get(0);
+
+            Function uriFunc = new Function(
+                    "uri",
+                    Collections.singletonList(tokenId),
+                    Collections.singletonList(TypeReference.create(Utf8String.class))
+            );
+            String encode = FunctionEncoder.encode(uriFunc);
+
+            Transaction reqTxn = Transaction.createEthCallTransaction(logObject.getAddress(), logObject.getAddress(), encode);
+            EthCall callResult = null;
+            try {
+                callResult = web3j.ethCall(reqTxn, DefaultBlockParameterName.LATEST).send();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // decode uri
+            List<Type> uriDecoded = FunctionReturnDecoder.decode(callResult.getValue(), uriFunc.getOutputParameters());
+            Utf8String uri = (Utf8String) uriDecoded.get(0);
+
+            // replace {id} with real token id
+            String url = uri.getValue();
+            System.out.println("raw url -> " + url);
+            url.replaceAll("\\{id}", tokenId.getValue().toString());
+            System.out.println("url -> " + url);
+            System.out.println();
+        });
+
+
+    }
+
+
+    @Test
     public void decode1155Batch() throws IOException {
 
         long blockHeight = 7962506L;
