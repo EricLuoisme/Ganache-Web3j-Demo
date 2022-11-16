@@ -24,7 +24,7 @@ public class RemoteSubscribeTest {
                 DefaultBlockParameterName.LATEST,
                 Collections.emptyList());
 
-        filter.addOptionalTopics(EthLogConstants.EthEventTopics.getTopicStr(EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_20_721));
+        filter.addOptionalTopics(EthLogConstants.EthEventTopics.getTopicStr(EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH));
 
         System.out.println("Start listening:\n");
 
