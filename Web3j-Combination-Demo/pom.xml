@@ -32,7 +32,7 @@
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>core</artifactId>
-            <version>5.0.0</version>
+            <version>4.9.5</version>
         </dependency>
 
         <!-- Web3j for Eth 2.0 -->
