@@ -3,7 +3,9 @@ package com.example.web3j.combination.eth;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.*;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Bool;
+import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.Hash;
@@ -16,7 +18,6 @@ import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.RawTransactionManager;
 import org.web3j.tx.TransactionManager;
 import org.web3j.tx.Transfer;
-import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
 import org.web3j.utils.Numeric;
 
@@ -127,9 +128,10 @@ public class EthTransferTest {
         long chainId = 5; // for Goerli
         BigInteger maxPriorityFeePerGas = BigInteger.valueOf(5_000_000_000L);
         BigInteger maxFeePerGas = BigInteger.valueOf(50_000_000_000L);
-        BigInteger gasLimit = BigInteger.valueOf(50_000L);
+        BigInteger gasLimit = BigInteger.valueOf(100_000L);
         String contract = "0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc";
-        BigInteger value = BigInteger.valueOf(10L);
+        // for interact with contract, value have to input 0
+        BigInteger value = BigInteger.valueOf(0L);
 
         // async transfer
         Credentials credentials = Credentials.create(priKeyUsing);
@@ -137,7 +139,13 @@ public class EthTransferTest {
         EthSendTransaction ethSendTransaction = tm.sendEIP1559Transaction(chainId, maxPriorityFeePerGas, maxFeePerGas, gasLimit, contract, data, value);
         String result = ethSendTransaction.getResult();
 
+        // 0x767bea249ac11c3093e88e24e159d0205e48f25f0064e072014eee28446a8489
         System.out.println("Transaction hash: " + result);
+    }
+
+    public static void main(String[] args) throws Exception {
+        EthTransferTest test = new EthTransferTest();
+        test.startTransfer_Erc20_Eip1559_Async();
     }
 
 }
