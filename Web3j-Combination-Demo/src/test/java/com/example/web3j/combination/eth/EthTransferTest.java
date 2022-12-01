@@ -118,7 +118,7 @@ public class EthTransferTest {
         // data for interacting with contract's specific method
         // for method 'transfer', only have two input params
         Function transfer = new Function("transfer",
-                Arrays.asList(new Address("0x36F0A040C8e60974d1F34b316B3e956f509Db7e5"), new Uint256(10L)),
+                Arrays.asList(new Address("0x36F0A040C8e60974d1F34b316B3e956f509Db7e5"), new Uint256(10_000_000_000_000_000L)),
                 Collections.singletonList(TypeReference.create(Bool.class)));
 
         // encode the data field
