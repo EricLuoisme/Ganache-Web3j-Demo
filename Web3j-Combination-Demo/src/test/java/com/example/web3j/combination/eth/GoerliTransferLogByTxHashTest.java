@@ -11,7 +11,10 @@ import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthLog;
+import org.web3j.protocol.core.methods.response.EthTransaction;
+import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Convert;
 
@@ -35,6 +38,16 @@ public class GoerliTransferLogByTxHashTest {
     @Test
     public void getLogByTxHashTest() throws IOException {
 
+        // find txn first
+        EthTransaction txn = web3j.ethGetTransactionByHash("0xd1feaef0379bbba0045ea8e2925877bc05ff1527d84399860a040ae4197c492e").send();
+        Transaction transaction = txn.getTransaction().get();
+
+        // get block for timestamp
+        EthBlock ethBlock = web3j.ethGetBlockByHash(transaction.getBlockHash(), false).send();
+        // timestamp in second
+        BigInteger timestamp = ethBlock.getBlock().getTimestamp();
+
+
         Event transfer = new Event("Transfer",
                 Arrays.asList(
                         TypeReference.create(Address.class, true),
@@ -44,14 +57,14 @@ public class GoerliTransferLogByTxHashTest {
         );
 
         EthFilter ethFilter = new EthFilter(
-                DefaultBlockParameter.valueOf(new BigInteger("8052688")),
-                DefaultBlockParameter.valueOf(new BigInteger("8052688")),
+                DefaultBlockParameter.valueOf(transaction.getBlockNumber()),
+                DefaultBlockParameter.valueOf(transaction.getBlockNumber()),
                 "0xba62bcfcaafc6622853cca2be6ac7d845bc0f2dc");
         ethFilter.addSingleTopic(EventEncoder.encode(transfer));
 
         EthLog send = web3j.ethGetLogs(ethFilter).send();
         send.getLogs().stream()
-                .filter(sinEthLog -> ((EthLog.LogObject) sinEthLog).getTransactionHash().equals("0xd1feaef0379bbba0045ea8e2925877bc05ff1527d84399860a040ae4197c492e"))
+                .filter(sinEthLog -> ((EthLog.LogObject) sinEthLog).getTransactionHash().equals(transaction.getHash()))
                 .forEach(sinEthLog -> {
                     EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
                     List<String> topics = curLogObj.getTopics();
