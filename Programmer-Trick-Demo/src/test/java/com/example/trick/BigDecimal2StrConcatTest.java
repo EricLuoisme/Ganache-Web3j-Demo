@@ -84,6 +84,7 @@ public class BigDecimal2StrConcatTest {
         stopWatch.stop();
         stopWatch.start("String");
 
+        // using string concat is much more quickly then using BigDecimal summation
         String firstHalf = pureAmtCryptoTotal.toPlainString();
         String lastHalf = nonceVal.toPlainString();
         String amtCryptoTotalStr = firstHalf + lastHalf.substring(8);
