@@ -151,9 +151,10 @@ public class EthTransferTest {
         System.out.println("Transaction hash: " + result);
     }
 
+    // not working for contract interaction
     public static void startTransfer_Erc20_Eip1559_Raw() throws Exception {
 
-        String tokenTransfer = "0.001003000000002417";
+        String tokenTransfer = "22.362200000000003077";
         long longVal = new BigDecimal(tokenTransfer).multiply(BigDecimal.TEN.pow(18)).longValue();
 
         Scanner in = new Scanner(System.in);
@@ -185,7 +186,7 @@ public class EthTransferTest {
         BigInteger value = BigInteger.valueOf(0L);
 
         // async transfer
-        RawTransaction rawTransaction = RawTransaction.createEtherTransaction(chainId, nonce, gasLimit, "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5", value, maxPriorityFeePerGas, maxFeePerGas);
+        RawTransaction rawTransaction = RawTransaction.createEtherTransaction(chainId, nonce, gasLimit, contract, value, maxPriorityFeePerGas, maxFeePerGas);
         byte[] signedMsg = TransactionEncoder.signMessage(rawTransaction, credentials);
         String hexValue = Numeric.toHexString(signedMsg);
 
