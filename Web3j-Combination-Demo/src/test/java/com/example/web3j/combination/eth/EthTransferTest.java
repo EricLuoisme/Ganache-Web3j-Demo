@@ -109,8 +109,16 @@ public class EthTransferTest {
         System.out.println("Transaction hash: " + transactionReceipt.getTransactionHash());
     }
 
-    @Test
-    public void startTransfer_Erc20_Eip1559_Async() throws Exception {
+
+    public static void main(String[] args) throws Exception {
+        startTransfer_Erc20_Eip1559_Async();
+    }
+
+    public static void startTransfer_Erc20_Eip1559_Async() throws Exception {
+
+        String tokenTransfer = "0.001003000000002417";
+        long longVal = new BigDecimal(tokenTransfer).multiply(BigDecimal.TEN.pow(18)).longValue();
+
         Scanner in = new Scanner(System.in);
         System.out.println("PriKey: ");
         String priKeyUsing = in.nextLine();
@@ -118,7 +126,7 @@ public class EthTransferTest {
         // data for interacting with contract's specific method
         // for method 'transfer', only have two input params
         Function transfer = new Function("transfer",
-                Arrays.asList(new Address("0x36F0A040C8e60974d1F34b316B3e956f509Db7e5"), new Uint256(10_000_000_000_000_000L)),
+                Arrays.asList(new Address("0x36F0A040C8e60974d1F34b316B3e956f509Db7e5"), new Uint256(longVal)),
                 Collections.singletonList(TypeReference.create(Bool.class)));
 
         // encode the data field
@@ -139,13 +147,8 @@ public class EthTransferTest {
         EthSendTransaction ethSendTransaction = tm.sendEIP1559Transaction(chainId, maxPriorityFeePerGas, maxFeePerGas, gasLimit, contract, data, value);
         String result = ethSendTransaction.getResult();
 
-        // 0x767bea249ac11c3093e88e24e159d0205e48f25f0064e072014eee28446a8489
+        // 0x0d81dfdda79ce172d33dc38732cfb8f2bdb1d1837d248ee7ba13b17d2e8c5c3d
         System.out.println("Transaction hash: " + result);
-    }
-
-    public static void main(String[] args) throws Exception {
-        EthTransferTest test = new EthTransferTest();
-        test.startTransfer_Erc20_Eip1559_Async();
     }
 
 }
