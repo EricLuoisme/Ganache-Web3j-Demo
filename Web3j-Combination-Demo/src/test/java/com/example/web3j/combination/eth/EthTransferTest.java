@@ -111,7 +111,7 @@ public class EthTransferTest {
 
 
     public static void main(String[] args) throws Exception {
-        startTransfer_Erc20_Eip1559_Async();
+        startTransfer_Erc20_Eip1559_Raw();
     }
 
     public static void startTransfer_Erc20_Eip1559_Async() throws Exception {
@@ -149,6 +149,51 @@ public class EthTransferTest {
 
         // 0x0d81dfdda79ce172d33dc38732cfb8f2bdb1d1837d248ee7ba13b17d2e8c5c3d
         System.out.println("Transaction hash: " + result);
+    }
+
+    public static void startTransfer_Erc20_Eip1559_Raw() throws Exception {
+
+        String tokenTransfer = "0.001003000000002417";
+        long longVal = new BigDecimal(tokenTransfer).multiply(BigDecimal.TEN.pow(18)).longValue();
+
+        Scanner in = new Scanner(System.in);
+        System.out.println("PriKey: ");
+        String priKeyUsing = in.nextLine();
+        Credentials credentials = Credentials.create(priKeyUsing);
+
+        // data for interacting with contract's specific method
+        // for method 'transfer', only have two input params
+        Function transfer = new Function("transfer",
+                Arrays.asList(new Address("0x36F0A040C8e60974d1F34b316B3e956f509Db7e5"), new Uint256(longVal)),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+
+        // encode the data field
+        String data = FunctionEncoder.encode(transfer);
+
+        // get the next available nonce
+        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST).send();
+        BigInteger nonce = ethGetTransactionCount.getTransactionCount();
+
+
+        // another stuff need to be filled
+        long chainId = 5; // for Goerli
+        BigInteger maxPriorityFeePerGas = BigInteger.valueOf(5_000_000_000L);
+        BigInteger maxFeePerGas = BigInteger.valueOf(50_000_000_000L);
+        BigInteger gasLimit = BigInteger.valueOf(100_000L);
+        String contract = "0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc";
+        // for interact with contract, value have to input 0
+        BigInteger value = BigInteger.valueOf(0L);
+
+        // async transfer
+        RawTransaction rawTransaction = RawTransaction.createEtherTransaction(chainId, nonce, gasLimit, "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5", value, maxPriorityFeePerGas, maxFeePerGas);
+        byte[] signedMsg = TransactionEncoder.signMessage(rawTransaction, credentials);
+        String hexValue = Numeric.toHexString(signedMsg);
+
+        // 0x0d81dfdda79ce172d33dc38732cfb8f2bdb1d1837d248ee7ba13b17d2e8c5c3d
+        String txHash = Hash.sha3(hexValue);
+        System.out.println("OffChain txHash: " + txHash);
+        EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
+        System.out.println("OnChain txHash: " + ethSendTransaction.getTransactionHash());
     }
 
 }
