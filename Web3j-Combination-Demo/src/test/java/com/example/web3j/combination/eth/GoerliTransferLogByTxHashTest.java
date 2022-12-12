@@ -229,8 +229,8 @@ public class GoerliTransferLogByTxHashTest {
                 .forEach(sinEthLog -> {
                     EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
                     List<String> topics = curLogObj.getTopics();
-                    String fromAddress = topics.get(1);
-                    String toAddress = topics.get(2);
+                    String fromAddress = new Address(topics.get(1)).toString();
+                    String toAddress = new Address(topics.get(2)).toString();
                     List<Type> decode = FunctionReturnDecoder.decode(curLogObj.getData(), transfer.getNonIndexedParameters());
                     Uint256 val256 = (Uint256) decode.get(0);
 
@@ -259,9 +259,9 @@ public class GoerliTransferLogByTxHashTest {
                         Uint8 decimals = (Uint8) decoded.get(0);
                         System.out.println("Decimal of the ERC-20: " + decimals.getValue());
 
-                        // from transaction + receipt + decimal
+                        // from transaction + receipt
                         System.out.println("Transaction Fee: " + new BigDecimal(transactionFee)
-                                .divide(BigDecimal.TEN.pow(decimals.getValue().intValue())).toPlainString());
+                                .divide(BigDecimal.TEN.pow(18)).toPlainString());
 
                         System.out.println();
                         System.out.println();
