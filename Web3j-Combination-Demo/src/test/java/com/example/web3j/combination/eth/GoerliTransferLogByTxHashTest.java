@@ -190,6 +190,7 @@ public class GoerliTransferLogByTxHashTest {
         CompletableFuture<EthTransaction> txnFuture = web3j.ethGetTransactionByHash(txHash).sendAsync();
         EthTransaction ethTransaction = txnFuture.get();
         Transaction transaction = ethTransaction.getTransaction().get();
+        System.out.println("Contract Address: " + transaction.getTo());
 
         // get decimal
         Function decimalFunc = new Function("decimals", Collections.emptyList(),

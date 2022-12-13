@@ -155,7 +155,7 @@ public class EthTransferTest {
     // not working for contract interaction
     public static void startTransfer_Erc20_Eip1559_Raw() throws Exception {
 
-        String tokenTransfer = "0.016816000000006528";
+        String tokenTransfer = "0.656929000000002091";
         long longVal = new BigDecimal(tokenTransfer).multiply(BigDecimal.TEN.pow(18)).longValue();
 
         Scanner in = new Scanner(System.in);
