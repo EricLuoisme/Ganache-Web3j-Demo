@@ -238,7 +238,7 @@ public class GoerliTransferLogByTxHashTest {
                     // from logs
                     System.out.println("From Address: " + fromAddress);
                     System.out.println("To Address: " + toAddress);
-                    System.out.println("Token Transferred: " + Convert.fromWei(val256.getValue().toString(), Convert.Unit.ETHER));
+                    System.out.println("Token Transferred: " + val256.getValue().toString());
 
                     try {
                         // from block
