@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutionException;
  * @author Roylic
  * 2022/12/1
  */
-public class GoerliTransferLogByTxHashTest {
+public class EthTransferLogByTxHashTest {
 
     public static final String INFURA_GOERLI_NODE_HTTP_LINK
             = "https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467";
@@ -273,6 +273,11 @@ public class GoerliTransferLogByTxHashTest {
                     }
 
                 });
+    }
+
+
+    public void checkForNativeTokeSupport() {
+        
     }
 
 }
