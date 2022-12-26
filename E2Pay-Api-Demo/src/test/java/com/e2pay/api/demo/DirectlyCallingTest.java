@@ -16,7 +16,7 @@ public class DirectlyCallingTest {
     public void md5Test() throws NoSuchAlgorithmException {
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-        String test = "123456";
+        String test = "270320";
 
         md5.update(test.getBytes(StandardCharsets.UTF_8));
         byte[] digest = md5.digest();
