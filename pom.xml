@@ -11,7 +11,6 @@
         <module>Raw-Lightning-Demo</module>
         <module>Web3j-Combination-Demo</module>
         <module>OpenSea-Nft-Demo</module>
-        <module>E2Pay-Api-Demo</module>
         <module>Programmer-Trick-Demo</module>
     </modules>
 
