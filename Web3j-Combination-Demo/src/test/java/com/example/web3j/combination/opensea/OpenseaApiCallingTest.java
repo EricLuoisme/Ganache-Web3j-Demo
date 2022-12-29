@@ -1,4 +1,4 @@
-package com.example.opensea;
+package com.example.web3j.combination.opensea;
 
 
 import com.alibaba.fastjson2.JSONObject;
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class ApiCallingTest {
+public class OpenseaApiCallingTest {
 
     private static final String OPENSEA_BASE_URL = "https://api.opensea.io/api/v1/";
     private static final String OPENSEA_TESTNET_BASE_URL = "https://testnets-api.opensea.io/api/v1/";
