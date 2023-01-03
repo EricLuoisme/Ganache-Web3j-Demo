@@ -23,10 +23,7 @@ import org.web3j.utils.Convert;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -87,7 +84,6 @@ public class EthTransferLogByTxHashTest {
 
 
     }
-
 
     @Test
     public void getLogByTxHashReceiptTest() throws IOException {
@@ -169,6 +165,30 @@ public class EthTransferLogByTxHashTest {
             e.printStackTrace();
         }
 
+    }
+
+    @Test
+    public void getNativeTxnTest() throws IOException {
+
+        String txHash = "0x49e75311432d87747841c7de654bd2df973464ed90c3945e2e4974d8002810c1";
+        Transaction transaction = web3j.ethGetTransactionByHash(txHash).send().getTransaction().get();
+        TransactionReceipt transactionReceipt = web3j.ethGetTransactionReceipt(txHash).send().getTransactionReceipt().get();
+        EthBlock ethBlock = web3j.ethGetBlockByHash(transactionReceipt.getBlockHash(), false).send();
+        BigInteger gasUsed = transactionReceipt.getGasUsed();
+        BigInteger transactionFee = transaction.getGasPrice().multiply(gasUsed);
+
+        String fromAddress = transaction.getFrom();
+        String toAddress = transaction.getTo();
+        BigDecimal txnVal = Convert.fromWei(transaction.getValue().toString(), Convert.Unit.ETHER);
+
+        System.out.println("From Address: " + fromAddress);
+        System.out.println("To Address: " + toAddress);
+        System.out.println("Native Val: " + txnVal);
+        System.out.println("Block Height: " + ethBlock.getBlock().getNumber());
+        System.out.println("Block Hash: " + ethBlock.getBlock().getHash());
+        System.out.println("Block Time: " + ethBlock.getBlock().getTimestamp());
+        System.out.println("Transaction Fee: " + new BigDecimal(transactionFee).divide(BigDecimal.TEN.pow(18)).toPlainString());
+        System.out.println();
     }
 
 
@@ -275,9 +295,5 @@ public class EthTransferLogByTxHashTest {
                 });
     }
 
-
-    public void checkForNativeTokeSupport() {
-        
-    }
 
 }
