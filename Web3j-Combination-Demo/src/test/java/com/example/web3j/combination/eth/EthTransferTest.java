@@ -35,8 +35,8 @@ import java.util.Scanner;
  */
 public class EthTransferTest {
 
-    private String address = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
-    private String priKey = "1235b980ac298e1f2228b3b3ca3593df89s07813s231ab0c0879dc6768992a767";
+    private static final String address = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+    private static final String priKey = "1235b980ac298e1f2228b3b3ca3593df89s07813s231ab0c0879dc6768992a767";
 
 
     public static final Web3j web3j = Web3j.build(new HttpService("https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467"));
@@ -61,38 +61,6 @@ public class EthTransferTest {
         System.out.println("GasPrice: " + gasPrice.toString() + " GWei");
     }
 
-
-    @Test
-    public void startTransfer() throws IOException {
-
-        Scanner in = new Scanner(System.in);
-        System.out.println("PriKey: ");
-        String priKeyUsing = in.nextLine();
-
-        // address exactly the same as ADDRESS_0
-        Credentials credentials = Credentials.create(priKeyUsing);
-
-        // get the next available nonce
-        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(address, DefaultBlockParameterName.LATEST).send();
-        BigInteger nonce = ethGetTransactionCount.getTransactionCount();
-
-        BigInteger gasPrice = Convert.toWei("50", Convert.Unit.GWEI).toBigInteger();
-        BigInteger gasLimit = new BigInteger("30000");
-        String toAddress = address.toLowerCase(Locale.ROOT);
-        BigInteger value = Convert.toWei("0.000345", Convert.Unit.ETHER).toBigInteger();
-
-        // create our transaction
-        RawTransaction rawTransaction = RawTransaction.createEtherTransaction(nonce, gasPrice, gasLimit, toAddress, value);
-
-        // sign & send our transaction
-        byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
-        String hexValue = Numeric.toHexString(signedMessage);
-
-        String txHash = Hash.sha3(hexValue);
-        System.out.println("OffChain txHash: " + txHash);
-        EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
-        System.out.println("OnChain txHash: " + ethSendTransaction.getTransactionHash());
-    }
 
     @Test
     public void startTransfer_Eip1559_Sync() throws Exception {
@@ -149,13 +117,13 @@ public class EthTransferTest {
 
 
     public static void main(String[] args) throws Exception {
-        startTransfer_Erc20_Eip1559_Raw();
+//        startTransfer_Erc20_Eip1559_Raw();
+        startTransfer_Native();
     }
 
-    // not working for contract interaction
     public static void startTransfer_Erc20_Eip1559_Raw() throws Exception {
 
-        String tokenTransfer = "7.956000000000006044";
+        String tokenTransfer = "0.132607000000005645";
         long longVal = new BigDecimal(tokenTransfer).multiply(BigDecimal.TEN.pow(18)).longValue();
 
         Scanner in = new Scanner(System.in);
@@ -192,6 +160,37 @@ public class EthTransferTest {
         String hexValue = Numeric.toHexString(signedMsg);
 
         // 0x0d81dfdda79ce172d33dc38732cfb8f2bdb1d1837d248ee7ba13b17d2e8c5c3d
+        String txHash = Hash.sha3(hexValue);
+        System.out.println("OffChain txHash: " + txHash);
+        EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
+        System.out.println("OnChain txHash: " + ethSendTransaction.getTransactionHash());
+    }
+
+    public static void startTransfer_Native() throws IOException {
+
+        Scanner in = new Scanner(System.in);
+        System.out.println("PriKey: ");
+        String priKeyUsing = in.nextLine();
+
+        // address exactly the same as ADDRESS_0
+        Credentials credentials = Credentials.create(priKeyUsing);
+
+        // get the next available nonce
+        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(address, DefaultBlockParameterName.LATEST).send();
+        BigInteger nonce = ethGetTransactionCount.getTransactionCount();
+
+        BigInteger gasPrice = Convert.toWei("50", Convert.Unit.GWEI).toBigInteger();
+        BigInteger gasLimit = new BigInteger("30000");
+        String toAddress = address.toLowerCase(Locale.ROOT);
+        BigInteger value = Convert.toWei("0.000205000000001416", Convert.Unit.ETHER).toBigInteger();
+
+        // create our transaction
+        RawTransaction rawTransaction = RawTransaction.createEtherTransaction(nonce, gasPrice, gasLimit, toAddress, value);
+
+        // sign & send our transaction
+        byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
+        String hexValue = Numeric.toHexString(signedMessage);
+
         String txHash = Hash.sha3(hexValue);
         System.out.println("OffChain txHash: " + txHash);
         EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
