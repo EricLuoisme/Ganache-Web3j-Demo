@@ -50,7 +50,7 @@ public class PolygonNftTest {
 
 
     @Test
-    public void getNftTokenUrl() throws IOException {
+    public void getOpenSeaNftTokenUrl() throws IOException {
         String contract = "0x2953399124F0cBB46d2CbACD8A89cF0599974963";
         BigInteger tokenId = new BigInteger("1867");
 
@@ -58,6 +58,37 @@ public class PolygonNftTest {
         Uint256 tokenId256 = new Uint256(tokenId);
         Function tokenUriFunc = new Function(
                 "uri",
+                Collections.singletonList(tokenId256),
+                Collections.singletonList(TypeReference.create(Utf8String.class))
+        );
+        String encode = FunctionEncoder.encode(tokenUriFunc);
+        System.out.println("ERC-721-Code >>> " + encode.substring(0, 10));
+
+        // call contract for url
+        Transaction reqTxn = Transaction.createEthCallTransaction(contract, contract, encode);
+        EthCall callResult = web3j.ethCall(reqTxn, DefaultBlockParameterName.LATEST).send();
+        List<Type> tokenUriDecoded = FunctionReturnDecoder.decode(callResult.getValue(), tokenUriFunc.getOutputParameters());
+
+        // decode token url
+        Utf8String tokenBaseUrl = (Utf8String) tokenUriDecoded.get(0);
+        System.out.println("ERC-721 token base uri >>> " + tokenBaseUrl.getValue());
+
+        // replace {id} with real id, for this OPEN_SEA's contract, we need to convert tokenId to hex
+        System.out.println("Token Id in hex >>> " + Numeric.toHexStringNoPrefix(tokenId));
+
+        // insert
+        System.out.println("Accessible token url >>> " + tokenBaseUrl.getValue().replace("{id}", Numeric.toHexStringNoPrefix(tokenId)));
+    }
+
+    @Test
+    public void getLuckingDayNftTokenUrl() throws IOException {
+        String contract = "0x50a289670273FFbD841beBc3a515DD968d65971A";
+        BigInteger tokenId = new BigInteger("1867");
+
+        // construct for func + params
+        Uint256 tokenId256 = new Uint256(tokenId);
+        Function tokenUriFunc = new Function(
+                "tokenUri",
                 Collections.singletonList(tokenId256),
                 Collections.singletonList(TypeReference.create(Utf8String.class))
         );
