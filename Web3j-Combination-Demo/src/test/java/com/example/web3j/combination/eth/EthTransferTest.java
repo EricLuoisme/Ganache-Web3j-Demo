@@ -182,7 +182,7 @@ public class EthTransferTest {
         BigInteger gasPrice = Convert.toWei("50", Convert.Unit.GWEI).toBigInteger();
         BigInteger gasLimit = new BigInteger("30000");
         String toAddress = address.toLowerCase(Locale.ROOT);
-        BigInteger value = Convert.toWei("0.000205000000001416", Convert.Unit.ETHER).toBigInteger();
+        BigInteger value = Convert.toWei("0.000016000000001972", Convert.Unit.ETHER).toBigInteger();
 
         // create our transaction
         RawTransaction rawTransaction = RawTransaction.createEtherTransaction(nonce, gasPrice, gasLimit, toAddress, value);
