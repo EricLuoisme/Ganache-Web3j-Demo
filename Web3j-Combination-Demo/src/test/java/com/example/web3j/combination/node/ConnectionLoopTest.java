@@ -31,7 +31,7 @@ public class ConnectionLoopTest {
             }
             Web3ClientVersion web3ClientVersion = null;
             try {
-                EthGetBalance send = web3j.ethGetBalance("0xEd9dd2a4F4455C0B42b053343F74Af2F926537ae", DefaultBlockParameterName.LATEST).send();
+                EthGetBalance send = web3j.ethGetBalance("", DefaultBlockParameterName.LATEST).send();
                 System.out.println(send.getBalance());
                 success++;
             } catch (IOException e) {
