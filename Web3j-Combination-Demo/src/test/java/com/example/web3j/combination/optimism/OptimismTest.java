@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Optimism
+ * Optimism, gasPrice only available on Mainnet
  *
  * @author Roylic
  * 2022/9/23

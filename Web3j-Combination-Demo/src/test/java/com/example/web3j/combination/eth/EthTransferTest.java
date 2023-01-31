@@ -117,13 +117,13 @@ public class EthTransferTest {
 
 
     public static void main(String[] args) throws Exception {
-//        startTransfer_Erc20_Eip1559_Raw();
-        startTransfer_Native();
+        startTransfer_Erc20_Eip1559_Raw();
+//        startTransfer_Native();
     }
 
     public static void startTransfer_Erc20_Eip1559_Raw() throws Exception {
 
-        String tokenTransfer = "0.132607000000005645";
+        String tokenTransfer = "0.2025730000000068";
         long longVal = new BigDecimal(tokenTransfer).multiply(BigDecimal.TEN.pow(18)).longValue();
 
         Scanner in = new Scanner(System.in);
