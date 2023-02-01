@@ -123,7 +123,7 @@ public class EthTransferTest {
 
     public static void startTransfer_Erc20_Eip1559_Raw() throws Exception {
 
-        String tokenTransfer = "0.2025730000000068";
+        String tokenTransfer = "0.202573000000001433";
         long longVal = new BigDecimal(tokenTransfer).multiply(BigDecimal.TEN.pow(18)).longValue();
 
         Scanner in = new Scanner(System.in);
