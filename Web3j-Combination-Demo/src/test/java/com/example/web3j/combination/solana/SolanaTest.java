@@ -3,17 +3,21 @@ package com.example.web3j.combination.solana;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.example.web3j.combination.solana.dto.AssetChanging;
 import com.example.web3j.combination.solana.fullBlock.BlockResult;
+import com.example.web3j.combination.solana.fullBlock.FullBlockDecHandler;
 import com.example.web3j.combination.solana.fullBlock.Txn;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.StopWatch;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -56,6 +60,11 @@ public class SolanaTest {
     @Test
     public void fullBlockDecoding() throws IOException {
 
+        StopWatch stopWatch = new StopWatch("Full Block Decoding");
+
+
+        stopWatch.start("JsonRpc Request");
+
         String pureTxnBlockHeight = "192792360";
         String tokenTxnBlockHeight = "192792378";
 
@@ -68,8 +77,12 @@ public class SolanaTest {
                 .addHeader("Content-Type", "application/json")
                 .build();
         Response response = okHttpClient.newCall(request).execute();
+        stopWatch.stop();
 
+
+        stopWatch.start("Parsing Obj");
         JSONObject respObj = JSONObject.parseObject(response.body().string());
+
 
         // 1. parse & filter for only caring txns
         ObjectMapper om = new ObjectMapper();
@@ -94,18 +107,25 @@ public class SolanaTest {
             }
         });
         blockResult.setTransactions(txns);
+        stopWatch.stop();
 
 
         System.out.println("Block Height: " + blockResult.getBlockHeight());
         System.out.println("Block Time: " + blockResult.getBlockHeight());
         System.out.println("Block Hash: " + blockResult.getBlockHeight());
 
+        stopWatch.start("Filter + Decoding");
 
         List<Txn> caredTxn = blockResult.getTransactions().stream()
                 .filter(txn -> txn.getTransaction().getMessage().getAccountKeys().contains(ADDRESS))
                 .collect(Collectors.toList());
 
-        System.out.println(caredTxn);
+        // decoding handler
+        Map<String, AssetChanging> assetDifInTxn = FullBlockDecHandler.getAssetDifInTxn(caredTxn.get(0));
+
+        System.out.println(JSON.toJSONString(assetDifInTxn.get(ADDRESS)));
+        stopWatch.stop();
+        System.out.println(stopWatch);
     }
 
     private static void callAndPrint(String jsonMsg) throws IOException {

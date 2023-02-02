@@ -32,7 +32,7 @@ public final class FullBlockDecHandler {
         Map<String, TokenBalanceDif> tokenChangingMap = fillAddressTokenBalanceChangingMap(accountKeys, meta, txnHash);
 
         // construct balance map
-        return fillAddressBalanceChangingMap(accountKeys, meta, tokenChangingMap);
+        return fillAddressBalanceChangingMap(accountKeys, meta, txnHash, tokenChangingMap);
     }
 
     /**
@@ -62,14 +62,17 @@ public final class FullBlockDecHandler {
         accountKeys.forEach(account -> {
             Meta.TokenBalance preTokenBalance = preTokenBalanceMap.get(account);
             Meta.TokenBalance postTokenBalance = postTokenBalanceMap.get(account);
+            if (null == preTokenBalance && null == postTokenBalance) {
+                return;
+            }
             TokenBalanceDif singleTokenBalanceDif = TokenBalanceDif.builder()
                     .owner(account)
-                    .programId(preTokenBalance.getProgramId())
-                    .preRawTokenAmt(preTokenBalance.getUiTokenAmount().getAmount())
-                    .preTokenAmt(preTokenBalance.getUiTokenAmount().getUiAmountString())
-                    .postRawTokenAmt(postTokenBalance.getUiTokenAmount().getAmount())
-                    .postTokenAmt(postTokenBalance.getUiTokenAmount().getUiAmountString())
-                    .tokenDecimal(preTokenBalance.getUiTokenAmount().getDecimals())
+                    .programId(null == preTokenBalance ? postTokenBalance.getProgramId() : preTokenBalance.getProgramId())
+                    .preRawTokenAmt(null == preTokenBalance ? "" : preTokenBalance.getUiTokenAmount().getAmount())
+                    .preTokenAmt(null == preTokenBalance ? "" : preTokenBalance.getUiTokenAmount().getUiAmountString())
+                    .postRawTokenAmt(null == postTokenBalance ? "" : postTokenBalance.getUiTokenAmount().getAmount())
+                    .postTokenAmt(null == postTokenBalance ? "" : postTokenBalance.getUiTokenAmount().getUiAmountString())
+                    .tokenDecimal(null == preTokenBalance ? postTokenBalance.getUiTokenAmount().getDecimals() : preTokenBalance.getUiTokenAmount().getDecimals())
                     .txHash(txnHash)
                     .build();
             tokenBalanceDifMap.put(account, singleTokenBalanceDif);
@@ -78,7 +81,7 @@ public final class FullBlockDecHandler {
         return tokenBalanceDifMap;
     }
 
-    private static Map<String, AssetChanging> fillAddressBalanceChangingMap(List<String> accountKeys, Meta meta, Map<String, TokenBalanceDif> tokenBalanceMap) {
+    private static Map<String, AssetChanging> fillAddressBalanceChangingMap(List<String> accountKeys, Meta meta, String txnHash, Map<String, TokenBalanceDif> tokenBalanceMap) {
 
         Map<String, AssetChanging> assetChangingMap = new HashMap<>();
         List<Long> preBalances = meta.getPreBalances();
@@ -92,7 +95,7 @@ public final class FullBlockDecHandler {
                     .preBalance(preBalances.get(i))
                     .postBalance(postBalances.get(i))
                     .tokenBalanceDif(tokenBalanceDif)
-                    .txHash(tokenBalanceDif.getTxHash())
+                    .txHash(txnHash)
                     .build();
             assetChangingMap.put(address, assetChanging);
         }
