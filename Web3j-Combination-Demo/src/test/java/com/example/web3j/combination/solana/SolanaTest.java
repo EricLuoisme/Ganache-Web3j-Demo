@@ -58,6 +58,7 @@ public class SolanaTest {
         callAndPrint(getBalance);
     }
 
+    @Test
     @Benchmark
     public void blockDecoding_support_full_and_account() throws IOException {
 
@@ -66,8 +67,8 @@ public class SolanaTest {
 
         String pureTxnBlockHeight = "192792360";
         String tokenTxnBlockHeight = "192792378";
-        String ops = "full";
-//        String ops = "accounts";
+//        String ops = "full";
+        String ops = "accounts";
 
         String getBlock = "{\"jsonrpc\": \"2.0\",\"id\":1,\"method\":\"getBlock\",\"params\":["
                 + tokenTxnBlockHeight + ", {\"encoding\": \"json\",\"maxSupportedTransactionVersion\":0,\"transactionDetails\":\""
@@ -118,9 +119,16 @@ public class SolanaTest {
 
         stopWatch.start("Filter + Decoding");
 
-        List<Txn> caredTxn = blockResult.getTransactions().stream()
-                .filter(txn -> txn.getTransaction().getMessage().getAccountKeys().contains(ADDRESS))
-                .collect(Collectors.toList());
+        List<Txn> caredTxn = null;
+        if (ops.equals("full")) {
+            caredTxn = blockResult.getTransactions().stream()
+                    .filter(txn -> txn.getTransaction().getMessage().getAccountKeys().contains(ADDRESS))
+                    .collect(Collectors.toList());
+        } else if (ops.equals("accounts")) {
+            caredTxn = blockResult.getTransactions().stream()
+                    .filter(txn -> txn.getTransaction().getAccountKeys().stream().anyMatch(key -> key.getPubkey().equalsIgnoreCase(ADDRESS)))
+                    .collect(Collectors.toList());
+        }
 
         // decoding handler
         Map<String, AssetChanging> assetDifInTxn = FullBlockDecHandler.getAssetDifInTxn(caredTxn.get(0));
