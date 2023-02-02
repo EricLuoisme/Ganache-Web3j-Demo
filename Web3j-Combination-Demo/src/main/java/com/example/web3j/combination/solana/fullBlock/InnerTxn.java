@@ -21,4 +21,18 @@ public class InnerTxn {
 
     // a list of base-58 encoded signatures applied to the transaction, the first one is used as transaction id
     private List<String> signatures;
+
+    // only not null when calling getBlock with -> ACCOUNTS option
+    private List<AccountBlockAccKeys> accountKeys;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AccountBlockAccKeys {
+        private String pubkey;
+        private Boolean signer;
+        private String source;
+        private Boolean writable;
+    }
 }

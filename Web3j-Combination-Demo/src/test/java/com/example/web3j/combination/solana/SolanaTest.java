@@ -58,17 +58,19 @@ public class SolanaTest {
     }
 
     @Test
-    public void fullBlockDecoding() throws IOException {
+    public void blockDecoding_support_full_and_account() throws IOException {
 
         StopWatch stopWatch = new StopWatch("Full Block Decoding");
-
-
         stopWatch.start("JsonRpc Request");
 
         String pureTxnBlockHeight = "192792360";
         String tokenTxnBlockHeight = "192792378";
+        String ops = "full";
+//        String ops = "accounts";
 
-        String getBlock = "{\"jsonrpc\": \"2.0\",\"id\":1,\"method\":\"getBlock\",\"params\":[" + tokenTxnBlockHeight + ", {\"encoding\": \"json\",\"maxSupportedTransactionVersion\":0,\"transactionDetails\":\"full\",\"rewards\":false}]}";
+        String getBlock = "{\"jsonrpc\": \"2.0\",\"id\":1,\"method\":\"getBlock\",\"params\":["
+                + tokenTxnBlockHeight + ", {\"encoding\": \"json\",\"maxSupportedTransactionVersion\":0,\"transactionDetails\":\""
+                + ops + "\",\"rewards\":false}]}";
 
         RequestBody body = RequestBody.create(getBlock, mediaType);
         Request request = new Request.Builder()
@@ -83,8 +85,7 @@ public class SolanaTest {
         stopWatch.start("Parsing Obj");
         JSONObject respObj = JSONObject.parseObject(response.body().string());
 
-
-        // 1. parse & filter for only caring txns
+        // parse & filter for only caring txns
         ObjectMapper om = new ObjectMapper();
         JSONObject blockResultJson = respObj.getJSONObject("result");
         BlockResult blockResult = BlockResult.builder()
@@ -123,10 +124,11 @@ public class SolanaTest {
         // decoding handler
         Map<String, AssetChanging> assetDifInTxn = FullBlockDecHandler.getAssetDifInTxn(caredTxn.get(0));
 
-        System.out.println(JSON.toJSONString(assetDifInTxn.get(ADDRESS)));
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(assetDifInTxn.get(ADDRESS)));
         stopWatch.stop();
         System.out.println(stopWatch);
     }
+
 
     private static void callAndPrint(String jsonMsg) throws IOException {
         RequestBody body = RequestBody.create(jsonMsg, mediaType);

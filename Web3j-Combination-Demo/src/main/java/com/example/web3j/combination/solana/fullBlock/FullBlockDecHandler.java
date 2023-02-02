@@ -25,8 +25,20 @@ public final class FullBlockDecHandler {
         Meta meta = singleTxn.getMeta();
 
         // prepare for common using
-        List<String> accountKeys = transaction.getMessage().getAccountKeys();
         String txnHash = transaction.getSignatures().get(0);
+        List<String> accountKeys;
+        if (null != transaction.getMessage()) {
+            // full block info
+            accountKeys = transaction.getMessage().getAccountKeys();
+        } else if (null != transaction.getAccountKeys()) {
+            // only accounts block info
+            accountKeys = transaction.getAccountKeys().stream()
+                    .map(InnerTxn.AccountBlockAccKeys::getPubkey)
+                    .collect(Collectors.toList());
+        } else {
+            // ERROR
+            return null;
+        }
 
         // construct token balance map
         Map<String, TokenBalanceDif> tokenChangingMap = fillAddressTokenBalanceChangingMap(accountKeys, meta, txnHash);
