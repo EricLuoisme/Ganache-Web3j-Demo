@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
+import org.openjdk.jmh.annotations.Benchmark;
 import org.springframework.util.StopWatch;
 
 import java.io.IOException;
@@ -57,7 +58,7 @@ public class SolanaTest {
         callAndPrint(getBalance);
     }
 
-    @Test
+    @Benchmark
     public void blockDecoding_support_full_and_account() throws IOException {
 
         StopWatch stopWatch = new StopWatch("Full Block Decoding");
@@ -144,15 +145,8 @@ public class SolanaTest {
     }
 
 
-//    @Data
-//    @Builder
-//    @NoArgsConstructor
-//    @AllArgsConstructor
-//    public static class SolanaAccountKey {
-//        private String pubkey;
-//        private Boolean signer;
-//        private String source;
-//        private Boolean writable;
-//    }
+    public static void main(String[] args) throws IOException {
+        org.openjdk.jmh.Main.main(args);
+    }
 
 }

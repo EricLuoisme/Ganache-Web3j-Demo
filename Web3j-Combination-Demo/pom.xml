@@ -152,6 +152,21 @@
             <version>1.36.0</version>
             <scope>test</scope>
         </dependency>
+
+
+        <!-- Performance Measurement -->
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.35</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.35</version>
+        </dependency>
+
+
     </dependencies>
 
     <dependencyManagement>
