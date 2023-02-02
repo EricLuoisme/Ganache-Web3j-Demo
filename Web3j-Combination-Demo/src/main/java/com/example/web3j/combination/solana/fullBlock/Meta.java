@@ -17,17 +17,32 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Meta {
+
+    // number of compute units consumed by the transaction
     private Integer computeUnitsConsumed;
+
+    // Error if transaction failed, null if transaction succeeded
     private Object err;
+
+    // fee this transaction was charged, as u64 integer
     private Integer fee;
+
     private List<InnerInstructions> innerInstructions;
+
     private JSONObject loadedAddresses;
+
     private List<String> logMessages;
+
     private List<Long> postBalances;
+
     private List<TokenBalance> postTokenBalances;
+
     private List<Long> preBalances;
+
     private List<TokenBalance> preTokenBalances;
+
     private Object rewards;
+
     private JSONObject status;
 
     @Data
@@ -43,21 +58,19 @@ public class Meta {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Instructions {
-        private List<Integer> accounts;
-        private String data;
-        private Integer programIdIndex;
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class TokenBalance {
+        // index of account in which the token balance is provided for
         private Integer accountIndex;
+
+        // pub key of token's mint
         private String mint;
+
+        // pub key of token balance's owner
         private String owner;
+
+        // pub key of token program
         private String programId;
+
         private TokenAmt uiTokenAmount;
 
         @Data
@@ -65,9 +78,16 @@ public class Meta {
         @NoArgsConstructor
         @AllArgsConstructor
         public static class TokenAmt {
+            // raw amount
             private String amount;
+
+            // token decimals
             private Integer decimals;
+
+            // deprecated
             private Double uiAmount;
+
+            // token amount (accounting for decimals already)
             private String uiAmountString;
         }
     }
