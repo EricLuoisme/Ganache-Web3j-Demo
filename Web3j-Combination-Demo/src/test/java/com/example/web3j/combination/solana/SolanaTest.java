@@ -4,8 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.example.web3j.combination.solana.fullBlock.BlockResult;
-import com.example.web3j.combination.solana.fullBlock.Meta;
-import com.example.web3j.combination.solana.fullBlock.Txns;
+import com.example.web3j.combination.solana.fullBlock.Txn;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
@@ -83,12 +82,13 @@ public class SolanaTest {
                 .previousBlockhash(blockResultJson.getString("previousBlockhash"))
                 .build();
 
-        List<Txns> txns = new LinkedList<>();
+        // parsing
+        List<Txn> txns = new LinkedList<>();
         JSONArray transactions = blockResultJson.getJSONArray("transactions");
         transactions.forEach(txn -> {
             try {
-                Txns parsedTxns = om.readValue(((JSONObject) txn).toJSONString(), Txns.class);
-                txns.add(parsedTxns);
+                Txn parsedTxn = om.readValue(((JSONObject) txn).toJSONString(), Txn.class);
+                txns.add(parsedTxn);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
@@ -101,22 +101,11 @@ public class SolanaTest {
         System.out.println("Block Hash: " + blockResult.getBlockHeight());
 
 
-        List<Meta> allMetas = blockResult.getTransactions().stream().map(Txns::getMeta).collect(Collectors.toList());
-//        for (Meta meta : allMetas) {
-//            JSONArray innerInstructionsJson = meta.getInnerInstructions();
-//            try {
-//                Meta.InnerInstructions innerInstructions = JSON.parseObject(innerInstructionsJson.toJSONString(), Meta.InnerInstructions.class);
-//            } catch (Exception e) {
-//                System.out.println();
-//            }
-//        }
+        List<Txn> caredTxn = blockResult.getTransactions().stream()
+                .filter(txn -> txn.getTransaction().getMessage().getAccountKeys().contains(ADDRESS))
+                .collect(Collectors.toList());
 
-
-//        List<Txns> caredTxn = blockResult.getTransactions().stream()
-//                .filter(txn -> txn.getTransaction().getMessage().getAccountKeys().contains(ADDRESS))
-//                .collect(Collectors.toList());
-//
-//        System.out.println(caredTxn);
+        System.out.println(caredTxn);
     }
 
     private static void callAndPrint(String jsonMsg) throws IOException {
