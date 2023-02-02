@@ -3,17 +3,17 @@ package com.example.web3j.combination.solana;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.example.web3j.combination.solana.fullBlock.BlockResult;
+import com.example.web3j.combination.solana.fullBlock.Meta;
+import com.example.web3j.combination.solana.fullBlock.Txns;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -55,7 +55,7 @@ public class SolanaTest {
     }
 
     @Test
-    public void blockDecoding() throws IOException {
+    public void fullBlockDecoding() throws IOException {
 
         String pureTxnBlockHeight = "192792360";
         String tokenTxnBlockHeight = "192792378";
@@ -75,35 +75,48 @@ public class SolanaTest {
         // 1. parse & filter for only caring txns
         ObjectMapper om = new ObjectMapper();
         JSONObject blockResultJson = respObj.getJSONObject("result");
-        SolanaBlockResult blockResult = new SolanaBlockResult.SolanaBlockResultBuilder()
+        BlockResult blockResult = BlockResult.builder()
                 .blockHeight(blockResultJson.getInteger("blockHeight"))
                 .blockTime(blockResultJson.getInteger("blockTime"))
                 .blockhash(blockResultJson.getString("blockhash"))
                 .parentSlot(blockResultJson.getInteger("parentSlot"))
                 .previousBlockhash(blockResultJson.getString("previousBlockhash"))
-                .transactions(
-                        om.readValue(
-                                blockResultJson.getJSONArray("transactions").toJSONString(),
-                                new TypeReference<List<Txns>>() {
-                                }))
                 .build();
+
+        List<Txns> txns = new LinkedList<>();
+        JSONArray transactions = blockResultJson.getJSONArray("transactions");
+        transactions.forEach(txn -> {
+            try {
+                Txns parsedTxns = om.readValue(((JSONObject) txn).toJSONString(), Txns.class);
+                txns.add(parsedTxns);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        });
+        blockResult.setTransactions(txns);
+
 
         System.out.println("Block Height: " + blockResult.getBlockHeight());
         System.out.println("Block Time: " + blockResult.getBlockHeight());
         System.out.println("Block Hash: " + blockResult.getBlockHeight());
 
-//        List<SolanaAccTxns> ownUserTxn = blockResult.getTransactions().stream()
-//                .filter(txn -> {
-//                    Set<String> pubKeySet = txn.getTransaction()
-//                            .getAccountKeys().stream()
-//                            .map(SolanaAccountKey::getPubkey).collect(Collectors.toSet());
-//                    return pubKeySet.contains(ADDRESS);
-//                }).collect(Collectors.toList());
 
-        List<Txns> caredFullTxn = blockResult.getTransactions().stream()
-                .filter(txn -> txn.getTransaction().getMessage().getAccountKeys().contains(ADDRESS))
-                .collect(Collectors.toList());
-        System.out.println();
+        List<Meta> allMetas = blockResult.getTransactions().stream().map(Txns::getMeta).collect(Collectors.toList());
+//        for (Meta meta : allMetas) {
+//            JSONArray innerInstructionsJson = meta.getInnerInstructions();
+//            try {
+//                Meta.InnerInstructions innerInstructions = JSON.parseObject(innerInstructionsJson.toJSONString(), Meta.InnerInstructions.class);
+//            } catch (Exception e) {
+//                System.out.println();
+//            }
+//        }
+
+
+//        List<Txns> caredTxn = blockResult.getTransactions().stream()
+//                .filter(txn -> txn.getTransaction().getMessage().getAccountKeys().contains(ADDRESS))
+//                .collect(Collectors.toList());
+//
+//        System.out.println(caredTxn);
     }
 
     private static void callAndPrint(String jsonMsg) throws IOException {
@@ -119,66 +132,6 @@ public class SolanaTest {
         System.out.println(str);
     }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class SolanaBlockResult {
-        private Integer blockHeight;
-        private Integer blockTime;
-        private String blockhash;
-        private Integer parentSlot;
-        private String previousBlockhash;
-        private List<Txns> transactions;
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Txns {
-        private Meta meta;
-        private Txn transaction;
-        private String version;
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Meta {
-        private Integer computeUnitsConsumed;
-        private Integer fee;
-        private JSONArray innerInstructions;
-        private JSONArray loadedAddresses;
-        private JSONArray logMessages;
-        private List<Integer> postBalances;
-        private JSONArray postTokenBalances;
-        private List<Integer> preBalances;
-        private JSONArray preTokenBalances;
-        private JSONArray status;
-    }
-
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Txn {
-        private TxnMsg message;
-        private List<String> signatures;
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class TxnMsg {
-        private List<String> accountKeys;
-        private JSONObject header;
-        private JSONArray instructions;
-        private String recentBlockhash;
-    }
 
 //    @Data
 //    @Builder

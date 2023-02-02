@@ -1,6 +1,5 @@
 package com.example.web3j.combination.solana.fullBlock;
 
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,11 +22,11 @@ public class Meta {
     private Integer fee;
     private List<InnerInstructions> innerInstructions;
     private JSONObject loadedAddresses;
-    private JSONArray logMessages;
-    private JSONArray postBalances;
-    private JSONArray postTokenBalances;
-    private JSONArray preBalances;
-    private JSONArray preTokenBalances;
+    private List<String> logMessages;
+    private List<Long> postBalances;
+    private List<TokenBalance> postTokenBalances;
+    private List<Long> preBalances;
+    private List<TokenBalance> preTokenBalances;
     private Object rewards;
     private JSONObject status;
 
@@ -69,7 +68,7 @@ public class Meta {
             private String amount;
             private Integer decimals;
             private Double uiAmount;
-            private String uiTokenAmount;
+            private String uiAmountString;
         }
     }
 }
