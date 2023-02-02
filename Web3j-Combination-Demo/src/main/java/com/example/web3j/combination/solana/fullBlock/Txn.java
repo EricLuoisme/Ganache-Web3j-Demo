@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 /**
  * @author Roylic
  * 2023/2/2
@@ -16,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Txn {
-    private TxnMsg message;
-    private List<String> signatures;
+    private Meta meta;
+    private InnerTxn transaction;
+    private String version;
 }

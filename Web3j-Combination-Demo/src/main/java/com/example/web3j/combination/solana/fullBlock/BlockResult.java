@@ -22,5 +22,5 @@ public class BlockResult {
     private String blockhash;
     private Integer parentSlot;
     private String previousBlockhash;
-    private List<Txns> transactions;
+    private List<Txn> transactions;
 }
