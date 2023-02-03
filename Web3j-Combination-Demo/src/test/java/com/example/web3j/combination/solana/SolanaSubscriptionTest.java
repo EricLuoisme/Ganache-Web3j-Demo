@@ -24,6 +24,7 @@ public class SolanaSubscriptionTest {
     private static final OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
 
     private static final String SUBSCRIBE_EVENT_LOG = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"logsSubscribe\",\"params\":[\"all\"]}";
+    private static final String SUBSCRIBE_BLOCK = "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"blockSubscribe\",\"params\":[\"all\"]}";
 
 
     @Test
@@ -60,7 +61,7 @@ public class SolanaSubscriptionTest {
             @Override
             public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
                 System.out.println("Web Socket Opened");
-                webSocket.send(SUBSCRIBE_EVENT_LOG);
+                webSocket.send(SUBSCRIBE_BLOCK);
             }
         });
 
