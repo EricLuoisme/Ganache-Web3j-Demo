@@ -1,4 +1,4 @@
-package com.example.web3j.combination;
+package com.example.web3j.combination.signature;
 
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
