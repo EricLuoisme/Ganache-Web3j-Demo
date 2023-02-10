@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class PolygonNftTest {
 
-    private static final String web3Url = "https://polygon-mainnet.nodereal.io/v1/872f4dafdb2c40b49c6d41db0449f591";
+    private static final String web3Url = "https://polygon-mainnet.nodereal.io/v1/";
 
     public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
@@ -46,6 +46,35 @@ public class PolygonNftTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void specificOpenSeaGifNft() throws IOException {
+        String contract = "0x1777feb71b2eeeb5d75f2a29e12352afdc9da374";
+        BigInteger tokenId = new BigInteger("308");
+
+        // construct for func + params
+        Uint256 tokenId256 = new Uint256(tokenId);
+        Function tokenUriFunc = new Function(
+                "tokenURI",
+                Collections.singletonList(tokenId256),
+                Collections.singletonList(TypeReference.create(Utf8String.class))
+        );
+
+        String encode = FunctionEncoder.encode(tokenUriFunc);
+        System.out.println("ERC-721-Code >>> " + encode.substring(0, 10));
+
+        // call contract for url
+        Transaction reqTxn = Transaction.createEthCallTransaction(contract, contract, encode);
+        EthCall callResult = web3j.ethCall(reqTxn, DefaultBlockParameterName.LATEST).send();
+        List<Type> tokenUriDecoded = FunctionReturnDecoder.decode(callResult.getValue(), tokenUriFunc.getOutputParameters());
+
+        // decode token url
+        Utf8String tokenBaseUrl = (Utf8String) tokenUriDecoded.get(0);
+        System.out.println("ERC-721 token base uri >>> " + tokenBaseUrl.getValue());
+
+        // replace {id} with real id, for this OPEN_SEA's contract, we need to convert tokenId to hex
+        System.out.println("Token Id in hex >>> " + Numeric.toHexStringNoPrefix(tokenId));
     }
 
 
