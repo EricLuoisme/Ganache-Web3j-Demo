@@ -105,8 +105,9 @@ public class EccRelatedTest {
         String hexMsg = Hex.toHexString(MESSAGE.getBytes(StandardCharsets.UTF_8));
         System.out.println("\n >>> Hex Msg is : " + hexMsg + "\n");
 
-        // 1. use web3j methods to sign the message
-        Sign.SignatureData signatureData = Sign.signMessage(Hash.sha3(hexMsg.getBytes(StandardCharsets.UTF_8)), ecKeyPair);
+        // 1. use web3j methods to sign the message (eth user sha3)
+        byte[] sha3HexBytes = Hash.sha3(hexMsg.getBytes(StandardCharsets.UTF_8));
+        Sign.SignatureData signatureData = Sign.signMessage(sha3HexBytes, ecKeyPair);
         byte[] r = signatureData.getR();
         byte[] s = signatureData.getS();
         byte[] v = signatureData.getV();
@@ -134,9 +135,15 @@ public class EccRelatedTest {
         byte[] bytes_s = Numeric.hexStringToByteArray(s_str);
         byte[] bytes_v = Numeric.hexStringToByteArray(v_str);
 
+        // reconstruct the signature first
+        Sign.SignatureData reconstructSignData = new Sign.SignatureData(bytes_v, bytes_r, bytes_s);
+
+        // verify
+        BigInteger recoverPubKey = Sign.signedMessageToKey(sha3HexBytes, reconstructSignData);
+        System.out.println("recover pubKey : " + "0x" + Keys.getAddress(recoverPubKey));
+        System.out.println("real pubKey: " + "0x" + Keys.getAddress(ecKeyPair));
 
         // For Ethereum, it's also using the ECDSA Algorithm for calculating and verifying the signature
-
     }
 
     /**
