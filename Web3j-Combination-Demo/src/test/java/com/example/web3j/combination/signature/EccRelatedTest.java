@@ -98,7 +98,8 @@ public class EccRelatedTest {
     @Test
     public void SignAndVerifyTest_ByEthereumMethod() throws Exception {
 
-        ECKeyPair ecKeyPair = Credentials.create("priKey").getEcKeyPair();
+//        ECKeyPair ecKeyPair = Credentials.create("priKey").getEcKeyPair();
+        ECKeyPair ecKeyPair = ECKeyPair.create(PRI_KEY_ETH);
 
         // convert string to hex
         String hexMsg = Hex.toHexString(MESSAGE.getBytes(StandardCharsets.UTF_8));
