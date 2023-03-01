@@ -135,6 +135,8 @@ public class EccRelatedTest {
         byte[] bytes_s = Numeric.hexStringToByteArray(s_str);
         byte[] bytes_v = Numeric.hexStringToByteArray(v_str);
 
+        System.out.println("Length of r: " + r_str.length() + " , s: " + s_str.length() + " , v: " + v_str.length());
+
         // reconstruct the signature first
         Sign.SignatureData reconstructSignData = new Sign.SignatureData(bytes_v, bytes_r, bytes_s);
 
