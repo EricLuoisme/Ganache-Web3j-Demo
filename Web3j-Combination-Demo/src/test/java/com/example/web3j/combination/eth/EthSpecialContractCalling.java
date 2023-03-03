@@ -1,11 +1,19 @@
 package com.example.web3j.combination.eth;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.example.web3j.combination.utils.OwnECDSASignUtil;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.*;
+import org.web3j.abi.datatypes.generated.Bytes32;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.Hash;
@@ -87,7 +95,6 @@ public class EthSpecialContractCalling {
         constructAndCallingContractFunction(data, PRI_KEY);
     }
 
-
     @Test
     public void supportTokenCheckingTest() throws IOException {
         /// encode
@@ -130,24 +137,54 @@ public class EthSpecialContractCalling {
 //                    "platOrderNo":"", "recAddress":"0x36F0A040C8e60974d1F34b316B3e956f509Db7e5",
 //                    "recTokenAmt":14, "recTokenContract":"0x337610d27c682E347C9cD60BD4b3b107C9d34dDd"
 //        }
-//        }
-//
-//
-//        String orderId = "20230303O_CR01167783311135710984";
-//        String merchantOrderId = "12342fjoi1u98rf31";
-//        String tokenAddress = "0x64544969ed7EBf5f083679233325356EbE738930";
-//        String tradingPair = "?";
-//        String exchangeRate = "?";
-//        String ddl = "1677919511947";
-//        String amount = "100";
-//
-//
+
+
+        String orderId = "20230303O_CR01167783311135710984";
+        String merchantOrderId = "12342fjoi1u98rf31";
+        String tokenAddress = "0x64544969ed7EBf5f083679233325356EbE738930";
+        String merchantAddress = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+
+        byte[] tradingPair = new byte[32];
+        byte[] exchangeRate = new byte[32];
+        byte[] inputBytes = Numeric.hexStringToByteArray("0x24");
+        System.arraycopy(inputBytes, 0, tradingPair, 0, inputBytes.length);
+        System.arraycopy(inputBytes, 0, exchangeRate, 0, inputBytes.length);
+
+        long deadline = 1687919511947L;
+        long amount = 100L;
+
+        ValidateMarketMaker plainTxt = ValidateMarketMaker.builder()
+                .tokenAddress(new Address(tokenAddress))
+                .merchantAddress(new Address(merchantAddress))
+                .tradingPair(new Bytes32(tradingPair))
+                .exchangeRate(new Bytes32(exchangeRate))
+                .deadline(new Uint256(deadline))
+                .deadline(new Uint256(amount))
+                .build();
+
+        long[] rsv = OwnECDSASignUtil.signGetByteArr(
+                JSONObject.toJSONString(plainTxt, SerializerFeature.SortField),
+                Credentials.create(PRI_KEY).getEcKeyPair());
+
+        System.out.println();
+
 //        new Function(
 //                "paymentByUser",
 //                Arrays.asList(
-//                        new Utf8String("")
+//                        new Utf8String(orderId),
+//                        new Utf8String(merchantOrderId),
+//                        plainTxt.getTokenAddress(),
+//                        plainTxt.getMerchantAddress(),
+//                        plainTxt.getTradingPair(),
+//                        plainTxt.getExchangeRate(),
+//                        plainTxt.getDeadline(),
+//                        plainTxt.getAmount(),
+//                        new Uint256(rsvBytes[0]),
+//                        new
 //                ),
-//                Collections.emptyList());
+//                Collections.emptyList()
+//        );
+
     }
 
     @Test
@@ -203,8 +240,19 @@ public class EthSpecialContractCalling {
             this.symbol = symbol.getValue();
             this.decimals = decimals.getValue().longValue();
         }
+    }
 
-
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ValidateMarketMaker {
+        private Address tokenAddress;
+        private Address merchantAddress;
+        private Bytes32 tradingPair;
+        private Bytes32 exchangeRate;
+        private Uint256 deadline;
+        private Uint256 amount;
     }
 
 }

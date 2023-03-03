@@ -16,7 +16,7 @@ import java.security.SignatureException;
  * @author Roylic
  * 2023/3/2
  */
-public class ECDSASignUtil {
+public class OwnECDSASignUtil {
 
     /**
      * Create signature in Base64 Hex
@@ -33,6 +33,28 @@ public class ECDSASignUtil {
         rsv[2] = Numeric.toHexString(signatureData.getV()).substring(2);
         return rsv;
     }
+
+    public static long[] signGetByteArr(String sortedJsonStr, ECKeyPair signPriKey) {
+        // sort & encode
+        String plainHexTxt = Hex.toHexString(sortedJsonStr.getBytes(StandardCharsets.UTF_8));
+        byte[] sha3PlainHexTxt = Hash.sha3(plainHexTxt.getBytes(StandardCharsets.UTF_8));
+        // sign
+        Sign.SignatureData signatureData = Sign.signMessage(sha3PlainHexTxt, signPriKey);
+
+        long r = 0, s = 0;
+        for (byte b : signatureData.getR()) {
+            r = (r << 8) + (b & 0xFF);
+        }
+        for (byte b : signatureData.getR()) {
+            s = (s << 8) + (b & 0xFF);
+        }
+        int v = 0;
+        for (byte b : signatureData.getR()) {
+            v = (v << 8) + (b & 0xFF);
+        }
+        return new long[]{r, s, v};
+    }
+
 
     /**
      * Verify signature
