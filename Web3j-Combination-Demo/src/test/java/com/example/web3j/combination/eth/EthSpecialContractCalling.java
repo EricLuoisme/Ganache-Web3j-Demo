@@ -8,14 +8,22 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Bool;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.Hash;
+import org.web3j.crypto.RawTransaction;
+import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
+import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.utils.Numeric;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.math.BigInteger;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,14 +38,17 @@ public class EthSpecialContractCalling {
 
     public static final String contractAdd = "0xa9E628B29169ef448dBf362ec068EC1F414505BC";
 
+    String PRI_KEY = "";
+
+
     @Test
-    public void marketMakerRegistrationTest() throws IOException {
+    public void marketMakerValidationTest() throws IOException {
         // encode
-        String pubAddress = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        String marketMakerAddress = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
         Function marketMakerFunc = new Function(
                 "marketMaker",
-                Arrays.asList(new Address(pubAddress)),
-                Arrays.asList(TypeReference.create(Bool.class)));
+                Collections.singletonList(new Address(marketMakerAddress)),
+                Collections.singletonList(TypeReference.create(Bool.class)));
         String encode = FunctionEncoder.encode(marketMakerFunc);
         System.out.println("Market Maker Func coding: " + encode);
 
@@ -50,4 +61,45 @@ public class EthSpecialContractCalling {
         Bool returnVal = (Bool) decode.get(0);
         System.out.println(returnVal.getValue());
     }
+
+
+
+
+    @Test
+    public void marketMakerRegistrationTest() throws IOException {
+        // encode input data
+        String marketMakerAddress = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        Function registerMarketMaker = new Function(
+                "registerMarketMaker",
+                Collections.singletonList(new Address(marketMakerAddress)),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+        String data = FunctionEncoder.encode(registerMarketMaker);
+        // construct txn
+        constructAndCallingContractFunction(data);
+    }
+
+    /**
+     * Construct txn inputs & execute
+     */
+    private void constructAndCallingContractFunction(String data) throws IOException {
+        Credentials credentials = Credentials.create(PRI_KEY);
+        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST).send();
+        BigInteger nonce = ethGetTransactionCount.getTransactionCount();
+        // another stuff need to be filled
+        long chainId = 5; // for Goerli
+        BigInteger maxPriorityFeePerGas = BigInteger.valueOf(5_000_000_000L);
+        BigInteger maxFeePerGas = BigInteger.valueOf(50_000_000_000L);
+        BigInteger gasLimit = BigInteger.valueOf(100_000L);
+        // for interact with contract, value have to input 0
+        BigInteger value = BigInteger.valueOf(0L);
+        RawTransaction rawTransaction = RawTransaction.createTransaction(chainId, nonce, gasLimit, contractAdd, value, data, maxPriorityFeePerGas, maxFeePerGas);
+        byte[] signedMsg = TransactionEncoder.signMessage(rawTransaction, credentials);
+        String hexValue = Numeric.toHexString(signedMsg);
+
+        String txHash = Hash.sha3(hexValue);
+        System.out.println("OffChain txHash: " + txHash);
+        EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
+        System.out.println("OnChain txHash: " + ethSendTransaction.getTransactionHash());
+    }
+
 }
