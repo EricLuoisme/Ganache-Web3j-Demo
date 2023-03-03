@@ -95,7 +95,8 @@ public class EthSpecialContractCalling {
                 "getMarketMakerToken",
                 Collections.singletonList(new Address(marketMakerAddress)),
                 Collections.singletonList(new TypeReference<DynamicArray<PaymentToken>>() {
-                }));
+                })
+        );
 
         String encode = FunctionEncoder.encode(marketMakerTokenFunc);
         System.out.println("Market Maker Func coding: " + encode);
@@ -106,7 +107,52 @@ public class EthSpecialContractCalling {
 
         // decode
         List<Type> decode = FunctionReturnDecoder.decode(send.getValue(), marketMakerTokenFunc.getOutputParameters());
-        System.out.println();
+        DynamicArray<PaymentToken> paymentTokenDynamicArray = (DynamicArray<PaymentToken>) decode.get(0);
+        List<PaymentToken> paymentTokenList = paymentTokenDynamicArray.getValue();
+        paymentTokenList.forEach(paymentToken -> {
+            System.out.println();
+            System.out.println("Token Address: " + paymentToken.getAddress());
+            System.out.println("Token name: " + paymentToken.getName());
+            System.out.println("Token symbol: " + paymentToken.getSymbol());
+            System.out.println("Token decimals: " + paymentToken.getDecimals());
+        });
+    }
+
+    @Test
+    public void paymentByUserTest() {
+//        {
+//            "hexR":"fa487a901302e8bbf3996433c09869d9cc7c4fe9664e37e4593fa9d21635944f",
+//                "hexS":"387b24bad8d0a4181ec2bb889a6d8ba4433a060159aaaebc6c20ed785099b3df",
+//                "hexV":"1c", "outputData":{
+//            "chainId":31, "createDt":1677833111360, "expireDt":,
+//            "mmOrderNo":"", "payAddress":"0x64544969ed7EBf5f083679233325356EbE738930",
+//                    "payTokenAmt":,"payTokenContract":"",
+//                    "platOrderNo":"", "recAddress":"0x36F0A040C8e60974d1F34b316B3e956f509Db7e5",
+//                    "recTokenAmt":14, "recTokenContract":"0x337610d27c682E347C9cD60BD4b3b107C9d34dDd"
+//        }
+//        }
+//
+//
+//        String orderId = "20230303O_CR01167783311135710984";
+//        String merchantOrderId = "12342fjoi1u98rf31";
+//        String tokenAddress = "0x64544969ed7EBf5f083679233325356EbE738930";
+//        String tradingPair = "?";
+//        String exchangeRate = "?";
+//        String ddl = "1677919511947";
+//        String amount = "100";
+//
+//
+//        new Function(
+//                "paymentByUser",
+//                Arrays.asList(
+//                        new Utf8String("")
+//                ),
+//                Collections.emptyList());
+    }
+
+    @Test
+    public void paymentEventDecodingTest() {
+
     }
 
 
@@ -135,19 +181,30 @@ public class EthSpecialContractCalling {
     }
 
     @Data
-    public class PaymentToken extends DynamicStruct {
-        private Address address;
-        private Utf8String name;
-        private Utf8String symbol;
-        private Uint8 decimals;
+    public static class PaymentToken extends DynamicStruct {
 
-        public PaymentToken(Address address, Utf8String name, Utf8String symbol, Uint8 decimals) {
-            super(address, name, symbol, decimals);
+        private String address;
+        private String name;
+        private String symbol;
+        private Long decimals;
+
+        public PaymentToken(String address, String name, String symbol, Long decimals) {
+            super(new Address(address), new Utf8String(name), new Utf8String(symbol), new Uint8(decimals));
             this.address = address;
             this.name = name;
             this.symbol = symbol;
             this.decimals = decimals;
         }
+
+        public PaymentToken(Address address, Utf8String name, Utf8String symbol, Uint8 decimals) {
+            super(address, name, symbol, decimals);
+            this.address = address.getValue();
+            this.name = name.getValue();
+            this.symbol = symbol.getValue();
+            this.decimals = decimals.getValue().longValue();
+        }
+
+
     }
 
 }
