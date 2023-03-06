@@ -43,7 +43,7 @@ public class EthSpecialContractCalling {
 
     public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
-    public static final String contractAdd = "0xa9E628B29169ef448dBf362ec068EC1F414505BC";
+    public static final String contractAddress = "0xa9E628B29169ef448dBf362ec068EC1F414505BC";
 
     public static final String supportTokenAddress = "0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc";
 
@@ -63,7 +63,7 @@ public class EthSpecialContractCalling {
         System.out.println("Market Maker Func coding: " + encode);
 
         // call contract
-        Transaction mmCallingTxn = Transaction.createEthCallTransaction(contractAdd, contractAdd, encode);
+        Transaction mmCallingTxn = Transaction.createEthCallTransaction(contractAddress, contractAddress, encode);
         EthCall send = web3j.ethCall(mmCallingTxn, DefaultBlockParameterName.LATEST).send();
 
         // decoding
@@ -109,7 +109,7 @@ public class EthSpecialContractCalling {
         System.out.println("Market Maker Func coding: " + encode);
 
         // call contract
-        Transaction mmCallingTxn = Transaction.createEthCallTransaction(contractAdd, contractAdd, encode);
+        Transaction mmCallingTxn = Transaction.createEthCallTransaction(contractAddress, contractAddress, encode);
         EthCall send = web3j.ethCall(mmCallingTxn, DefaultBlockParameterName.LATEST).send();
 
         // decode
@@ -135,9 +135,13 @@ public class EthSpecialContractCalling {
 
         byte[] tradingPair = new byte[32];
         byte[] exchangeRate = new byte[32];
-        byte[] inputBytes = Numeric.hexStringToByteArray("0x24");
-        System.arraycopy(inputBytes, 0, tradingPair, 0, inputBytes.length);
-        System.arraycopy(inputBytes, 0, exchangeRate, 0, inputBytes.length);
+        byte[] tradingPairBytes = Numeric.hexStringToByteArray("0xF");
+        byte[] exchangeRateBytes = Numeric.hexStringToByteArray("0x9");
+        System.arraycopy(tradingPairBytes, 0, tradingPair, 31, tradingPairBytes.length);
+        System.arraycopy(exchangeRateBytes, 0, exchangeRate, 31, exchangeRateBytes.length);
+
+        System.out.println("Trading Pair Amt: " + Integer.parseInt(Numeric.toHexString(tradingPairBytes, 0, tradingPairBytes.length, false), 16));
+        System.out.println("ExchangedRate Pair Amt: " + Integer.parseInt(Numeric.toHexString(exchangeRateBytes, 0, exchangeRateBytes.length, false), 16));
 
         long deadline = 1687919511947L;
         long amount = 100L;
@@ -148,7 +152,7 @@ public class EthSpecialContractCalling {
                 .tradingPair(new Bytes32(tradingPair))
                 .exchangeRate(new Bytes32(exchangeRate))
                 .deadline(new Uint256(deadline))
-                .deadline(new Uint256(amount))
+                .amount(new Uint256(amount))
                 .build();
 
         long[] rsv = OwnECDSASignUtil.signGetByteArr(
@@ -156,6 +160,7 @@ public class EthSpecialContractCalling {
                 Credentials.create(PRI_KEY).getEcKeyPair());
 
         System.out.println();
+
 
 //        new Function(
 //                "paymentByUser",
@@ -196,7 +201,7 @@ public class EthSpecialContractCalling {
         BigInteger gasLimit = BigInteger.valueOf(100_000L);
         // for interact with contract, value have to input 0
         BigInteger value = BigInteger.valueOf(0L);
-        RawTransaction rawTransaction = RawTransaction.createTransaction(chainId, nonce, gasLimit, contractAdd, value, data, maxPriorityFeePerGas, maxFeePerGas);
+        RawTransaction rawTransaction = RawTransaction.createTransaction(chainId, nonce, gasLimit, contractAddress, value, data, maxPriorityFeePerGas, maxFeePerGas);
         byte[] signedMsg = TransactionEncoder.signMessage(rawTransaction, credentials);
         String hexValue = Numeric.toHexString(signedMsg);
 
