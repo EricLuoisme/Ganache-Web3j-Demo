@@ -77,6 +77,9 @@ public class SolanaProgramRelated {
                         new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr").toByteArray()),
                 new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"));
         System.out.println(derivedAddress.getAddress());
+        String getTokenAccountBalance = "{\"jsonrpc\":\"2.0\", \"id\":1, \"method\":\"getTokenAccountBalance\"," +
+                " \"params\":[\"" + derivedAddress.getAddress() + "\"]}";
+        callAndPrint(getTokenAccountBalance);
     }
 
 
