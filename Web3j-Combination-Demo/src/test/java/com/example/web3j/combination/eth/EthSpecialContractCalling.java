@@ -127,17 +127,6 @@ public class EthSpecialContractCalling {
 
     @Test
     public void paymentByUserTest() {
-//        {
-//            "hexR":"fa487a901302e8bbf3996433c09869d9cc7c4fe9664e37e4593fa9d21635944f",
-//                "hexS":"387b24bad8d0a4181ec2bb889a6d8ba4433a060159aaaebc6c20ed785099b3df",
-//                "hexV":"1c", "outputData":{
-//            "chainId":31, "createDt":1677833111360, "expireDt":,
-//            "mmOrderNo":"", "payAddress":"0x64544969ed7EBf5f083679233325356EbE738930",
-//                    "payTokenAmt":,"payTokenContract":"",
-//                    "platOrderNo":"", "recAddress":"0x36F0A040C8e60974d1F34b316B3e956f509Db7e5",
-//                    "recTokenAmt":14, "recTokenContract":"0x337610d27c682E347C9cD60BD4b3b107C9d34dDd"
-//        }
-
 
         String orderId = "20230303O_CR01167783311135710984";
         String merchantOrderId = "12342fjoi1u98rf31";
