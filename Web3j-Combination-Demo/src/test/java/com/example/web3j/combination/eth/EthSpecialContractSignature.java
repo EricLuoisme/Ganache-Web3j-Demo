@@ -3,6 +3,10 @@ package com.example.web3j.combination.eth;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.junit.jupiter.api.Test;
+import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.generated.Bytes32;
+import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
@@ -14,6 +18,8 @@ import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Roylic
@@ -56,7 +62,7 @@ public class EthSpecialContractSignature {
         wholeStructuredData.put("types", types);
 
         // 3. domain-data
-        wholeStructuredData.put("domain", getDomainData("fundCheckContract", "1",
+        wholeStructuredData.put("domain", getDomainData("FundCheck", "1",
                 5L, "0xa9E628B29169ef448dBf362ec068EC1F414505BC"));
         // 4. primaryType
         wholeStructuredData.put("primaryType", primaryTypeName);
@@ -64,11 +70,36 @@ public class EthSpecialContractSignature {
         wholeStructuredData.put("message", getAbiData(supportTokenAddress, marketMakerAddress,
                 "0x0000000000000000000000000000000000000000000000000000000000000005",
                 "0x0000000000000000000000000000000000000000000000000000000000000006",
-                1629271118L, 10L));
+                1999271118L, 10L));
 
         // parsing and sign
         StructuredDataEncoder structuredDataEncoder = new StructuredDataEncoder(wholeStructuredData.toJSONString());
-        System.out.println("txHash of eip721 msgHash: " + Numeric.toHexString(structuredDataEncoder.hashStructuredData()));
+        String msgHash = Numeric.toHexStringNoPrefix(structuredDataEncoder.hashStructuredData());
+        System.out.println("txHash of eip721 msgHash: " + msgHash);
+
+    }
+
+    @Test
+    public void paymentByUser() {
+        String msgHash = "80dd7a261708a88ab2b0e6f6d7a30653e8aa745bd552794ed7c642746f4f7507";
+
+        ECKeyPair signAcc = Credentials.create("").getEcKeyPair();
+        Sign.SignatureData signatureData = Sign.signMessage(Numeric.hexStringToByteArray(msgHash), signAcc, false);
+
+        List<Type> inputParameters = new ArrayList<>();
+        Uint8 v = new Uint8(Numeric.toBigInt(signatureData.getV()));
+        Bytes32 r = new Bytes32((signatureData.getR()));
+        Bytes32 s = new Bytes32((signatureData.getS()));
+        System.out.println("v : " + Numeric.toHexStringWithPrefix(v.getValue()));
+        System.out.println("r : " + Numeric.toHexString(r.getValue()));
+        System.out.println("s : " + Numeric.toHexString(s.getValue()));
+
+        inputParameters.add(v);
+        inputParameters.add(r);
+        inputParameters.add(s);
+
+        String data = FunctionEncoder.encodeConstructor(inputParameters);
+        System.out.println(data);
     }
 
 
