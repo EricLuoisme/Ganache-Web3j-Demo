@@ -1,11 +1,13 @@
 package com.example.web3j.combination.solana;
 
 import com.alibaba.fastjson2.JSON;
+import com.example.web3j.combination.solana.utils.PublicKey;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
@@ -64,6 +66,17 @@ public class SolanaProgramRelated {
                 "\"method\":\"getTokenAccountsByOwner\", \"params\":[\"" + TOKEN_ACCOUNT + "\", " +
                 "{\"programId\":\"" + PROGRAM_ID + "\"}]}";
         callAndPrint(getAddressRemainingToken);
+    }
+
+    @Test
+    public void getAssociatedTokenAddress() throws Exception {
+        PublicKey.ProgramDerivedAddress derivedAddress = PublicKey.findProgramAddress(
+                Arrays.asList(
+                        new PublicKey(ACCOUNT).toByteArray(),
+                        new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA").toByteArray(),
+                        new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr").toByteArray()),
+                new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"));
+        System.out.println(derivedAddress.getAddress());
     }
 
 
