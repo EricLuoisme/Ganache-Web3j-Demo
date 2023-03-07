@@ -44,7 +44,7 @@ public class EthSpecialContractSignature {
     public static final String tradingPair = "0x0000000000000000000000000000000000000000000000000000000000000005";
     public static final String exchangeRate = "0x0000000000000000000000000000000000000000000000000000000000000006";
     public static final Long deadline = 1978244195003L;
-    public static final Long amt = 10L;
+    public static final Long amt = 1000000000000000000L;
 
 
     @Test
@@ -255,7 +255,7 @@ public class EthSpecialContractSignature {
         long chainId = 5; // for Goerli
         BigInteger maxPriorityFeePerGas = BigInteger.valueOf(5_000_000_000L);
         BigInteger maxFeePerGas = BigInteger.valueOf(50_000_000_000L);
-        BigInteger gasLimit = BigInteger.valueOf(900_000L);
+        BigInteger gasLimit = BigInteger.valueOf(100_000L);
         // for interact with contract, value have to input 0
         BigInteger value = BigInteger.valueOf(0L);
         RawTransaction rawTransaction = RawTransaction.createTransaction(chainId, nonce, gasLimit, callingContract, value, data, maxPriorityFeePerGas, maxFeePerGas);
