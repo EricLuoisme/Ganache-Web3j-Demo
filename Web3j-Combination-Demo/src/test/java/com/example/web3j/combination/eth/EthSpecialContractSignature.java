@@ -3,17 +3,19 @@ package com.example.web3j.combination.eth;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.junit.jupiter.api.Test;
-import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.TypeReference;
+import org.web3j.abi.*;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthChainId;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
+import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Numeric;
@@ -24,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static com.example.web3j.combination.eth.EthContractCallingTest.UINT256_OUTPUT;
 
 /**
  * @author Roylic
@@ -121,7 +125,6 @@ public class EthSpecialContractSignature {
         constructAndCallingContractFunction(data, supportTokenAddress, "");
     }
 
-
     @Test
     public void callingPaymentByUser() throws IOException {
         Function paymentByUser = new Function(
@@ -145,6 +148,46 @@ public class EthSpecialContractSignature {
 
         // call contract
         constructAndCallingContractFunction(data, contractAddress, "");
+    }
+
+    @Test
+    public void decodingPaymentByUserEvent() throws IOException {
+        Event paymentByUserEvent = new Event("paymentByUserEvent",
+                Arrays.asList(
+                        TypeReference.create(Utf8String.class, true), // orderId
+                        TypeReference.create(Utf8String.class, true), // merchantOrderId
+                        TypeReference.create(Address.class, true), // tokenAddress
+                        TypeReference.create(Address.class), // fromAddress
+                        TypeReference.create(Address.class), // toAddress
+                        TypeReference.create(Uint256.class) // amount
+                ));
+        String eventEncode = EventEncoder.encode(paymentByUserEvent);
+
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(8611235L)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(8611235L)),
+                Collections.emptyList());
+        filter.addOptionalTopics(eventEncode);
+
+        EthLog log = web3j.ethGetLogs(filter).send();
+        EthLog.LogObject logResult = (EthLog.LogObject) log.getLogs().get(0);
+
+        // 1. decode non-indexed stuff ->
+        List<Type> nonIndexedVal = FunctionReturnDecoder.decode(logResult.getData(), paymentByUserEvent.getNonIndexedParameters());
+        Type<Address> fromAddress = (Type<Address>) nonIndexedVal.get(0);
+        Type<Address> toAddress = (Type<Address>) nonIndexedVal.get(1);
+        Type<Uint256> amount = (Type<Uint256>) nonIndexedVal.get(2);
+
+        List<TypeReference<Type>> convert = Utils.convert(UINT256_OUTPUT);
+
+        // 2. decode indexed stuff ->
+        List<String> topics = logResult.getTopics();
+        Type type = FunctionReturnDecoder.decodeIndexedValue(topics.get(1), TypeReference.create(Utf8String.class));
+        Utf8String merchantOrderId = (Utf8String) FunctionReturnDecoder.decodeIndexedValue(topics.get(2), TypeReference.create(Utf8String.class));
+        Address tokenAddress = (Address) FunctionReturnDecoder.decodeIndexedValue(topics.get(3), TypeReference.create(Address.class));
+        System.out.println();
+
+
     }
 
 
