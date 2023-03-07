@@ -4,20 +4,18 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.Type;
-import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
-import org.web3j.contracts.eip20.generated.ERC20;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.response.*;
+import org.web3j.protocol.core.methods.response.EthChainId;
+import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
@@ -85,7 +83,7 @@ public class EthSpecialContractSignature {
     }
 
     @Test
-    public void paymentByUser() {
+    public void paymentByUserVRS() {
         String msgHash = "af388024982c964d0ec66e7202babb19aff3a0f797115f4564c35790679eb8f2";
 
         ECKeyPair signAcc = Credentials.create("").getEcKeyPair();
@@ -109,25 +107,17 @@ public class EthSpecialContractSignature {
 
     @Test
     public void approveToken() throws Exception {
-        ERC20 fauContract = ERC20.load(supportTokenAddress, web3j, Credentials.create(""), new DefaultGasProvider());
-        TransactionReceipt receipt = fauContract.approve(contractAddress, BigInteger.valueOf(50L)).send();
-        System.out.println("blockHash " + receipt.getBlockHash());
-        System.out.println("blockNumber " + receipt.getBlockNumber());
-        System.out.println("txHash " + receipt.getTransactionHash());
-        System.out.println("transactionIdx " + receipt.getTransactionIndex());
-        System.out.println("cumulativeGasUsed " + receipt.getCumulativeGasUsed());
-        System.out.println("effectiveGasPrice " + receipt.getEffectiveGasPrice());
-        System.out.println("gasUsed " + receipt.getGasUsed());
-        System.out.println("root " + receipt.getRoot());
-        System.out.println("status " + receipt.getStatus());
-        System.out.println("from " + receipt.getFrom());
-        System.out.println("to " + receipt.getTo());
 
-        // logs
-        List<Log> logs = receipt.getLogs();
+        Function approveFunc = new Function(
+                "approve",
+                Arrays.asList(new Address(contractAddress), new Uint256(new BigInteger("10000000000000000000"))),
+                Collections.singletonList(TypeReference.create(Bool.class))
+        );
+        String data = FunctionEncoder.encode(approveFunc);
+        System.out.println("Approve Func input data coding: " + data);
 
-
-        System.out.println();
+        // call contract
+        constructAndCallingContractFunction(data, supportTokenAddress, "");
     }
 
 
@@ -153,7 +143,7 @@ public class EthSpecialContractSignature {
         System.out.println("paymentByUser Func input data coding: " + data);
 
         // call contract
-        constructAndCallingContractFunction(data, "");
+        constructAndCallingContractFunction(data, contractAddress, "");
     }
 
 
@@ -257,7 +247,7 @@ public class EthSpecialContractSignature {
     /**
      * Construct txn inputs & execute
      */
-    private void constructAndCallingContractFunction(String data, String priKey) throws IOException {
+    private void constructAndCallingContractFunction(String data, String callingContract, String priKey) throws IOException {
         Credentials credentials = Credentials.create(priKey);
         EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST).send();
         BigInteger nonce = ethGetTransactionCount.getTransactionCount();
@@ -265,17 +255,21 @@ public class EthSpecialContractSignature {
         long chainId = 5; // for Goerli
         BigInteger maxPriorityFeePerGas = BigInteger.valueOf(5_000_000_000L);
         BigInteger maxFeePerGas = BigInteger.valueOf(50_000_000_000L);
-        BigInteger gasLimit = BigInteger.valueOf(100_000L);
+        BigInteger gasLimit = BigInteger.valueOf(900_000L);
         // for interact with contract, value have to input 0
         BigInteger value = BigInteger.valueOf(0L);
-        RawTransaction rawTransaction = RawTransaction.createTransaction(chainId, nonce, gasLimit, contractAddress, value, data, maxPriorityFeePerGas, maxFeePerGas);
+        RawTransaction rawTransaction = RawTransaction.createTransaction(chainId, nonce, gasLimit, callingContract, value, data, maxPriorityFeePerGas, maxFeePerGas);
         byte[] signedMsg = TransactionEncoder.signMessage(rawTransaction, credentials);
         String hexValue = Numeric.toHexString(signedMsg);
 
         String txHash = Hash.sha3(hexValue);
         System.out.println("OffChain txHash: " + txHash);
         EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
-        System.out.println("OnChain txHash: " + ethSendTransaction.getTransactionHash());
+        if (ethSendTransaction.hasError()) {
+            System.out.println("Error received: " + ethSendTransaction.getError().getMessage());
+        } else {
+            System.out.println("OnChain txHash: " + ethSendTransaction.getTransactionHash());
+        }
     }
 
 
