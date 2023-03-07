@@ -3,23 +3,29 @@ package com.example.web3j.combination.eth;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.junit.jupiter.api.Test;
-import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.*;
+import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.response.EthChainId;
-import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
-import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.request.Transaction;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import static com.example.web3j.combination.eth.EthContractCallingTest.UINT256_OUTPUT;
 
 /**
  * @author Roylic
@@ -29,32 +35,106 @@ public class EthSpecialContractSignatureV2 {
 
     private static final String web3Url = "https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467";
 
-    public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
+    private static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
-    public static final String contractAddress = "0xa9E628B29169ef448dBf362ec068EC1F414505BC";
+    private static final String contractAddress = "0x1bBB032517033C866Afd83D37234d3F6E8d4Fcc2";
 
-    public static final String supportTokenAddress = "0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc";
+    private static final String supportTokenAddress = "0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc";
+    private static final String quoteTokenAddress = "0x07865c6E87B9F70255377e024ace6630C1Eaa37F";
 
-    public static final String marketMakerAddress = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+    private static final String marketMakerAddress = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
 
-    public static final String PRI_KEY = "";
-
+    private static final String orderId = "20230307O_CR01167817057936624383";
+    private static final String merchantOrderId = "12342fjoi1u98r_1678170579727";
+    private static final String tradingPair = "0x0000000000000000000000000000000000000000000000000000000000000005";
+    private static final String exchangeRate = "0x0000000000000000000000000000000000000000000000000000000000000006";
+    private static final Long deadline = 1978244195003L;
+    private static final String payAmt = "0x0000000000000000000000000000000000000000000000001846c6ffd6a34200";
+    private static final String recAmt = "0x00000000000000000000000000000000000000000000000015a63bbc199c0000";
+    private static final Long recAmtLong = 1560000000000000000L;
 
     @Test
-    public void getChainId() throws IOException {
-        EthChainId send = web3j.ethChainId().send();
-        System.out.println(send.getChainId());
+    public void marketMakerValidationTest() throws IOException {
+        // encode
+        Function marketMakerFunc = new Function(
+                "marketMaker",
+                Collections.singletonList(new Address(marketMakerAddress)),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+        String encode = FunctionEncoder.encode(marketMakerFunc);
+        System.out.println("Market Maker Func coding: " + encode);
+
+        // call contract
+        Transaction mmCallingTxn = Transaction.createEthCallTransaction(contractAddress, contractAddress, encode);
+        EthCall send = web3j.ethCall(mmCallingTxn, DefaultBlockParameterName.LATEST).send();
+
+        // decoding
+        List<Type> decode = FunctionReturnDecoder.decode(send.getValue(), marketMakerFunc.getOutputParameters());
+        Bool returnVal = (Bool) decode.get(0);
+        System.out.println(returnVal.getValue());
+    }
+
+    @Test
+    public void marketMakerRegistrationTest() throws IOException {
+        // encode input data
+        Function registerMarketMaker = new Function(
+                "registerMarketMaker",
+                Collections.singletonList(new Address(marketMakerAddress)),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+        String data = FunctionEncoder.encode(registerMarketMaker);
+        // construct txn
+        constructAndCallingContractFunction(data, contractAddress, "");
+    }
+
+    @Test
+    public void marketMakerTokenAddTest() throws IOException {
+        // encode input data
+        Function marketMakerAddTokenFunc = new Function(
+                "marketMakerAddToken",
+                Collections.singletonList(new Address(supportTokenAddress)),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+        String data = FunctionEncoder.encode(marketMakerAddTokenFunc);// construct txn
+        constructAndCallingContractFunction(data, contractAddress, "");
+    }
+
+    @Test
+    public void supportTokenCheckingTest() throws IOException {
+        /// encode
+        Function marketMakerTokenFunc = new Function(
+                "getMarketMakerToken",
+                Collections.singletonList(new Address(marketMakerAddress)),
+                Collections.singletonList(new TypeReference<DynamicArray<EthSpecialContractCalling.PaymentToken>>() {
+                })
+        );
+
+        String encode = FunctionEncoder.encode(marketMakerTokenFunc);
+        System.out.println("Market Maker Func coding: " + encode);
+
+        // call contract
+        Transaction mmCallingTxn = Transaction.createEthCallTransaction(contractAddress, contractAddress, encode);
+        EthCall send = web3j.ethCall(mmCallingTxn, DefaultBlockParameterName.LATEST).send();
+
+        // decode
+        List<Type> decode = FunctionReturnDecoder.decode(send.getValue(), marketMakerTokenFunc.getOutputParameters());
+        DynamicArray<EthSpecialContractCalling.PaymentToken> paymentTokenDynamicArray = (DynamicArray<EthSpecialContractCalling.PaymentToken>) decode.get(0);
+        List<EthSpecialContractCalling.PaymentToken> paymentTokenList = paymentTokenDynamicArray.getValue();
+        paymentTokenList.forEach(paymentToken -> {
+            System.out.println();
+            System.out.println("Token Address: " + paymentToken.getAddress());
+            System.out.println("Token name: " + paymentToken.getName());
+            System.out.println("Token symbol: " + paymentToken.getSymbol());
+            System.out.println("Token decimals: " + paymentToken.getDecimals());
+        });
     }
 
 
     @Test
-    public void comprehensionTest() throws Exception {
+    public void constructMsgHash() throws Exception {
 
         // construct eip-712 structured data
-        JSONObject wholeStructuredData = new JSONObject();
+        com.alibaba.fastjson2.JSONObject wholeStructuredData = new com.alibaba.fastjson2.JSONObject();
 
         // 1. domain-data-type
-        JSONObject types = new JSONObject();
+        com.alibaba.fastjson2.JSONObject types = new com.alibaba.fastjson2.JSONObject();
         types.put("EIP712Domain", getDomainType());
         // 2. abi-params-type
         String primaryTypeName = "ValidateMarketMakers";
@@ -62,26 +142,21 @@ public class EthSpecialContractSignatureV2 {
         wholeStructuredData.put("types", types);
 
         // 3. domain-data
-        wholeStructuredData.put("domain", getDomainData("FundCheck", "1",
-                5L, "0xa9E628B29169ef448dBf362ec068EC1F414505BC"));
+        wholeStructuredData.put("domain", getDomainData("FundCheck", "1", 5L, contractAddress));
         // 4. primaryType
         wholeStructuredData.put("primaryType", primaryTypeName);
         // 5. abi-params-data
-        wholeStructuredData.put("message", getAbiData(supportTokenAddress, marketMakerAddress,
-                "0x0000000000000000000000000000000000000000000000000000000000000005",
-                "0x0000000000000000000000000000000000000000000000000000000000000006",
-                1999271118L, 10L));
+        wholeStructuredData.put("message", getAbiData(orderId, merchantOrderId, marketMakerAddress, supportTokenAddress, quoteTokenAddress, payAmt, recAmt, deadline));
 
         // parsing and sign
         StructuredDataEncoder structuredDataEncoder = new StructuredDataEncoder(wholeStructuredData.toJSONString());
         String msgHash = Numeric.toHexStringNoPrefix(structuredDataEncoder.hashStructuredData());
         System.out.println("txHash of eip721 msgHash: " + msgHash);
-
     }
 
     @Test
-    public void paymentByUser() {
-        String msgHash = "80dd7a261708a88ab2b0e6f6d7a30653e8aa745bd552794ed7c642746f4f7507";
+    public void paymentByUserVRS() {
+        String msgHash = "af388024982c964d0ec66e7202babb19aff3a0f797115f4564c35790679eb8f2";
 
         ECKeyPair signAcc = Credentials.create("").getEcKeyPair();
         Sign.SignatureData signatureData = Sign.signMessage(Numeric.hexStringToByteArray(msgHash), signAcc, false);
@@ -90,7 +165,7 @@ public class EthSpecialContractSignatureV2 {
         Uint8 v = new Uint8(Numeric.toBigInt(signatureData.getV()));
         Bytes32 r = new Bytes32((signatureData.getR()));
         Bytes32 s = new Bytes32((signatureData.getS()));
-        System.out.println("v : " + Numeric.toHexStringWithPrefix(v.getValue()));
+        System.out.println("v : " + v.getValue() + " in hex: " + Numeric.toHexStringWithPrefix(v.getValue()));
         System.out.println("r : " + Numeric.toHexString(r.getValue()));
         System.out.println("s : " + Numeric.toHexString(s.getValue()));
 
@@ -102,6 +177,87 @@ public class EthSpecialContractSignatureV2 {
         System.out.println(data);
     }
 
+    @Test
+    public void approveToken() throws Exception {
+
+        BigInteger maximum = new BigInteger("2").pow(256).subtract(BigInteger.ONE);
+        Function approveFunc = new Function(
+                "approve",
+                Arrays.asList(new Address(contractAddress), new Uint256(maximum)),
+                Collections.singletonList(TypeReference.create(Bool.class))
+        );
+        String data = FunctionEncoder.encode(approveFunc);
+        System.out.println("Approve Func input data coding: " + data);
+
+        // call contract
+        constructAndCallingContractFunction(data, supportTokenAddress, "");
+    }
+
+    @Test
+    public void callingPaymentByUser() throws IOException {
+        Function paymentByUser = new Function(
+                "paymentByUser",
+                Arrays.asList(
+                        new Utf8String(orderId), // orderId
+                        new Utf8String(merchantOrderId), // merchantOrderId
+                        new Address(marketMakerAddress), // merchantAddress
+                        new Address(supportTokenAddress), // baseCurrencyAddress
+                        new Address(quoteTokenAddress), // quoteCurrencyAddress
+                        new Bytes32(Numeric.hexStringToByteArray(payAmt)), // baseCurrencyAmt
+                        new Bytes32(Numeric.hexStringToByteArray(recAmt)), // quoteCurrencyAmt
+                        new Uint256(deadline), // deadline
+                        new Uint8(27L), // v
+                        new Bytes32(Numeric.hexStringToByteArray("0x2aeb13802db8735d0c66f2ae384ae38f2d5ac0ea2271be67e528874e01e9bd5d")), // r
+                        new Bytes32(Numeric.hexStringToByteArray("0x68b365c7d92db42a69a43f3ed1c9da5b9330654cf2aeaa34dcd6891a8eeabae2")) // s
+                ),
+                Collections.emptyList());
+        String data = FunctionEncoder.encode(paymentByUser);
+        System.out.println("paymentByUser Func input data coding: " + data);
+
+        // call contract
+        constructAndCallingContractFunction(data, contractAddress, "");
+    }
+
+    @Test
+    public void decodingPaymentByUserEvent() throws IOException {
+        Event paymentByUserEvent = new Event("paymentByUserEvent",
+                Arrays.asList(
+                        TypeReference.create(Utf8String.class, true), // orderId
+                        TypeReference.create(Utf8String.class, true), // merchantOrderId
+                        TypeReference.create(Address.class, true), // tokenAddress
+                        TypeReference.create(Address.class), // fromAddress
+                        TypeReference.create(Address.class), // toAddress
+                        TypeReference.create(Uint256.class) // amount
+                ));
+        String eventEncode = EventEncoder.encode(paymentByUserEvent);
+
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(8611235L)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(8611235L)),
+                Collections.emptyList());
+        filter.addOptionalTopics(eventEncode);
+
+        EthLog log = web3j.ethGetLogs(filter).send();
+        EthLog.LogObject logResult = (EthLog.LogObject) log.getLogs().get(0);
+
+        // 1. decode non-indexed stuff ->
+        List<Type> nonIndexedVal = FunctionReturnDecoder.decode(logResult.getData(), paymentByUserEvent.getNonIndexedParameters());
+        Type<Address> fromAddress = (Type<Address>) nonIndexedVal.get(0);
+        Type<Address> toAddress = (Type<Address>) nonIndexedVal.get(1);
+        Type<Uint256> amount = (Type<Uint256>) nonIndexedVal.get(2);
+
+        List<TypeReference<Type>> convert = Utils.convert(UINT256_OUTPUT);
+
+        // 2. decode indexed stuff ->
+        List<String> topics = logResult.getTopics();
+        Type type = FunctionReturnDecoder.decodeIndexedValue(topics.get(1), TypeReference.create(Utf8String.class));
+        Utf8String merchantOrderId = (Utf8String) FunctionReturnDecoder.decodeIndexedValue(topics.get(2), TypeReference.create(Utf8String.class));
+        Address tokenAddress = (Address) FunctionReturnDecoder.decodeIndexedValue(topics.get(3), TypeReference.create(Address.class));
+        System.out.println();
+
+
+    }
+
 
     /**
      * Get DomainType
@@ -109,19 +265,19 @@ public class EthSpecialContractSignatureV2 {
     private static JSONArray getDomainType() {
         JSONArray array = new JSONArray();
 
-        JSONObject nameJson = new JSONObject();
+        com.alibaba.fastjson2.JSONObject nameJson = new com.alibaba.fastjson2.JSONObject();
         nameJson.put("name", "name");
         nameJson.put("type", "string");
 
-        JSONObject versionJson = new JSONObject();
+        com.alibaba.fastjson2.JSONObject versionJson = new com.alibaba.fastjson2.JSONObject();
         versionJson.put("name", "version");
         versionJson.put("type", "string");
 
-        JSONObject chainIdJson = new JSONObject();
+        com.alibaba.fastjson2.JSONObject chainIdJson = new com.alibaba.fastjson2.JSONObject();
         chainIdJson.put("name", "chainId");
         chainIdJson.put("type", "uint256");
 
-        JSONObject verifyingContractJson = new JSONObject();
+        com.alibaba.fastjson2.JSONObject verifyingContractJson = new com.alibaba.fastjson2.JSONObject();
         verifyingContractJson.put("name", "verifyingContract");
         verifyingContractJson.put("type", "address");
 
@@ -135,9 +291,9 @@ public class EthSpecialContractSignatureV2 {
     /**
      * Get DomainType
      */
-    private static JSONObject getDomainData(String name, String version,
-                                            Long chainId, String verifyingContract) {
-        JSONObject domainObj = new JSONObject();
+    private static com.alibaba.fastjson2.JSONObject getDomainData(String name, String version,
+                                                                  Long chainId, String verifyingContract) {
+        com.alibaba.fastjson2.JSONObject domainObj = new com.alibaba.fastjson2.JSONObject();
         domainObj.put("name", name);
         domainObj.put("version", version);
         domainObj.put("chainId", chainId);
@@ -150,35 +306,35 @@ public class EthSpecialContractSignatureV2 {
      */
     private static JSONArray getAbiType() {
         JSONArray array = new JSONArray();
-        JSONObject param_1 = new JSONObject();
+        com.alibaba.fastjson2.JSONObject param_1 = new com.alibaba.fastjson2.JSONObject();
         param_1.put("name", "orderId");
-        param_1.put("type", "string");
+        param_1.put("type", "bytes32");
 
-        JSONObject param_2 = new JSONObject();
+        com.alibaba.fastjson2.JSONObject param_2 = new com.alibaba.fastjson2.JSONObject();
         param_2.put("name", "merchantOrderId");
-        param_2.put("type", "string");
+        param_2.put("type", "bytes32");
 
-        JSONObject param_3 = new JSONObject();
-        param_3.put("name", "leftTokenAddress");
+        com.alibaba.fastjson2.JSONObject param_3 = new com.alibaba.fastjson2.JSONObject();
+        param_3.put("name", "merchantAddress");
         param_3.put("type", "address");
 
-        JSONObject param_4 = new JSONObject();
-        param_4.put("name", "tokenAddress");
+        com.alibaba.fastjson2.JSONObject param_4 = new com.alibaba.fastjson2.JSONObject();
+        param_4.put("name", "baseCurrencyAddress");
         param_4.put("type", "address");
 
-        JSONObject param_5 = new JSONObject();
-        param_5.put("name", "merchantAddress");
+        com.alibaba.fastjson2.JSONObject param_5 = new com.alibaba.fastjson2.JSONObject();
+        param_5.put("name", "quoteCurrencyAddress");
         param_5.put("type", "address");
 
-        JSONObject param_6 = new JSONObject();
-        param_6.put("name", "leftAmount");
+        com.alibaba.fastjson2.JSONObject param_6 = new com.alibaba.fastjson2.JSONObject();
+        param_6.put("name", "baseCurrencyAmount");
         param_6.put("type", "uint256");
 
-        JSONObject param_7 = new JSONObject();
-        param_7.put("name", "amount");
+        com.alibaba.fastjson2.JSONObject param_7 = new com.alibaba.fastjson2.JSONObject();
+        param_7.put("name", "quoteCurrencyAmount");
         param_7.put("type", "uint256");
 
-        JSONObject param_8 = new JSONObject();
+        com.alibaba.fastjson2.JSONObject param_8 = new com.alibaba.fastjson2.JSONObject();
         param_8.put("name", "deadline");
         param_8.put("type", "uint256");
 
@@ -194,18 +350,21 @@ public class EthSpecialContractSignatureV2 {
     }
 
     /**
-     * return Abi data
+     * return Abi data, no matter we put String or Long inside, it would not change the txHash of the msg
      */
-    private static JSONObject getAbiData(String tokenAddress, String merchantAddress,
-                                         String tradingPair, String exchangeRate, Long deadline,
-                                         Long amount) {
-        JSONObject msg = new JSONObject();
-        msg.put("tokenAddress", tokenAddress);
+    private static com.alibaba.fastjson2.JSONObject getAbiData(String orderId, String merchantOrderId, String merchantAddress,
+                                                               String baseCurrencyAddress, String quoteCurrencyAddress,
+                                                               String baseCurrencyAmount, String quoteCurrencyAmount,
+                                                               Long deadline) {
+        com.alibaba.fastjson2.JSONObject msg = new JSONObject();
+        msg.put("orderId", Hash.sha3String(orderId));
+        msg.put("merchantOrderId", Hash.sha3String(merchantOrderId));
         msg.put("merchantAddress", merchantAddress);
-        msg.put("tradingPair", tradingPair);
-        msg.put("exchangeRate", exchangeRate);
+        msg.put("baseCurrencyAddress", baseCurrencyAddress);
+        msg.put("quoteCurrencyAddress", quoteCurrencyAddress);
+        msg.put("baseCurrencyAmount", baseCurrencyAmount);
+        msg.put("quoteCurrencyAmount", quoteCurrencyAmount);
         msg.put("deadline", deadline);
-        msg.put("amount", amount);
         return msg;
     }
 
@@ -213,7 +372,7 @@ public class EthSpecialContractSignatureV2 {
     /**
      * Construct txn inputs & execute
      */
-    private void constructAndCallingContractFunction(String data, String priKey) throws IOException {
+    private void constructAndCallingContractFunction(String data, String callingContract, String priKey) throws IOException {
         Credentials credentials = Credentials.create(priKey);
         EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST).send();
         BigInteger nonce = ethGetTransactionCount.getTransactionCount();
@@ -221,17 +380,21 @@ public class EthSpecialContractSignatureV2 {
         long chainId = 5; // for Goerli
         BigInteger maxPriorityFeePerGas = BigInteger.valueOf(5_000_000_000L);
         BigInteger maxFeePerGas = BigInteger.valueOf(50_000_000_000L);
-        BigInteger gasLimit = BigInteger.valueOf(100_000L);
+        BigInteger gasLimit = BigInteger.valueOf(1_000_000L);
         // for interact with contract, value have to input 0
         BigInteger value = BigInteger.valueOf(0L);
-        RawTransaction rawTransaction = RawTransaction.createTransaction(chainId, nonce, gasLimit, contractAddress, value, data, maxPriorityFeePerGas, maxFeePerGas);
+        RawTransaction rawTransaction = RawTransaction.createTransaction(chainId, nonce, gasLimit, callingContract, value, data, maxPriorityFeePerGas, maxFeePerGas);
         byte[] signedMsg = TransactionEncoder.signMessage(rawTransaction, credentials);
         String hexValue = Numeric.toHexString(signedMsg);
 
         String txHash = Hash.sha3(hexValue);
         System.out.println("OffChain txHash: " + txHash);
         EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
-        System.out.println("OnChain txHash: " + ethSendTransaction.getTransactionHash());
+        if (ethSendTransaction.hasError()) {
+            System.out.println("Error received: " + ethSendTransaction.getError().getMessage());
+        } else {
+            System.out.println("OnChain txHash: " + ethSendTransaction.getTransactionHash());
+        }
     }
 
 
