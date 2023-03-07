@@ -108,9 +108,10 @@ public class EthSpecialContractSignature {
     @Test
     public void approveToken() throws Exception {
 
+        BigInteger maximum = new BigInteger("2").pow(256).subtract(BigInteger.ONE);
         Function approveFunc = new Function(
                 "approve",
-                Arrays.asList(new Address(contractAddress), new Uint256(new BigInteger("10000000000000000000"))),
+                Arrays.asList(new Address(contractAddress), new Uint256(maximum)),
                 Collections.singletonList(TypeReference.create(Bool.class))
         );
         String data = FunctionEncoder.encode(approveFunc);
@@ -126,8 +127,8 @@ public class EthSpecialContractSignature {
         Function paymentByUser = new Function(
                 "paymentByUser",
                 Arrays.asList(
-                        new Utf8String("20230307O_CR01167815779443174917"), // orderId
-                        new Utf8String("12342fjoi1u98rf31"), // merchantOrderId
+                        new Utf8String("20230307O_CR01167817057936624383"), // orderId
+                        new Utf8String("12342fjoi1u98r_1678170579727"), // merchantOrderId
                         new Address(supportTokenAddress), // tokenAddress
                         new Address(marketMakerAddress), // merchantAddress
                         new Bytes32(Numeric.hexStringToByteArray(tradingPair)), // tradingPair
