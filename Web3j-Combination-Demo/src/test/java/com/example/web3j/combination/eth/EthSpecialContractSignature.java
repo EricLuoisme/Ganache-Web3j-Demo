@@ -4,21 +4,27 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Bytes32;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
+import org.web3j.contracts.eip20.generated.ERC20;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.response.EthChainId;
-import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
-import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -37,7 +43,10 @@ public class EthSpecialContractSignature {
 
     public static final String marketMakerAddress = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
 
-    public static final String PRI_KEY = "";
+    public static final String tradingPair = "0x0000000000000000000000000000000000000000000000000000000000000005";
+    public static final String exchangeRate = "0x0000000000000000000000000000000000000000000000000000000000000006";
+    public static final Long deadline = 1978244195003L;
+    public static final Long amt = 10L;
 
 
     @Test
@@ -62,26 +71,22 @@ public class EthSpecialContractSignature {
         wholeStructuredData.put("types", types);
 
         // 3. domain-data
-        wholeStructuredData.put("domain", getDomainData("FundCheck", "1",
-                5L, "0xa9E628B29169ef448dBf362ec068EC1F414505BC"));
+        wholeStructuredData.put("domain", getDomainData("FundCheck", "1", 5L, contractAddress));
         // 4. primaryType
         wholeStructuredData.put("primaryType", primaryTypeName);
         // 5. abi-params-data
         wholeStructuredData.put("message", getAbiData(supportTokenAddress, marketMakerAddress,
-                "0x0000000000000000000000000000000000000000000000000000000000000005",
-                "0x0000000000000000000000000000000000000000000000000000000000000006",
-                1999271118L, 10L));
+                tradingPair, exchangeRate, deadline, amt));
 
         // parsing and sign
         StructuredDataEncoder structuredDataEncoder = new StructuredDataEncoder(wholeStructuredData.toJSONString());
         String msgHash = Numeric.toHexStringNoPrefix(structuredDataEncoder.hashStructuredData());
         System.out.println("txHash of eip721 msgHash: " + msgHash);
-
     }
 
     @Test
     public void paymentByUser() {
-        String msgHash = "80dd7a261708a88ab2b0e6f6d7a30653e8aa745bd552794ed7c642746f4f7507";
+        String msgHash = "af388024982c964d0ec66e7202babb19aff3a0f797115f4564c35790679eb8f2";
 
         ECKeyPair signAcc = Credentials.create("").getEcKeyPair();
         Sign.SignatureData signatureData = Sign.signMessage(Numeric.hexStringToByteArray(msgHash), signAcc, false);
@@ -90,7 +95,7 @@ public class EthSpecialContractSignature {
         Uint8 v = new Uint8(Numeric.toBigInt(signatureData.getV()));
         Bytes32 r = new Bytes32((signatureData.getR()));
         Bytes32 s = new Bytes32((signatureData.getS()));
-        System.out.println("v : " + Numeric.toHexStringWithPrefix(v.getValue()));
+        System.out.println("v : " + v.getValue() + " in hex: " + Numeric.toHexStringWithPrefix(v.getValue()));
         System.out.println("r : " + Numeric.toHexString(r.getValue()));
         System.out.println("s : " + Numeric.toHexString(s.getValue()));
 
@@ -100,6 +105,55 @@ public class EthSpecialContractSignature {
 
         String data = FunctionEncoder.encodeConstructor(inputParameters);
         System.out.println(data);
+    }
+
+    @Test
+    public void approveToken() throws Exception {
+        ERC20 fauContract = ERC20.load(supportTokenAddress, web3j, Credentials.create(""), new DefaultGasProvider());
+        TransactionReceipt receipt = fauContract.approve(contractAddress, BigInteger.valueOf(50L)).send();
+        System.out.println("blockHash " + receipt.getBlockHash());
+        System.out.println("blockNumber " + receipt.getBlockNumber());
+        System.out.println("txHash " + receipt.getTransactionHash());
+        System.out.println("transactionIdx " + receipt.getTransactionIndex());
+        System.out.println("cumulativeGasUsed " + receipt.getCumulativeGasUsed());
+        System.out.println("effectiveGasPrice " + receipt.getEffectiveGasPrice());
+        System.out.println("gasUsed " + receipt.getGasUsed());
+        System.out.println("root " + receipt.getRoot());
+        System.out.println("status " + receipt.getStatus());
+        System.out.println("from " + receipt.getFrom());
+        System.out.println("to " + receipt.getTo());
+
+        // logs
+        List<Log> logs = receipt.getLogs();
+
+
+        System.out.println();
+    }
+
+
+    @Test
+    public void callingPaymentByUser() throws IOException {
+        Function paymentByUser = new Function(
+                "paymentByUser",
+                Arrays.asList(
+                        new Utf8String("20230307O_CR01167815779443174917"), // orderId
+                        new Utf8String("12342fjoi1u98rf31"), // merchantOrderId
+                        new Address(supportTokenAddress), // tokenAddress
+                        new Address(marketMakerAddress), // merchantAddress
+                        new Bytes32(Numeric.hexStringToByteArray(tradingPair)), // tradingPair
+                        new Bytes32(Numeric.hexStringToByteArray(exchangeRate)), // exchangeRate
+                        new Uint256(deadline), // deadline
+                        new Uint256(amt), // amount
+                        new Uint8(27L), // v
+                        new Bytes32(Numeric.hexStringToByteArray("0x2aeb13802db8735d0c66f2ae384ae38f2d5ac0ea2271be67e528874e01e9bd5d")), // r
+                        new Bytes32(Numeric.hexStringToByteArray("0x68b365c7d92db42a69a43f3ed1c9da5b9330654cf2aeaa34dcd6891a8eeabae2")) // s
+                ),
+                Collections.emptyList());
+        String data = FunctionEncoder.encode(paymentByUser);
+        System.out.println("paymentByUser Func input data coding: " + data);
+
+        // call contract
+        constructAndCallingContractFunction(data, "");
     }
 
 

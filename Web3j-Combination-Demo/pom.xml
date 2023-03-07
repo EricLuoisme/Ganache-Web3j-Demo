@@ -34,6 +34,12 @@
             <artifactId>core</artifactId>
             <version>4.9.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.web3j</groupId>
+            <artifactId>contracts</artifactId>
+            <version>4.9.5</version>
+        </dependency>
+
 
         <!-- Web3j for Eth 2.0 -->
         <dependency>

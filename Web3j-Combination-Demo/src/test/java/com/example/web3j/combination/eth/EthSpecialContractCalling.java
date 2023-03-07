@@ -1,8 +1,5 @@
 package com.example.web3j.combination.eth;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.example.web3j.combination.utils.OwnECDSASignUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -123,67 +120,6 @@ public class EthSpecialContractCalling {
             System.out.println("Token symbol: " + paymentToken.getSymbol());
             System.out.println("Token decimals: " + paymentToken.getDecimals());
         });
-    }
-
-    @Test
-    public void paymentByUserTest() {
-
-        String orderId = "20230303O_CR01167783311135710984";
-        String merchantOrderId = "12342fjoi1u98rf31";
-        String tokenAddress = "0x64544969ed7EBf5f083679233325356EbE738930";
-        String merchantAddress = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
-
-        byte[] tradingPair = new byte[32];
-        byte[] exchangeRate = new byte[32];
-        byte[] tradingPairBytes = Numeric.hexStringToByteArray("0xF");
-        byte[] exchangeRateBytes = Numeric.hexStringToByteArray("0x9");
-        System.arraycopy(tradingPairBytes, 0, tradingPair, 31, tradingPairBytes.length);
-        System.arraycopy(exchangeRateBytes, 0, exchangeRate, 31, exchangeRateBytes.length);
-
-        System.out.println("Trading Pair Amt: " + Integer.parseInt(Numeric.toHexString(tradingPairBytes, 0, tradingPairBytes.length, false), 16));
-        System.out.println("ExchangedRate Pair Amt: " + Integer.parseInt(Numeric.toHexString(exchangeRateBytes, 0, exchangeRateBytes.length, false), 16));
-
-        long deadline = 1687919511947L;
-        long amount = 100L;
-
-        ValidateMarketMaker plainTxt = ValidateMarketMaker.builder()
-                .tokenAddress(new Address(tokenAddress))
-                .merchantAddress(new Address(merchantAddress))
-                .tradingPair(new Bytes32(tradingPair))
-                .exchangeRate(new Bytes32(exchangeRate))
-                .deadline(new Uint256(deadline))
-                .amount(new Uint256(amount))
-                .build();
-
-        long[] rsv = OwnECDSASignUtil.signGetByteArr(
-                JSONObject.toJSONString(plainTxt, SerializerFeature.SortField),
-                Credentials.create(PRI_KEY).getEcKeyPair());
-
-        System.out.println();
-
-
-//        new Function(
-//                "paymentByUser",
-//                Arrays.asList(
-//                        new Utf8String(orderId),
-//                        new Utf8String(merchantOrderId),
-//                        plainTxt.getTokenAddress(),
-//                        plainTxt.getMerchantAddress(),
-//                        plainTxt.getTradingPair(),
-//                        plainTxt.getExchangeRate(),
-//                        plainTxt.getDeadline(),
-//                        plainTxt.getAmount(),
-//                        new Uint256(rsvBytes[0]),
-//                        new
-//                ),
-//                Collections.emptyList()
-//        );
-
-    }
-
-    @Test
-    public void paymentEventDecodingTest() {
-
     }
 
 
