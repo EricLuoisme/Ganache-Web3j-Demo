@@ -279,20 +279,20 @@ public class EthSpecialContractSignatureV2 {
     public void decodingPaymentByUserEvent() throws IOException {
         Event paymentByUserEvent = new Event("paymentByUserEvent",
                 Arrays.asList(
-                        TypeReference.create(Utf8String.class, true), // orderId
-                        TypeReference.create(Utf8String.class, true), // merchantOrderId
+                        TypeReference.create(Address.class, true), // fromAddress
+                        TypeReference.create(Address.class, true), // toAddress
+                        TypeReference.create(Utf8String.class), // orderId
+                        TypeReference.create(Utf8String.class), // merchantOrderId
                         TypeReference.create(Address.class), // baseCurrencyAddress
                         TypeReference.create(Address.class), // quoteCurrencyAddress
-                        TypeReference.create(Address.class), // fromAddress
-                        TypeReference.create(Address.class), // toAddress
                         TypeReference.create(Uint256.class), // baseCurrencyAmount
                         TypeReference.create(Uint256.class) // quoteCurrencyAmount
                 ));
         String eventEncode = EventEncoder.encode(paymentByUserEvent);
 
         EthFilter filter = new EthFilter(
-                DefaultBlockParameter.valueOf(BigInteger.valueOf(8616597L)),
-                DefaultBlockParameter.valueOf(BigInteger.valueOf(8616597L)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(8617192L)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(8617192L)),
                 Collections.emptyList());
         filter.addOptionalTopics(eventEncode);
 
@@ -301,20 +301,26 @@ public class EthSpecialContractSignatureV2 {
         List<String> topics = logResult.getTopics();
 
         // 1. decode indexed stuff over topics
-        Type<Utf8String> orderId = FunctionReturnDecoder.decodeIndexedValue(topics.get(1), TypeReference.create(Utf8String.class));
-        Type<Utf8String> merchantOrderId = FunctionReturnDecoder.decodeIndexedValue(topics.get(2), TypeReference.create(Utf8String.class));
-
+        Type<Address> fromAddress = FunctionReturnDecoder.decodeIndexedValue(topics.get(1), TypeReference.create(Address.class));
+        Type<Address> toAddress = FunctionReturnDecoder.decodeIndexedValue(topics.get(2), TypeReference.create(Address.class));
 
         // 2. decode non-indexed stuff over data
         List<Type> nonIndexedVal = FunctionReturnDecoder.decode(logResult.getData(), paymentByUserEvent.getNonIndexedParameters());
-        Type<Address> baseCurrencyAddress = nonIndexedVal.get(0);
-        Type<Address> quoteCurrencyAddress = nonIndexedVal.get(1);
-        Type<Address> fromAddress = nonIndexedVal.get(2);
-        Type<Address> toAddress = nonIndexedVal.get(3);
+        Type<Utf8String> orderId = nonIndexedVal.get(0);
+        Type<Utf8String> merchantOrderId = nonIndexedVal.get(1);
+        Type<Address> baseCurrencyAddress = nonIndexedVal.get(2);
+        Type<Address> quoteCurrencyAddress = nonIndexedVal.get(3);
         Type<Uint256> baseCurrencyAmount = nonIndexedVal.get(4);
         Type<Uint256> quoteCurrencyAmount = nonIndexedVal.get(5);
 
-        System.out.println();
+        System.out.println("Customer Address: " + fromAddress.getValue());
+        System.out.println("Market Maker Address: " + toAddress.getValue());
+        System.out.println("Platform Order Id: " + orderId.getValue());
+        System.out.println("Market Maker Order Id: " + merchantOrderId.getValue());
+        System.out.println("Customer Pay Token Contract: " + baseCurrencyAddress.getValue());
+        System.out.println("Customer Rec Token Contract: " + quoteCurrencyAddress.getValue());
+        System.out.println("Customer Pay Token Amount(Raw): " + baseCurrencyAmount.getValue());
+        System.out.println("Customer Rec Token Amount(Raw): " + quoteCurrencyAmount.getValue());
 
     }
 
