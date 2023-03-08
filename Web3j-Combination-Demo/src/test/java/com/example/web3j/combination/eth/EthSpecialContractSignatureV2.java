@@ -2,6 +2,8 @@ package com.example.web3j.combination.eth;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.*;
 import org.web3j.abi.datatypes.*;
@@ -14,12 +16,19 @@ import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.request.Transaction;
-import org.web3j.protocol.core.methods.response.*;
+import org.web3j.protocol.core.methods.response.EthCall;
+import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
+import org.web3j.protocol.core.methods.response.EthLog;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,7 +46,7 @@ public class EthSpecialContractSignatureV2 {
 
     private static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
-    private static final String contractAddress = "0x1bBB032517033C866Afd83D37234d3F6E8d4Fcc2";
+    private static final String contractAddress = "0xc57E4ba601cfBE747983D36c9eF051024c43C2d7";
 
     private static final String supportTokenAddress = "0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc";
     private static final String quoteTokenAddress = "0x07865c6E87B9F70255377e024ace6630C1Eaa37F";
@@ -46,12 +55,24 @@ public class EthSpecialContractSignatureV2 {
 
     private static final String orderId = "20230307O_CR01167817057936624383";
     private static final String merchantOrderId = "12342fjoi1u98r_1678170579727";
-    private static final String tradingPair = "0x0000000000000000000000000000000000000000000000000000000000000005";
-    private static final String exchangeRate = "0x0000000000000000000000000000000000000000000000000000000000000006";
     private static final Long deadline = 1978244195003L;
     private static final String payAmt = "0x0000000000000000000000000000000000000000000000001846c6ffd6a34200";
     private static final String recAmt = "0x00000000000000000000000000000000000000000000000015a63bbc199c0000";
+    private static final Long payAmtLong = 1749304307400000000L;
     private static final Long recAmtLong = 1560000000000000000L;
+
+
+    @Test
+    public void marketMakerRegistrationTest() throws IOException {
+        // encode input data
+        Function registerMarketMaker = new Function(
+                "registerMarketMaker",
+                Collections.singletonList(new Address(marketMakerAddress)),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+        String data = FunctionEncoder.encode(registerMarketMaker);
+        // construct txn, 0x675514737a35fcf6c7f9583deeafb647a8f1b249ea57d8a4f74a144f7fa0bc9c
+        constructAndCallingContractFunction(data, contractAddress, "");
+    }
 
     @Test
     public void marketMakerValidationTest() throws IOException {
@@ -74,25 +95,14 @@ public class EthSpecialContractSignatureV2 {
     }
 
     @Test
-    public void marketMakerRegistrationTest() throws IOException {
-        // encode input data
-        Function registerMarketMaker = new Function(
-                "registerMarketMaker",
-                Collections.singletonList(new Address(marketMakerAddress)),
-                Collections.singletonList(TypeReference.create(Bool.class)));
-        String data = FunctionEncoder.encode(registerMarketMaker);
-        // construct txn
-        constructAndCallingContractFunction(data, contractAddress, "");
-    }
-
-    @Test
     public void marketMakerTokenAddTest() throws IOException {
         // encode input data
         Function marketMakerAddTokenFunc = new Function(
                 "marketMakerAddToken",
                 Collections.singletonList(new Address(supportTokenAddress)),
                 Collections.singletonList(TypeReference.create(Bool.class)));
-        String data = FunctionEncoder.encode(marketMakerAddTokenFunc);// construct txn
+        String data = FunctionEncoder.encode(marketMakerAddTokenFunc);
+        // construct txn, 0xbea09c736fa57298e17116c18d75b55b865f481150dde5a5f60976df40066675
         constructAndCallingContractFunction(data, contractAddress, "");
     }
 
@@ -126,6 +136,21 @@ public class EthSpecialContractSignatureV2 {
         });
     }
 
+    @Test
+    public void approveToken() throws Exception {
+
+        BigInteger maximum = new BigInteger("2").pow(256).subtract(BigInteger.ONE);
+        Function approveFunc = new Function(
+                "approve",
+                Arrays.asList(new Address(contractAddress), new Uint256(maximum)),
+                Collections.singletonList(TypeReference.create(Bool.class))
+        );
+        String data = FunctionEncoder.encode(approveFunc);
+        System.out.println("Approve Func input data coding: " + data);
+
+        // call contract, 0xd10f9d955dfe87bf939e3da7e1928f74315c465ade8037c0c685d0fb55a81b74
+        constructAndCallingContractFunction(data, supportTokenAddress, "");
+    }
 
     @Test
     public void constructMsgHash() throws Exception {
@@ -148,15 +173,18 @@ public class EthSpecialContractSignatureV2 {
         // 5. abi-params-data
         wholeStructuredData.put("message", getAbiData(orderId, merchantOrderId, marketMakerAddress, supportTokenAddress, quoteTokenAddress, payAmt, recAmt, deadline));
 
+        ObjectMapper om = new ObjectMapper();
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(wholeStructuredData));
+
         // parsing and sign
         StructuredDataEncoder structuredDataEncoder = new StructuredDataEncoder(wholeStructuredData.toJSONString());
         String msgHash = Numeric.toHexStringNoPrefix(structuredDataEncoder.hashStructuredData());
-        System.out.println("txHash of eip721 msgHash: " + msgHash);
+        System.out.println("\ntxHash of eip721 msgHash: " + msgHash);
     }
 
     @Test
     public void paymentByUserVRS() {
-        String msgHash = "af388024982c964d0ec66e7202babb19aff3a0f797115f4564c35790679eb8f2";
+        String msgHash = "ab080bb362a27558c94a466a528cbaac877906e306a23bb887ca335750e35ab0";
 
         ECKeyPair signAcc = Credentials.create("").getEcKeyPair();
         Sign.SignatureData signatureData = Sign.signMessage(Numeric.hexStringToByteArray(msgHash), signAcc, false);
@@ -178,20 +206,54 @@ public class EthSpecialContractSignatureV2 {
     }
 
     @Test
-    public void approveToken() throws Exception {
+    public void constructEip712WholeProcess() throws IOException {
 
-        BigInteger maximum = new BigInteger("2").pow(256).subtract(BigInteger.ONE);
-        Function approveFunc = new Function(
-                "approve",
-                Arrays.asList(new Address(contractAddress), new Uint256(maximum)),
-                Collections.singletonList(TypeReference.create(Bool.class))
-        );
-        String data = FunctionEncoder.encode(approveFunc);
-        System.out.println("Approve Func input data coding: " + data);
+        String priKey = "";
 
-        // call contract
-        constructAndCallingContractFunction(data, supportTokenAddress, "");
+        // construct eip-712 structured data
+        com.alibaba.fastjson2.JSONObject wholeStructuredData = new com.alibaba.fastjson2.JSONObject();
+
+        // 1. domain-data-type
+        com.alibaba.fastjson2.JSONObject types = new com.alibaba.fastjson2.JSONObject();
+        types.put("EIP712Domain", getDomainType());
+        // 2. abi-params-type
+        String primaryTypeName = "ValidateMarketMakers";
+        types.put(primaryTypeName, getAbiType());
+        wholeStructuredData.put("types", types);
+
+        // 3. domain-data
+        wholeStructuredData.put("domain", getDomainData("FundCheck", "1", 5L, contractAddress));
+        // 4. primaryType
+        wholeStructuredData.put("primaryType", primaryTypeName);
+        // 5. abi-params-data
+        wholeStructuredData.put("message", getAbiData(orderId, merchantOrderId, marketMakerAddress, supportTokenAddress, quoteTokenAddress, payAmt, recAmt, deadline));
+
+        ObjectMapper om = new ObjectMapper();
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(wholeStructuredData));
+
+        // parsing and sign
+        StructuredDataEncoder structuredDataEncoder = new StructuredDataEncoder(wholeStructuredData.toJSONString());
+        String msgHash = Numeric.toHexStringNoPrefix(structuredDataEncoder.hashStructuredData());
+        System.out.println("\ntxHash of eip721 msgHash: " + msgHash);
+
+        ECKeyPair signAcc = Credentials.create(priKey).getEcKeyPair();
+        Sign.SignatureData signatureData = Sign.signMessage(Numeric.hexStringToByteArray(msgHash), signAcc, false);
+
+        List<Type> inputParameters = new ArrayList<>();
+        Uint8 v = new Uint8(Numeric.toBigInt(signatureData.getV()));
+        Bytes32 r = new Bytes32((signatureData.getR()));
+        Bytes32 s = new Bytes32((signatureData.getS()));
+        System.out.println("v : " + v.getValue() + " in hex: " + Numeric.toHexStringWithPrefix(v.getValue()));
+        System.out.println("r : " + Numeric.toHexString(r.getValue()));
+        System.out.println("s : " + Numeric.toHexString(s.getValue()));
+
+        inputParameters.add(v);
+        inputParameters.add(r);
+        inputParameters.add(s);
+        String data = FunctionEncoder.encodeConstructor(inputParameters);
+        System.out.println(data);
     }
+
 
     @Test
     public void callingPaymentByUser() throws IOException {
@@ -349,6 +411,25 @@ public class EthSpecialContractSignatureV2 {
         return array;
     }
 
+
+    @Test
+    public void comparison() throws NoSuchAlgorithmException {
+        String origin = Hash.sha3String(orderId);
+        String simSha256Prefix = Numeric.toHexString(Hash.sha256(orderId.getBytes(StandardCharsets.UTF_8)));
+        String simSha256NoPrefix = Numeric.toHexStringNoPrefix(Hash.sha256(orderId.getBytes(StandardCharsets.UTF_8)));
+
+        Security.addProvider(new BouncyCastleProvider());
+        final MessageDigest digest = MessageDigest.getInstance("Keccak-256");
+        final byte[] encodedHash = digest.digest(
+                orderId.getBytes(StandardCharsets.UTF_8));
+
+        System.out.println(origin);
+        System.out.println(simSha256Prefix);
+        System.out.println(simSha256NoPrefix);
+        System.out.println(Numeric.toHexString(encodedHash));
+    }
+
+
     /**
      * return Abi data, no matter we put String or Long inside, it would not change the txHash of the msg
      */
@@ -357,6 +438,15 @@ public class EthSpecialContractSignatureV2 {
                                                                String baseCurrencyAmount, String quoteCurrencyAmount,
                                                                Long deadline) {
         com.alibaba.fastjson2.JSONObject msg = new JSONObject();
+        System.out.println("orderId: " + Hash.sha3String(orderId));
+        System.out.println("merchantOrderId: " + Hash.sha3String(merchantOrderId));
+        System.out.println("merchantAddress: " + merchantAddress);
+        System.out.println("baseCurrencyAddress: " + baseCurrencyAddress);
+        System.out.println("quoteCurrencyAddress: " + quoteCurrencyAddress);
+        System.out.println("baseCurrencyAmount: " + baseCurrencyAmount);
+        System.out.println("quoteCurrencyAmount: " + quoteCurrencyAmount);
+        System.out.println("deadline: " + deadline);
+
         msg.put("orderId", Hash.sha3String(orderId));
         msg.put("merchantOrderId", Hash.sha3String(merchantOrderId));
         msg.put("merchantAddress", merchantAddress);
