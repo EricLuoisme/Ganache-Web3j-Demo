@@ -3,9 +3,11 @@ package com.example.web3j.combination.eth;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Test;
-import org.web3j.abi.*;
+import org.web3j.abi.EventEncoder;
+import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.FunctionReturnDecoder;
+import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
@@ -25,16 +27,10 @@ import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static com.example.web3j.combination.eth.EthContractCallingTest.UINT256_OUTPUT;
 
 /**
  * @author Roylic
@@ -53,8 +49,8 @@ public class EthSpecialContractSignatureV2 {
 
     private static final String marketMakerAddress = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
 
-    private static final String orderId = "20230307O_CR01167817057936624383";
-    private static final String merchantOrderId = "12342fjoi1u98r_1678170579727";
+    private static final String orderId = "20230308O_CR01167825566846949350";
+    private static final String merchantOrderId = "12342fjoi1u98r_1678255668993";
     private static final Long deadline = 1978244195003L;
     private static final String payAmt = "0x0000000000000000000000000000000000000000000000001846c6ffd6a34200";
     private static final String recAmt = "0x00000000000000000000000000000000000000000000000015a63bbc199c0000";
@@ -254,7 +250,6 @@ public class EthSpecialContractSignatureV2 {
         System.out.println(data);
     }
 
-
     @Test
     public void callingPaymentByUser() throws IOException {
         Function paymentByUser = new Function(
@@ -269,14 +264,14 @@ public class EthSpecialContractSignatureV2 {
                         new Uint256(new BigInteger(Numeric.hexStringToByteArray(recAmt))), // quoteCurrencyAmt
                         new Uint256(deadline), // deadline
                         new Uint8(27L), // v
-                        new Bytes32(Numeric.hexStringToByteArray("0x755a139a91d72065d7e72b6aeef7c283837204baa166f3daabd33bf4751a64f0")), // r
-                        new Bytes32(Numeric.hexStringToByteArray("0x12cd1285ebd55a43caad7ff2c7dee0bb7e41eb7a57a3fe3c2e53dfc2f7eeda4e")) // s
+                        new Bytes32(Numeric.hexStringToByteArray("0x382791970557f3e5e1243623b05e27a863fd084cd0434f3c579cf91a216608fe")), // r
+                        new Bytes32(Numeric.hexStringToByteArray("0x21830f0c30694d780b3770a1816939ac29e73bbb4d300d8fa768c04d1f9fcf64")) // s
                 ),
                 Collections.emptyList());
         String data = FunctionEncoder.encode(paymentByUser);
         System.out.println("paymentByUser Func input data coding: " + data);
 
-        // call contract, 0x28113797909728cdaf40c49cc38b732f6283f24725f61bf9f93e3a38241f92ec
+        // call contract, 0xdce9942c5dcf53d1c8ea2fc2a2199f2b88dc80d203bd3564dd3391711f7d57a5
         constructAndCallingContractFunction(data, contractAddress, "");
     }
 
@@ -286,37 +281,40 @@ public class EthSpecialContractSignatureV2 {
                 Arrays.asList(
                         TypeReference.create(Utf8String.class, true), // orderId
                         TypeReference.create(Utf8String.class, true), // merchantOrderId
-                        TypeReference.create(Address.class, true), // tokenAddress
+                        TypeReference.create(Address.class), // baseCurrencyAddress
+                        TypeReference.create(Address.class), // quoteCurrencyAddress
                         TypeReference.create(Address.class), // fromAddress
                         TypeReference.create(Address.class), // toAddress
-                        TypeReference.create(Uint256.class) // amount
+                        TypeReference.create(Uint256.class), // baseCurrencyAmount
+                        TypeReference.create(Uint256.class) // quoteCurrencyAmount
                 ));
         String eventEncode = EventEncoder.encode(paymentByUserEvent);
 
         EthFilter filter = new EthFilter(
-                DefaultBlockParameter.valueOf(BigInteger.valueOf(8611235L)),
-                DefaultBlockParameter.valueOf(BigInteger.valueOf(8611235L)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(8616597L)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(8616597L)),
                 Collections.emptyList());
         filter.addOptionalTopics(eventEncode);
 
         EthLog log = web3j.ethGetLogs(filter).send();
         EthLog.LogObject logResult = (EthLog.LogObject) log.getLogs().get(0);
-
-        // 1. decode non-indexed stuff ->
-        List<Type> nonIndexedVal = FunctionReturnDecoder.decode(logResult.getData(), paymentByUserEvent.getNonIndexedParameters());
-        Type<Address> fromAddress = (Type<Address>) nonIndexedVal.get(0);
-        Type<Address> toAddress = (Type<Address>) nonIndexedVal.get(1);
-        Type<Uint256> amount = (Type<Uint256>) nonIndexedVal.get(2);
-
-        List<TypeReference<Type>> convert = Utils.convert(UINT256_OUTPUT);
-
-        // 2. decode indexed stuff ->
         List<String> topics = logResult.getTopics();
-        Type type = FunctionReturnDecoder.decodeIndexedValue(topics.get(1), TypeReference.create(Utf8String.class));
-        Utf8String merchantOrderId = (Utf8String) FunctionReturnDecoder.decodeIndexedValue(topics.get(2), TypeReference.create(Utf8String.class));
-        Address tokenAddress = (Address) FunctionReturnDecoder.decodeIndexedValue(topics.get(3), TypeReference.create(Address.class));
-        System.out.println();
 
+        // 1. decode indexed stuff over topics
+        Type<Utf8String> orderId = FunctionReturnDecoder.decodeIndexedValue(topics.get(1), TypeReference.create(Utf8String.class));
+        Type<Utf8String> merchantOrderId = FunctionReturnDecoder.decodeIndexedValue(topics.get(2), TypeReference.create(Utf8String.class));
+
+
+        // 2. decode non-indexed stuff over data
+        List<Type> nonIndexedVal = FunctionReturnDecoder.decode(logResult.getData(), paymentByUserEvent.getNonIndexedParameters());
+        Type<Address> baseCurrencyAddress = nonIndexedVal.get(0);
+        Type<Address> quoteCurrencyAddress = nonIndexedVal.get(1);
+        Type<Address> fromAddress = nonIndexedVal.get(2);
+        Type<Address> toAddress = nonIndexedVal.get(3);
+        Type<Uint256> baseCurrencyAmount = nonIndexedVal.get(4);
+        Type<Uint256> quoteCurrencyAmount = nonIndexedVal.get(5);
+
+        System.out.println();
 
     }
 
@@ -410,25 +408,6 @@ public class EthSpecialContractSignatureV2 {
         array.add(param_8);
         return array;
     }
-
-
-    @Test
-    public void comparison() throws NoSuchAlgorithmException {
-        String origin = Hash.sha3String(orderId);
-        String simSha256Prefix = Numeric.toHexString(Hash.sha256(orderId.getBytes(StandardCharsets.UTF_8)));
-        String simSha256NoPrefix = Numeric.toHexStringNoPrefix(Hash.sha256(orderId.getBytes(StandardCharsets.UTF_8)));
-
-        Security.addProvider(new BouncyCastleProvider());
-        final MessageDigest digest = MessageDigest.getInstance("Keccak-256");
-        final byte[] encodedHash = digest.digest(
-                orderId.getBytes(StandardCharsets.UTF_8));
-
-        System.out.println(origin);
-        System.out.println(simSha256Prefix);
-        System.out.println(simSha256NoPrefix);
-        System.out.println(Numeric.toHexString(encodedHash));
-    }
-
 
     /**
      * return Abi data, no matter we put String or Long inside, it would not change the txHash of the msg
