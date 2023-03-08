@@ -265,18 +265,18 @@ public class EthSpecialContractSignatureV2 {
                         new Address(marketMakerAddress), // merchantAddress
                         new Address(supportTokenAddress), // baseCurrencyAddress
                         new Address(quoteTokenAddress), // quoteCurrencyAddress
-                        new Bytes32(Numeric.hexStringToByteArray(payAmt)), // baseCurrencyAmt
-                        new Bytes32(Numeric.hexStringToByteArray(recAmt)), // quoteCurrencyAmt
+                        new Uint256(new BigInteger(Numeric.hexStringToByteArray(payAmt))), // baseCurrencyAmt
+                        new Uint256(new BigInteger(Numeric.hexStringToByteArray(recAmt))), // quoteCurrencyAmt
                         new Uint256(deadline), // deadline
                         new Uint8(27L), // v
-                        new Bytes32(Numeric.hexStringToByteArray("0x2aeb13802db8735d0c66f2ae384ae38f2d5ac0ea2271be67e528874e01e9bd5d")), // r
-                        new Bytes32(Numeric.hexStringToByteArray("0x68b365c7d92db42a69a43f3ed1c9da5b9330654cf2aeaa34dcd6891a8eeabae2")) // s
+                        new Bytes32(Numeric.hexStringToByteArray("0x755a139a91d72065d7e72b6aeef7c283837204baa166f3daabd33bf4751a64f0")), // r
+                        new Bytes32(Numeric.hexStringToByteArray("0x12cd1285ebd55a43caad7ff2c7dee0bb7e41eb7a57a3fe3c2e53dfc2f7eeda4e")) // s
                 ),
                 Collections.emptyList());
         String data = FunctionEncoder.encode(paymentByUser);
         System.out.println("paymentByUser Func input data coding: " + data);
 
-        // call contract
+        // call contract, 0x28113797909728cdaf40c49cc38b732f6283f24725f61bf9f93e3a38241f92ec
         constructAndCallingContractFunction(data, contractAddress, "");
     }
 
