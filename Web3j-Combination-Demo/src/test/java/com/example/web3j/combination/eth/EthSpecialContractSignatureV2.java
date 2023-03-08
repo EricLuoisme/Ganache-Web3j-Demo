@@ -171,6 +171,7 @@ public class EthSpecialContractSignatureV2 {
 
         ObjectMapper om = new ObjectMapper();
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(wholeStructuredData));
+        System.out.println(wholeStructuredData.toJSONString());
 
         // parsing and sign
         StructuredDataEncoder structuredDataEncoder = new StructuredDataEncoder(wholeStructuredData.toJSONString());
