@@ -18,10 +18,7 @@ import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.request.Transaction;
-import org.web3j.protocol.core.methods.response.EthCall;
-import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
-import org.web3j.protocol.core.methods.response.EthLog;
-import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Numeric;
 
@@ -57,6 +54,12 @@ public class EthSpecialContractSignatureV2 {
     private static final Long payAmtLong = 1749304307400000000L;
     private static final Long recAmtLong = 1560000000000000000L;
 
+
+    @Test
+    public void getLatestHeight() throws IOException {
+        EthBlockNumber resp = web3j.ethBlockNumber().send();
+        System.out.println(resp.getBlockNumber());
+    }
 
     @Test
     public void marketMakerRegistrationTest() throws IOException {
