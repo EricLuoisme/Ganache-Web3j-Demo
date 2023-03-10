@@ -280,6 +280,50 @@ public class EthSpecialContractSignatureV2 {
     }
 
     @Test
+    public void callingPaymentByUserSimulation() throws IOException {
+
+
+        String inputJsonStr = "{\"data\":{\"requestId\":\"20230302102300\",\"merchantNo\":\"202201Maker_2ai75\",\"orderNo\":\"20230310O_CR01167842016127819573\",\"merchantOrderNo\":\"12342fjoi1u98r_1678420161685\",\"chainId\":31,\"baseContract\":\"0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc\",\"quoteContract\":\"0x07865c6E87B9F70255377e024ace6630C1Eaa37F\",\"baseAmt\":\"2085708981900000000\",\"quoteAmt\":\"1860000000000000000\",\"c2cRate\":1.12134892,\"payAddress\":\"0x36F0A040C8e60974d1F34b316B3e956f509Db7e5\",\"merchantAddress\":\"0x36F0A040C8e60974d1F34b316B3e956f509Db7e5\",\"deadline\":1678506561686,\"signR\":\"0xb8a8ead31a5bf4be5be10a79eb6e5dd1705922d52ce094c26286312e3fcf00f1\",\"signS\":\"0x142e0f943f9216daac93ed3f08ed615af27c3d30ed9eb2c640aa00d1a197574a\",\"signV\":\"0x1b\",\"accepted\":true},\"error\":null}";
+        JSONObject jsonObject = JSONObject.parseObject(inputJsonStr);
+        JSONObject dataObj = jsonObject.getJSONObject("data");
+
+        String orderId = dataObj.getString("orderNo");
+        String merchantOrderId = dataObj.getString("merchantOrderNo");
+        String merchantAddress = dataObj.getString("merchantAddress");
+        String baseCurrencyAddress = dataObj.getString("baseContract");
+        String quoteCurrencyAddress = dataObj.getString("quoteContract");
+        BigInteger baseCurrencyAmount = new BigInteger(dataObj.getString("baseAmt"));
+        BigInteger quoteCurrencyAmount = new BigInteger(dataObj.getString("quoteAmt"));
+        Long deadline = 1678504820080L;
+        BigInteger v = new BigInteger(1, Numeric.hexStringToByteArray(dataObj.getString("signV")));
+        String hexR = dataObj.getString("signR");
+        String hexS = dataObj.getString("signS");
+
+
+        Function paymentByUser = new Function(
+                "paymentByUser",
+                Arrays.asList(
+                        new Utf8String(orderId), // orderId
+                        new Utf8String(merchantOrderId), // merchantOrderId
+                        new Address(merchantAddress), // merchantAddress
+                        new Address(baseCurrencyAddress), // baseCurrencyAddress
+                        new Address(quoteCurrencyAddress), // quoteCurrencyAddress
+                        new Uint256(baseCurrencyAmount), // baseCurrencyAmt
+                        new Uint256(quoteCurrencyAmount), // quoteCurrencyAmt
+                        new Uint256(deadline), // deadline
+                        new Uint8(v), // v
+                        new Bytes32(Numeric.hexStringToByteArray(hexR)), // r
+                        new Bytes32(Numeric.hexStringToByteArray(hexS)) // s
+                ),
+                Collections.emptyList());
+        String data = FunctionEncoder.encode(paymentByUser);
+        System.out.println("paymentByUser Func input data coding: " + data);
+
+        // call contract, 0xdce9942c5dcf53d1c8ea2fc2a2199f2b88dc80d203bd3564dd3391711f7d57a5
+        constructAndCallingContractFunction(data, contractAddress, "");
+    }
+
+    @Test
     public void decodingPaymentByUserEvent() throws IOException {
         Event paymentByUserEvent = new Event("paymentByUserEvent",
                 Arrays.asList(
