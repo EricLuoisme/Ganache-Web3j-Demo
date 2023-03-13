@@ -2,7 +2,6 @@ package com.example.web3j.combination.eth;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.EventEncoder;
 import org.web3j.abi.FunctionEncoder;
@@ -12,7 +11,10 @@ import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
-import org.web3j.crypto.*;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.Hash;
+import org.web3j.crypto.RawTransaction;
+import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
@@ -24,7 +26,6 @@ import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -33,26 +34,14 @@ import java.util.List;
  * @author Roylic
  * 2023/3/3
  */
-public class EthSpecialContractSignatureV2 {
+public class SepoliaSpecContractInteraction {
 
-    private static final String web3Url = "https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467";
-
+    private static final String web3Url = "https://eth-sepolia.g.alchemy.com/v2/QLMIscpEP9Ok7kjHjnW2F65XN11crn55";
     private static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
-    private static final String contractAddress = "0xc57E4ba601cfBE747983D36c9eF051024c43C2d7";
-
+    private static final String contractAddress = "0x1bBB032517033C866Afd83D37234d3F6E8d4Fcc2";
     private static final String supportTokenAddress = "0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc";
-    private static final String quoteTokenAddress = "0x07865c6E87B9F70255377e024ace6630C1Eaa37F";
-
     private static final String marketMakerAddress = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
-
-    private static final String orderId = "20230308O_CR01167825566846949350";
-    private static final String merchantOrderId = "12342fjoi1u98r_1678255668993";
-    private static final Long deadline = 1978244195003L;
-    private static final String payAmt = "0x0000000000000000000000000000000000000000000000001846c6ffd6a34200";
-    private static final String recAmt = "0x00000000000000000000000000000000000000000000000015a63bbc199c0000";
-    private static final Long payAmtLong = 1749304307400000000L;
-    private static final Long recAmtLong = 1560000000000000000L;
 
 
     @Test
@@ -72,7 +61,7 @@ public class EthSpecialContractSignatureV2 {
                 Collections.singletonList(new Address(marketMakerAddress)),
                 Collections.singletonList(TypeReference.create(Bool.class)));
         String data = FunctionEncoder.encode(registerMarketMaker);
-        // construct txn, 0x675514737a35fcf6c7f9583deeafb647a8f1b249ea57d8a4f74a144f7fa0bc9c
+        // construct txn, 0xb7f45cbd2e48ca2a54cc5f0e8e80fefaf3e5e0cdddfdbb9bb69faf56c475325f
         constructAndCallingContractFunction(data, contractAddress, "");
     }
 
@@ -152,134 +141,6 @@ public class EthSpecialContractSignatureV2 {
 
         // call contract, 0xd10f9d955dfe87bf939e3da7e1928f74315c465ade8037c0c685d0fb55a81b74
         constructAndCallingContractFunction(data, supportTokenAddress, "");
-    }
-
-    @Test
-    public void constructMsgHash() throws Exception {
-
-        // construct eip-712 structured data
-        com.alibaba.fastjson2.JSONObject wholeStructuredData = new com.alibaba.fastjson2.JSONObject();
-
-        // 1. domain-data-type
-        com.alibaba.fastjson2.JSONObject types = new com.alibaba.fastjson2.JSONObject();
-        types.put("EIP712Domain", getDomainType());
-        // 2. abi-params-type
-        String primaryTypeName = "ValidateMarketMakers";
-        types.put(primaryTypeName, getAbiType());
-        wholeStructuredData.put("types", types);
-
-        // 3. domain-data
-        wholeStructuredData.put("domain", getDomainData("FundCheck", "1", 5L, contractAddress));
-        // 4. primaryType
-        wholeStructuredData.put("primaryType", primaryTypeName);
-        // 5. abi-params-data
-        wholeStructuredData.put("message", getAbiData(orderId, merchantOrderId, marketMakerAddress, supportTokenAddress, quoteTokenAddress, payAmt, recAmt, deadline));
-
-        ObjectMapper om = new ObjectMapper();
-        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(wholeStructuredData));
-        System.out.println(wholeStructuredData.toJSONString());
-
-        // parsing and sign
-        StructuredDataEncoder structuredDataEncoder = new StructuredDataEncoder(wholeStructuredData.toJSONString());
-        String msgHash = Numeric.toHexStringNoPrefix(structuredDataEncoder.hashStructuredData());
-        System.out.println("\ntxHash of eip721 msgHash: " + msgHash);
-    }
-
-    @Test
-    public void paymentByUserVRS() {
-        String msgHash = "ab080bb362a27558c94a466a528cbaac877906e306a23bb887ca335750e35ab0";
-
-        ECKeyPair signAcc = Credentials.create("").getEcKeyPair();
-        Sign.SignatureData signatureData = Sign.signMessage(Numeric.hexStringToByteArray(msgHash), signAcc, false);
-
-        List<Type> inputParameters = new ArrayList<>();
-        Uint8 v = new Uint8(Numeric.toBigInt(signatureData.getV()));
-        Bytes32 r = new Bytes32((signatureData.getR()));
-        Bytes32 s = new Bytes32((signatureData.getS()));
-        System.out.println("v : " + v.getValue() + " in hex: " + Numeric.toHexStringWithPrefix(v.getValue()));
-        System.out.println("r : " + Numeric.toHexString(r.getValue()));
-        System.out.println("s : " + Numeric.toHexString(s.getValue()));
-
-        inputParameters.add(v);
-        inputParameters.add(r);
-        inputParameters.add(s);
-
-        String data = FunctionEncoder.encodeConstructor(inputParameters);
-        System.out.println(data);
-    }
-
-    @Test
-    public void constructEip712WholeProcess() throws IOException {
-
-        String priKey = "";
-
-        // construct eip-712 structured data
-        com.alibaba.fastjson2.JSONObject wholeStructuredData = new com.alibaba.fastjson2.JSONObject();
-
-        // 1. domain-data-type
-        com.alibaba.fastjson2.JSONObject types = new com.alibaba.fastjson2.JSONObject();
-        types.put("EIP712Domain", getDomainType());
-        // 2. abi-params-type
-        String primaryTypeName = "ValidateMarketMakers";
-        types.put(primaryTypeName, getAbiType());
-        wholeStructuredData.put("types", types);
-
-        // 3. domain-data
-        wholeStructuredData.put("domain", getDomainData("FundCheck", "1", 5L, contractAddress));
-        // 4. primaryType
-        wholeStructuredData.put("primaryType", primaryTypeName);
-        // 5. abi-params-data
-        wholeStructuredData.put("message", getAbiData(orderId, merchantOrderId, marketMakerAddress, supportTokenAddress, quoteTokenAddress, payAmt, recAmt, deadline));
-
-        ObjectMapper om = new ObjectMapper();
-        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(wholeStructuredData));
-
-        // parsing and sign
-        StructuredDataEncoder structuredDataEncoder = new StructuredDataEncoder(wholeStructuredData.toJSONString());
-        String msgHash = Numeric.toHexStringNoPrefix(structuredDataEncoder.hashStructuredData());
-        System.out.println("\ntxHash of eip721 msgHash: " + msgHash);
-
-        ECKeyPair signAcc = Credentials.create(priKey).getEcKeyPair();
-        Sign.SignatureData signatureData = Sign.signMessage(Numeric.hexStringToByteArray(msgHash), signAcc, false);
-
-        List<Type> inputParameters = new ArrayList<>();
-        Uint8 v = new Uint8(Numeric.toBigInt(signatureData.getV()));
-        Bytes32 r = new Bytes32((signatureData.getR()));
-        Bytes32 s = new Bytes32((signatureData.getS()));
-        System.out.println("v : " + v.getValue() + " in hex: " + Numeric.toHexStringWithPrefix(v.getValue()));
-        System.out.println("r : " + Numeric.toHexString(r.getValue()));
-        System.out.println("s : " + Numeric.toHexString(s.getValue()));
-
-        inputParameters.add(v);
-        inputParameters.add(r);
-        inputParameters.add(s);
-        String data = FunctionEncoder.encodeConstructor(inputParameters);
-        System.out.println(data);
-    }
-
-    @Test
-    public void callingPaymentByUser() throws IOException {
-        Function paymentByUser = new Function(
-                "paymentByUser",
-                Arrays.asList(
-                        new Utf8String(orderId), // orderId
-                        new Utf8String(merchantOrderId), // merchantOrderId
-                        new Address(marketMakerAddress), // merchantAddress
-                        new Address(supportTokenAddress), // baseCurrencyAddress
-                        new Address(quoteTokenAddress), // quoteCurrencyAddress
-                        new Uint256(new BigInteger(Numeric.hexStringToByteArray(payAmt))), // baseCurrencyAmt
-                        new Uint256(new BigInteger(Numeric.hexStringToByteArray(recAmt))), // quoteCurrencyAmt
-                        new Uint256(deadline), // deadline
-                        new Uint8(27L), // v
-                        new Bytes32(Numeric.hexStringToByteArray("0x382791970557f3e5e1243623b05e27a863fd084cd0434f3c579cf91a216608fe")), // r
-                        new Bytes32(Numeric.hexStringToByteArray("0x21830f0c30694d780b3770a1816939ac29e73bbb4d300d8fa768c04d1f9fcf64")) // s
-                ),
-                Collections.emptyList());
-        String data = FunctionEncoder.encode(paymentByUser);
-        System.out.println("paymentByUser Func input data coding: " + data);
-
-        // call contract, 0xdce9942c5dcf53d1c8ea2fc2a2199f2b88dc80d203bd3564dd3391711f7d57a5
-        constructAndCallingContractFunction(data, contractAddress, "");
     }
 
     @Test
@@ -382,19 +243,19 @@ public class EthSpecialContractSignatureV2 {
     private static JSONArray getDomainType() {
         JSONArray array = new JSONArray();
 
-        com.alibaba.fastjson2.JSONObject nameJson = new com.alibaba.fastjson2.JSONObject();
+        JSONObject nameJson = new JSONObject();
         nameJson.put("name", "name");
         nameJson.put("type", "string");
 
-        com.alibaba.fastjson2.JSONObject versionJson = new com.alibaba.fastjson2.JSONObject();
+        JSONObject versionJson = new JSONObject();
         versionJson.put("name", "version");
         versionJson.put("type", "string");
 
-        com.alibaba.fastjson2.JSONObject chainIdJson = new com.alibaba.fastjson2.JSONObject();
+        JSONObject chainIdJson = new JSONObject();
         chainIdJson.put("name", "chainId");
         chainIdJson.put("type", "uint256");
 
-        com.alibaba.fastjson2.JSONObject verifyingContractJson = new com.alibaba.fastjson2.JSONObject();
+        JSONObject verifyingContractJson = new JSONObject();
         verifyingContractJson.put("name", "verifyingContract");
         verifyingContractJson.put("type", "address");
 
@@ -408,9 +269,9 @@ public class EthSpecialContractSignatureV2 {
     /**
      * Get DomainType
      */
-    private static com.alibaba.fastjson2.JSONObject getDomainData(String name, String version,
-                                                                  Long chainId, String verifyingContract) {
-        com.alibaba.fastjson2.JSONObject domainObj = new com.alibaba.fastjson2.JSONObject();
+    private static JSONObject getDomainData(String name, String version,
+                                            Long chainId, String verifyingContract) {
+        JSONObject domainObj = new JSONObject();
         domainObj.put("name", name);
         domainObj.put("version", version);
         domainObj.put("chainId", chainId);
@@ -423,35 +284,35 @@ public class EthSpecialContractSignatureV2 {
      */
     private static JSONArray getAbiType() {
         JSONArray array = new JSONArray();
-        com.alibaba.fastjson2.JSONObject param_1 = new com.alibaba.fastjson2.JSONObject();
+        JSONObject param_1 = new JSONObject();
         param_1.put("name", "orderId");
         param_1.put("type", "bytes32");
 
-        com.alibaba.fastjson2.JSONObject param_2 = new com.alibaba.fastjson2.JSONObject();
+        JSONObject param_2 = new JSONObject();
         param_2.put("name", "merchantOrderId");
         param_2.put("type", "bytes32");
 
-        com.alibaba.fastjson2.JSONObject param_3 = new com.alibaba.fastjson2.JSONObject();
+        JSONObject param_3 = new JSONObject();
         param_3.put("name", "merchantAddress");
         param_3.put("type", "address");
 
-        com.alibaba.fastjson2.JSONObject param_4 = new com.alibaba.fastjson2.JSONObject();
+        JSONObject param_4 = new JSONObject();
         param_4.put("name", "baseCurrencyAddress");
         param_4.put("type", "address");
 
-        com.alibaba.fastjson2.JSONObject param_5 = new com.alibaba.fastjson2.JSONObject();
+        JSONObject param_5 = new JSONObject();
         param_5.put("name", "quoteCurrencyAddress");
         param_5.put("type", "address");
 
-        com.alibaba.fastjson2.JSONObject param_6 = new com.alibaba.fastjson2.JSONObject();
+        JSONObject param_6 = new JSONObject();
         param_6.put("name", "baseCurrencyAmount");
         param_6.put("type", "uint256");
 
-        com.alibaba.fastjson2.JSONObject param_7 = new com.alibaba.fastjson2.JSONObject();
+        JSONObject param_7 = new JSONObject();
         param_7.put("name", "quoteCurrencyAmount");
         param_7.put("type", "uint256");
 
-        com.alibaba.fastjson2.JSONObject param_8 = new com.alibaba.fastjson2.JSONObject();
+        JSONObject param_8 = new JSONObject();
         param_8.put("name", "deadline");
         param_8.put("type", "uint256");
 
@@ -469,11 +330,11 @@ public class EthSpecialContractSignatureV2 {
     /**
      * return Abi data, no matter we put String or Long inside, it would not change the txHash of the msg
      */
-    private static com.alibaba.fastjson2.JSONObject getAbiData(String orderId, String merchantOrderId, String merchantAddress,
-                                                               String baseCurrencyAddress, String quoteCurrencyAddress,
-                                                               String baseCurrencyAmount, String quoteCurrencyAmount,
-                                                               Long deadline) {
-        com.alibaba.fastjson2.JSONObject msg = new JSONObject();
+    private static JSONObject getAbiData(String orderId, String merchantOrderId, String merchantAddress,
+                                         String baseCurrencyAddress, String quoteCurrencyAddress,
+                                         String baseCurrencyAmount, String quoteCurrencyAmount,
+                                         Long deadline) {
+        JSONObject msg = new JSONObject();
         System.out.println("orderId: " + Hash.sha3String(orderId));
         System.out.println("merchantOrderId: " + Hash.sha3String(merchantOrderId));
         System.out.println("merchantAddress: " + merchantAddress);
@@ -503,7 +364,7 @@ public class EthSpecialContractSignatureV2 {
         EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST).send();
         BigInteger nonce = ethGetTransactionCount.getTransactionCount();
         // another stuff need to be filled
-        long chainId = 5; // for Goerli
+        long chainId = 11155111; // for Sepolia
         BigInteger maxPriorityFeePerGas = BigInteger.valueOf(5_000_000_000L);
         BigInteger maxFeePerGas = BigInteger.valueOf(50_000_000_000L);
         BigInteger gasLimit = BigInteger.valueOf(1_000_000L);
