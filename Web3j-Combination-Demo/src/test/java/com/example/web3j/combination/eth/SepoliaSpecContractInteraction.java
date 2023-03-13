@@ -93,7 +93,7 @@ public class SepoliaSpecContractInteraction {
                 Collections.singletonList(new Address(supportTokenAddress)),
                 Collections.singletonList(TypeReference.create(Bool.class)));
         String data = FunctionEncoder.encode(marketMakerAddTokenFunc);
-        // construct txn, 0xbea09c736fa57298e17116c18d75b55b865f481150dde5a5f60976df40066675
+        // construct txn, 0xfcefb9f102c30ba600d306abb23bcc0ce87646c90108d6105e53d4dc4770a20b
         constructAndCallingContractFunction(data, contractAddress, "");
     }
 
