@@ -40,7 +40,7 @@ public class SepoliaSpecContractInteraction {
     private static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
     private static final String contractAddress = "0x1bBB032517033C866Afd83D37234d3F6E8d4Fcc2";
-    private static final String supportTokenAddress = "0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc";
+    private static final String supportTokenAddress = "0x00e4523e0De972ffC7268470aa114e47d14241a9";
     private static final String marketMakerAddress = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
 
 
@@ -90,12 +90,25 @@ public class SepoliaSpecContractInteraction {
         // encode input data
         Function marketMakerAddTokenFunc = new Function(
                 "marketMakerAddToken",
-                Collections.singletonList(new Address(supportTokenAddress)),
+                Collections.singletonList(new Address("0x36F0A040C8e60974d1F34b316B3e956f509Db7e5")),
                 Collections.singletonList(TypeReference.create(Bool.class)));
         String data = FunctionEncoder.encode(marketMakerAddTokenFunc);
-        // construct txn, 0xfcefb9f102c30ba600d306abb23bcc0ce87646c90108d6105e53d4dc4770a20b
+        // construct txn, 0xc933312280dad59dfa62d2d54ac52c1ae37ac4326b106032750a9cb514e87845
         constructAndCallingContractFunction(data, contractAddress, "");
     }
+
+    @Test
+    public void marketMakerTokenDelTest() throws IOException {
+        // encode input data
+        Function marketMakerAddTokenFunc = new Function(
+                "marketMakerDelToke",
+                Collections.singletonList(new Address("0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc")),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+        String data = FunctionEncoder.encode(marketMakerAddTokenFunc);
+        // construct txn, 0x5a94ecb29d1128f557bb50ec457730026f9eef7459e083ba4a88fd99e7c21a5d
+        constructAndCallingContractFunction(data, contractAddress, "");
+    }
+
 
     @Test
     public void supportTokenCheckingTest() throws IOException {
