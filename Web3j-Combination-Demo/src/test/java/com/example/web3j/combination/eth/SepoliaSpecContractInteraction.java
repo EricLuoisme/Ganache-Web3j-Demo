@@ -109,7 +109,6 @@ public class SepoliaSpecContractInteraction {
         constructAndCallingContractFunction(data, contractAddress, "");
     }
 
-
     @Test
     public void supportTokenCheckingTest() throws IOException {
         /// encode
@@ -152,7 +151,7 @@ public class SepoliaSpecContractInteraction {
         String data = FunctionEncoder.encode(approveFunc);
         System.out.println("Approve Func input data coding: " + data);
 
-        // call contract, 0xd10f9d955dfe87bf939e3da7e1928f74315c465ade8037c0c685d0fb55a81b74
+        // call contract, 0x1e4f5a857b54e1dd609fc7ecd5cf261937a25c07edf7d85c40a70a02e006e1f5
         constructAndCallingContractFunction(data, supportTokenAddress, "");
     }
 
@@ -160,7 +159,7 @@ public class SepoliaSpecContractInteraction {
     public void callingPaymentByUserSimulation() throws IOException {
 
 
-        String inputJsonStr = "{\"data\":{\"requestId\":\"20230302102300\",\"merchantNo\":\"202201Maker_2ai75\",\"orderNo\":\"20230310O_CR01167842016127819573\",\"merchantOrderNo\":\"12342fjoi1u98r_1678420161685\",\"chainId\":31,\"baseContract\":\"0xBA62BCfcAaFc6622853cca2BE6Ac7d845BC0f2Dc\",\"quoteContract\":\"0x07865c6E87B9F70255377e024ace6630C1Eaa37F\",\"baseAmt\":\"2085708981900000000\",\"quoteAmt\":\"1860000000000000000\",\"c2cRate\":1.12134892,\"payAddress\":\"0x36F0A040C8e60974d1F34b316B3e956f509Db7e5\",\"merchantAddress\":\"0x36F0A040C8e60974d1F34b316B3e956f509Db7e5\",\"deadline\":1678506561686,\"signR\":\"0xb8a8ead31a5bf4be5be10a79eb6e5dd1705922d52ce094c26286312e3fcf00f1\",\"signS\":\"0x142e0f943f9216daac93ed3f08ed615af27c3d30ed9eb2c640aa00d1a197574a\",\"signV\":\"0x1b\",\"accepted\":true},\"error\":null}";
+        String inputJsonStr = "{\"data\":{\"requestId\":\"20230302102300\",\"merchantNo\":\"202201Maker_2ai75\",\"orderNo\":\"20230314O_CR01167876390609434469\",\"merchantOrderNo\":\"12342fjoi1u98r_1678763906388\",\"chainId\":11155111,\"baseContract\":\"0x00e4523e0De972ffC7268470aa114e47d14241a9\",\"quoteContract\":\"0x07865c6E87B9F70255377e024ace6630C1Eaa37F\",\"baseAmt\":\"1379259165450000000\",\"quoteAmt\":\"1230000000000000000\",\"c2cRate\":1.12134892,\"payAddress\":\"0x36F0A040C8e60974d1F34b316B3e956f509Db7e5\",\"merchantAddress\":\"0x36F0A040C8e60974d1F34b316B3e956f509Db7e5\",\"deadline\":1678850306389,\"signR\":\"0x8654f2eecf52a18722be6839ca2b7d8fce332bdcd811aa4d9a8aacd469cf68dc\",\"signS\":\"0x50e2193f118cc7aa3c886bcd64e03d39341ad8e8e966a33903c2ef408d54633b\",\"signV\":\"0x1b\",\"accepted\":true},\"error\":null}";
         JSONObject jsonObject = JSONObject.parseObject(inputJsonStr);
         JSONObject dataObj = jsonObject.getJSONObject("data");
 
@@ -171,7 +170,7 @@ public class SepoliaSpecContractInteraction {
         String quoteCurrencyAddress = dataObj.getString("quoteContract");
         BigInteger baseCurrencyAmount = new BigInteger(dataObj.getString("baseAmt"));
         BigInteger quoteCurrencyAmount = new BigInteger(dataObj.getString("quoteAmt"));
-        Long deadline = 1678504820080L;
+        Long deadline = dataObj.getLong("deadline");
         BigInteger v = new BigInteger(1, Numeric.hexStringToByteArray(dataObj.getString("signV")));
         String hexR = dataObj.getString("signR");
         String hexS = dataObj.getString("signS");
@@ -196,7 +195,7 @@ public class SepoliaSpecContractInteraction {
         String data = FunctionEncoder.encode(paymentByUser);
         System.out.println("paymentByUser Func input data coding: " + data);
 
-        // call contract, 0xdce9942c5dcf53d1c8ea2fc2a2199f2b88dc80d203bd3564dd3391711f7d57a5
+        // call contract, 0x838f14169868080c21da1348580b9115111edc67607cac60417590ce556fa444
         constructAndCallingContractFunction(data, contractAddress, "");
     }
 
