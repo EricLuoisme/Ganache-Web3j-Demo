@@ -8,7 +8,7 @@
         <version>2.7.1</version>
     </parent>
 
-    <groupId>com.example</groupId>
+    <groupId>com.market.maker.demo</groupId>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>Market-Maker-Demo</artifactId>
     <version>0.0.1-SNAPSHOT</version>
