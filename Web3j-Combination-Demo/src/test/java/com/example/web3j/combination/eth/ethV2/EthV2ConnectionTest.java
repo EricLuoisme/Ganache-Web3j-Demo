@@ -1,4 +1,4 @@
-package com.example.web3j.combination.ethV2;
+package com.example.web3j.combination.eth.ethV2;
 
 import org.junit.jupiter.api.Test;
 import org.web3j.protocol.Web3j;

@@ -1,4 +1,4 @@
-package com.example.web3j.combination.ethV2;
+package com.example.web3j.combination.eth.ethV2;
 
 import com.example.web3j.combination.web3j.EthLogConstants;
 import org.assertj.core.util.Lists;
@@ -22,8 +22,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Roylic
