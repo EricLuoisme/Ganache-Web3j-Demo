@@ -1,9 +1,13 @@
 package com.example.web3j.combination.solana;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.example.web3j.combination.solana.utils.PublicKey;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
+import org.bitcoinj.core.Base58;
+import org.bouncycastle.util.encoders.Base64;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -65,7 +69,28 @@ public class SolanaProgramRelated {
         String getAddressRemainingToken = "{\"jsonrpc\":\"2.0\", \"id\":1, " +
                 "\"method\":\"getTokenAccountsByOwner\", \"params\":[\"" + ACCOUNT + "\", " +
                 "{\"programId\":\"" + PROGRAM_ID + "\"}, {\"encoding\":\"base64\"}]}";
-        callAndPrint(getAddressRemainingToken);
+        String respString = callAndPrint(getAddressRemainingToken);
+        JSONObject jsonRpcRespJson = JSONObject.parseObject(respString);
+        JSONObject result = jsonRpcRespJson.getJSONObject("result");
+        JSONArray value = result.getJSONArray("value");
+        Object val_0 = value.get(0);
+        String data_0_base64 = (String) ((JSONObject) val_0).getJSONObject("account").getJSONArray("data").get(0);
+        byte[] decode = Base64.decode(data_0_base64);
+        byte[] mint = new byte[32];
+        byte[] owner = new byte[32];
+        byte[] amount = new byte[8];
+
+        System.arraycopy(decode, 0, mint, 0, 32);
+        System.arraycopy(decode, 32, owner, 0, 32);
+        System.arraycopy(decode, 64, amount, 0, 8);
+        System.out.println("0: mint address " + Base58.encode(mint));
+        System.out.println("0: owner address " + Base58.encode(owner));
+        int unsignedInt = 0;
+        for (int i = 0; i < amount.length; i++) {
+            unsignedInt |= (amount[i] & 0xFF) << (8 * i);
+        }
+        System.out.println("0: amount " + unsignedInt);
+        System.out.println();
     }
 
     @Test
@@ -83,7 +108,7 @@ public class SolanaProgramRelated {
     }
 
 
-    private static void callAndPrint(String jsonMsg) throws IOException {
+    private static String callAndPrint(String jsonMsg) throws IOException {
         RequestBody body = RequestBody.create(jsonMsg, mediaType);
         Request request = new Request.Builder()
                 .url(SOLANA_DEV_URL)
@@ -94,6 +119,7 @@ public class SolanaProgramRelated {
         ObjectMapper om = new ObjectMapper();
         String str = om.writerWithDefaultPrettyPrinter().writeValueAsString(JSON.parse(response.body().string()));
         System.out.println(str);
+        return str;
     }
 
 }
