@@ -63,8 +63,8 @@ public class SolanaProgramRelated {
     @Test
     public void getTokenAccountsByOwner() throws IOException {
         String getAddressRemainingToken = "{\"jsonrpc\":\"2.0\", \"id\":1, " +
-                "\"method\":\"getTokenAccountsByOwner\", \"params\":[\"" + TOKEN_ACCOUNT + "\", " +
-                "{\"programId\":\"" + PROGRAM_ID + "\"}]}";
+                "\"method\":\"getTokenAccountsByOwner\", \"params\":[\"" + ACCOUNT + "\", " +
+                "{\"programId\":\"" + PROGRAM_ID + "\"}, {\"encoding\":\"base64\"}]}";
         callAndPrint(getAddressRemainingToken);
     }
 
