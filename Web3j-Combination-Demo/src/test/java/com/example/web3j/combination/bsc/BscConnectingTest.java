@@ -18,8 +18,8 @@ import java.io.IOException;
 public class BscConnectingTest {
 
     public static final Web3j web3j
-            = Web3j.build(new HttpService("https://data-seed-prebsc-1-s1.binance.org:8545/"));
-//            = Web3j.build(new HttpService("http://testnet-bsc-dataseed1.functionx.io:8545"));
+//            = Web3j.build(new HttpService("https://data-seed-prebsc-1-s1.binance.org:8545/"));
+            = Web3j.build(new HttpService("http://testnet-bsc-dataseed1.functionx.io:8545/"));
 
     @Test
     public void testConnection() {
