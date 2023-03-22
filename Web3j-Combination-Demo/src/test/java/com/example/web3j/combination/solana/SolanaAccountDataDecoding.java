@@ -33,7 +33,8 @@ public class SolanaAccountDataDecoding {
     @Test
     public void getTokenPubKey() throws Exception {
 
-        String nftAssociatedAccount = "EZqtsCxYpYtNaX1Pd2ep3ZUVxS6qHLVQriugvbKGEahk";
+//        String nftAssociatedAccount = "EZqtsCxYpYtNaX1Pd2ep3ZUVxS6qHLVQriugvbKGEahk";
+        String nftAssociatedAccount = "ARHE7qXefr79DqyApiEkZ2QwnyzfAnUew4jRXfkMBVT2";
 
         // 1. get nft token meta account pub key
         PublicKey.ProgramDerivedAddress derivedAddress = PublicKey.findProgramAddress(
@@ -53,6 +54,7 @@ public class SolanaAccountDataDecoding {
     @Test
     public void tryDecodeData() {
         String base58DataStr = "BJFmu4q8Nqbfbjctj5+IGdJqz1GNfBTwx+ef1OIIT5lEyZHNApSQhhH4+13jqVLCWl2buaAfO1onpJALNxFgpBcgAAAATnVtYmVyICMwMDA1AAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAATkIAAAAAAAAAAMgAAABodHRwczovL2Fyd2VhdmUubmV0L2ZOWjhRaWJzd05UbjZPSXhNOGZIMFZwcFFhYzBtdGsyVk5HMlVET3ptLUUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJYAAQIAAABwR1rHRLcV9Pgwql6fuU9yLlnguuhQosZbVaLFO1SDZwEAkWa7irw2pt9uNy2Pn4gZ0mrPUY18FPDH55/U4ghPmUQAZAEBAf8BAAEBi/F3/535aQiLpyuFs9WhGNyT1kiOX782bZ4mKJOp0wUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
+//        String base58DataStr = "BJFmu4q8Nqbfbjctj5+IGdJqz1GNfBTwx+ef1OIIT5lEi/F3/535aQiLpyuFs9WhGNyT1kiOX782bZ4mKJOp0wUgAAAATnVtYmVycyBDb2xsZWN0aW9uAAAAAAAAAAAAAAAAAAAKAAAATkIAAAAAAAAAAMgAAABodHRwczovL2Fyd2VhdmUubmV0L3NxRjM4Y0tvSnkwX2NXSmwwNGRIT09fazJGUnVpSVkxNm9pRzhiaW9qMFUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAAACRZruKvDam3243LY+fiBnSas9RjXwU8Mfnn9TiCE+ZRAFkAAEB/wEAAAABAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
         byte[] decode = Base64.decode(base58DataStr);
 
         byte[] key = new byte[1];
@@ -70,7 +72,6 @@ public class SolanaAccountDataDecoding {
         System.arraycopy(decode, 101, symbol, 0, 14);
         System.arraycopy(decode, 115, uri, 0, 204);
         System.arraycopy(decode, 319, sellerFeeBasicPoints, 0, 2);
-
 
         System.out.println("Key: " + Numeric.toHexString(key));
         System.out.println("Update Authority: " + Base58.encode(updateAuthority));
@@ -93,6 +94,50 @@ public class SolanaAccountDataDecoding {
             unsignedInt |= (sellerFeeBasicPoints[i] & 0xFF) << (8 * i);
         }
         System.out.println("Seller Fee Basic Points: " + unsignedInt);
+
+
+        byte[] creatorIndicator = new byte[1];
+        System.arraycopy(decode, 321, creatorIndicator, 0, 1);
+        int decodeIdx = 322;
+
+
+        if (creatorIndicator[0] == 1) {
+            // have creator list
+            byte[] creatorList = new byte[4];
+            System.arraycopy(decode, decodeIdx, creatorList, 0, 4);
+            int creatorNums = 0;
+            for (int i = 0; i < creatorList.length; i++) {
+                creatorNums |= (creatorList[i] & 0xFF) << (8 * i);
+            }
+
+            // traverse creators
+            decodeIdx += 4;
+            int i = 0;
+            while (i++ < creatorNums) {
+                byte[] creator = new byte[32];
+                byte[] verified = new byte[1];
+                byte[] shared = new byte[1];
+                System.arraycopy(decode, decodeIdx, creator, 0, 32);
+                System.arraycopy(decode, decodeIdx + 32, verified, 0, 1);
+                System.arraycopy(decode, decodeIdx + 32 + 1, shared, 0, 1);
+                decodeIdx += 32 + 1 + 1;
+
+                System.out.println("Creator_" + i);
+                System.out.println("  Address: " + Base58.encode(creator));
+                System.out.println("  Verified: " + (verified[0] == 1 ? "true" : "false"));
+                System.out.println("  Share: " + shared[0]);
+            }
+
+            System.out.println();
+        }
+
+        // primary sale
+        
+
+
+        System.out.println();
+        System.out.println();
+
 
     }
 
