@@ -35,8 +35,12 @@ public class SolanaProgramRelated {
     //    private static final String SOLANA_DEV_URL = HttpUrl.parse("https://api.devnet.solana.com").newBuilder().build().toString();
     private static final MediaType mediaType = MediaType.parse("application/json");
     private static final String ACCOUNT = "AnayTW335MabjhtXTJeBit5jdLhNeUVBVPXeRKCid79D";
-    private static final String TOKEN_ACCOUNT = "Gd8nxWzbnJ2zwtn5TukvEMKKjjbFhdtqA1L67DgnRvXc";
-    private static final String TOKEN_MINT_ADDRESS = "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr";
+    private static final String ASSOCIATED_TOKEN_ACCOUNT = "Gd8nxWzbnJ2zwtn5TukvEMKKjjbFhdtqA1L67DgnRvXc";
+    private static final String TOKEN_MINT_ACCOUNT = "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr";
+    private static final String NFT_MINT_ACCOUNT = "EZqtsCxYpYtNaX1Pd2ep3ZUVxS6qHLVQriugvbKGEahk";
+    private static final String NFT_COLLECTION_MINT_ACCOUNT = "ARHE7qXefr79DqyApiEkZ2QwnyzfAnUew4jRXfkMBVT2";
+
+
     private static final String PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
 
@@ -55,11 +59,18 @@ public class SolanaProgramRelated {
         callAndPrint(getBalance);
     }
 
+    @Test
+    public void getAccountInfo() throws IOException {
+        String getAccountInfo = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getAccountInfo\",\"params\":[\"" + NFT_MINT_ACCOUNT + "\",{\"encoding\":\"base58\"}]}";
+        callAndPrint(getAccountInfo);
+    }
+
+
     // means to check the Address's token account remaining token amount
     @Test
     public void getTokenAccountBalance() throws IOException {
         String getTokenAccountBalance = "{\"jsonrpc\":\"2.0\", \"id\":1, \"method\":\"getTokenAccountBalance\"," +
-                " \"params\":[\"" + TOKEN_ACCOUNT + "\"]}";
+                " \"params\":[\"" + ASSOCIATED_TOKEN_ACCOUNT + "\"]}";
         callAndPrint(getTokenAccountBalance);
     }
 
