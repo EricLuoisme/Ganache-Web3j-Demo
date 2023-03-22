@@ -42,9 +42,10 @@ public class SolanaBlockDecodingTest {
         stopWatch.start("JsonRpc Request");
 
         String pureTxnBlockHeight = "192792360";
-        String tokenTxnBlockHeight = "192792378";
-//        String ops = "full";
-        String ops = "accounts";
+//        String tokenTxnBlockHeight = "192792378";
+        String tokenTxnBlockHeight = "203493212";
+        String ops = "full";
+//        String ops = "accounts";
 
         String getBlock = "{\"jsonrpc\": \"2.0\",\"id\":1,\"method\":\"getBlock\",\"params\":["
                 + tokenTxnBlockHeight + ", {\"encoding\": \"json\",\"maxSupportedTransactionVersion\":0,\"transactionDetails\":\""
@@ -98,11 +99,11 @@ public class SolanaBlockDecodingTest {
         List<Txn> caredTxn = null;
         if (ops.equals("full")) {
             caredTxn = blockResult.getTransactions().stream()
-                    .filter(txn -> txn.getTransaction().getMessage().getAccountKeys().contains(ADDRESS))
+                    .filter(txn -> txn.getTransaction().getMessage().getAccountKeys().contains(ADDRESS) || txn.getTransaction().getMessage().getAccountKeys().contains("GCTFHbBcLs3vsNkCKLz2uCq5boZhMHbuawuFuhbYttc8"))
                     .collect(Collectors.toList());
         } else if (ops.equals("accounts")) {
             caredTxn = blockResult.getTransactions().stream()
-                    .filter(txn -> txn.getTransaction().getAccountKeys().stream().anyMatch(key -> key.getPubkey().equalsIgnoreCase(ADDRESS)))
+                    .filter(txn -> txn.getTransaction().getAccountKeys().stream().anyMatch(key -> key.getPubkey().equalsIgnoreCase(ADDRESS) || key.getPubkey().equalsIgnoreCase("GCTFHbBcLs3vsNkCKLz2uCq5boZhMHbuawuFuhbYttc8")))
                     .collect(Collectors.toList());
         }
 
