@@ -131,8 +131,44 @@ public class SolanaAccountDataDecoding {
             System.out.println();
         }
 
-        // primary sale
-        
+        byte[] primarySale = new byte[1];
+        byte[] isMutable = new byte[1];
+        System.arraycopy(decode, decodeIdx, primarySale, 0, 1);
+        System.arraycopy(decode, decodeIdx + 1, isMutable, 0, 1);
+        decodeIdx += 2;
+        System.out.println("Primary Sale Happened: " + (primarySale[0] == 1 ? "true" : "false"));
+        System.out.println("Is Mutable: " + (isMutable[0] == 1 ? "true" : "false"));
+
+        byte[] editionNonceIndicator = new byte[1];
+        System.arraycopy(decode, decodeIdx++, editionNonceIndicator, 0, 1);
+        if (editionNonceIndicator[0] == 1) {
+            byte[] editionNonce = new byte[2];
+            System.arraycopy(decode, decodeIdx, editionNonce, 0, 2);
+            decodeIdx += 2;
+            int nonce = 0;
+            for (int i = 0; i < editionNonce.length; i++) {
+                nonce |= (editionNonce[i] & 0xFF) << (8 * i);
+            }
+            System.out.println("Edition Nonce: " + nonce);
+        }
+
+        byte[] tokenStandardIndicator = new byte[1];
+        System.arraycopy(decode, decodeIdx++, tokenStandardIndicator, 0, 1);
+        if (tokenStandardIndicator[0] == 1) {
+            byte[] tokenStandard = new byte[2];
+            System.arraycopy(decode, decodeIdx, tokenStandard, 0, 2);
+            decodeIdx += 2;
+            System.out.println("Token Standard: " + Numeric.toHexString(tokenStandard));
+        }
+
+//        byte[] collectionIndicator = new byte[1];
+//        System.arraycopy(decode, decodeIdx++, collectionIndicator, 0, 1);
+//        if (collectionIndicator[0] == 1) {
+//            byte[] tokenStandard = new byte[2];
+//            System.arraycopy(decode, decodeIdx, tokenStandard, 0, 2);
+//            decodeIdx += 2;
+//            System.out.println("Token Standard: " + Numeric.toHexString(tokenStandard));
+//        }
 
 
         System.out.println();
