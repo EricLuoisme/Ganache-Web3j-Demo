@@ -61,7 +61,7 @@ public class SolanaProgramRelated {
 
     @Test
     public void getAccountInfo() throws IOException {
-        String getAccountInfo = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getAccountInfo\",\"params\":[\"" + NFT_MINT_ACCOUNT + "\",{\"encoding\":\"base58\"}]}";
+        String getAccountInfo = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getAccountInfo\",\"params\":[\"" + ASSOCIATED_TOKEN_ACCOUNT + "\",{\"encoding\":\"base64\"}]}";
         callAndPrint(getAccountInfo);
     }
 
