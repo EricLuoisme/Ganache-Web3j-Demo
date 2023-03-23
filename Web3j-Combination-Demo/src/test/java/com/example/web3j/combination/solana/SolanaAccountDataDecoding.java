@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -127,54 +128,84 @@ public class SolanaAccountDataDecoding {
                 System.out.println("  Verified: " + (verified[0] == 1 ? "true" : "false"));
                 System.out.println("  Share: " + shared[0]);
             }
-
-            System.out.println();
         }
 
         byte[] primarySale = new byte[1];
         byte[] isMutable = new byte[1];
-        System.arraycopy(decode, decodeIdx, primarySale, 0, 1);
-        System.arraycopy(decode, decodeIdx + 1, isMutable, 0, 1);
-        decodeIdx += 2;
+        System.arraycopy(decode, decodeIdx++, primarySale, 0, 1);
+        System.arraycopy(decode, decodeIdx++, isMutable, 0, 1);
         System.out.println("Primary Sale Happened: " + (primarySale[0] == 1 ? "true" : "false"));
         System.out.println("Is Mutable: " + (isMutable[0] == 1 ? "true" : "false"));
 
+
+        // edition nonce 396
         byte[] editionNonceIndicator = new byte[1];
         System.arraycopy(decode, decodeIdx++, editionNonceIndicator, 0, 1);
         if (editionNonceIndicator[0] == 1) {
-            byte[] editionNonce = new byte[2];
-            System.arraycopy(decode, decodeIdx, editionNonce, 0, 2);
-            decodeIdx += 2;
-            int nonce = 0;
-            for (int i = 0; i < editionNonce.length; i++) {
-                nonce |= (editionNonce[i] & 0xFF) << (8 * i);
-            }
-            System.out.println("Edition Nonce: " + nonce);
+            byte[] editionNonce = new byte[1];
+            System.arraycopy(decode, decodeIdx++, editionNonce, 0, 1);
+            System.out.println("Edition Nonce: " + new BigInteger(editionNonce));
         }
 
+        // token standard
         byte[] tokenStandardIndicator = new byte[1];
         System.arraycopy(decode, decodeIdx++, tokenStandardIndicator, 0, 1);
         if (tokenStandardIndicator[0] == 1) {
-            byte[] tokenStandard = new byte[2];
-            System.arraycopy(decode, decodeIdx, tokenStandard, 0, 2);
-            decodeIdx += 2;
-            System.out.println("Token Standard: " + Numeric.toHexString(tokenStandard));
+            byte[] tokenStandard = new byte[1];
+            System.arraycopy(decode, decodeIdx++, tokenStandard, 0, 1);
+            System.out.println("Token Standard: " + new BigInteger(tokenStandard));
         }
 
-//        byte[] collectionIndicator = new byte[1];
-//        System.arraycopy(decode, decodeIdx++, collectionIndicator, 0, 1);
-//        if (collectionIndicator[0] == 1) {
-//            byte[] tokenStandard = new byte[2];
-//            System.arraycopy(decode, decodeIdx, tokenStandard, 0, 2);
-//            decodeIdx += 2;
-//            System.out.println("Token Standard: " + Numeric.toHexString(tokenStandard));
-//        }
+        // collection
+        byte[] collectionIndicator = new byte[1];
+        System.arraycopy(decode, decodeIdx++, collectionIndicator, 0, 1);
+        if (collectionIndicator[0] == 1) {
+            byte[] verified = new byte[1];
+            byte[] collectionMintKey = new byte[32];
+            System.arraycopy(decode, decodeIdx++, verified, 0, 1);
+            System.arraycopy(decode, decodeIdx, collectionMintKey, 0, 32);
+            decodeIdx += 32;
+            System.out.println("Collection: ");
+            System.out.println("  Verified: " + (verified[0] == 1 ? "true" : "false"));
+            System.out.println("  Nft Collection Mint Account: " + Base58.encode(collectionMintKey));
+        }
+
+        // uses
+        byte[] usesIndicator = new byte[1];
+        System.arraycopy(decode, decodeIdx++, usesIndicator, 0, 1);
+        if (usesIndicator[0] == 1) {
+            byte[] useMethod = new byte[1];
+            byte[] remaining = new byte[8];
+            byte[] total = new byte[8];
+            System.arraycopy(decode, decodeIdx++, useMethod, 0, 1);
+            System.arraycopy(decode, decodeIdx, remaining, 0, 8);
+            System.arraycopy(decode, decodeIdx + 8, total, 0, 8);
+            decodeIdx += 8 + 8;
+            int remainingNums = 0;
+            for (int i = 0; i < remaining.length; i++) {
+                remainingNums |= (remaining[i] & 0xFF) << (8 * i);
+            }
+            int totalNums = 0;
+            for (int i = 0; i < total.length; i++) {
+                totalNums |= (total[i] & 0xFF) << (8 * i);
+            }
+            System.out.println("Uses: ");
+            System.out.println("  Use Method: " + new BigInteger(useMethod));
+            System.out.println("  Remaining: " + remainingNums);
+            System.out.println("  Total: " + totalNums);
+        }
+
+        // programmable config
+        byte[] programIndicator = new byte[1];
+        System.arraycopy(decode, decodeIdx++, programIndicator, 0, 1);
+        if (programIndicator[0] == 1) {
+            byte[] programConfig = new byte[33];
+            System.arraycopy(decode, decodeIdx, programConfig, 0, 33);
+            System.out.println();
+        }
 
 
         System.out.println();
-        System.out.println();
-
-
     }
 
 
