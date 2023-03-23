@@ -1,6 +1,7 @@
 package com.example.web3j.combination.solana;
 
 import com.alibaba.fastjson2.JSON;
+import com.example.web3j.combination.solana.utils.ByteUtils;
 import com.example.web3j.combination.solana.utils.PublicKey;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
@@ -238,11 +239,15 @@ public class SolanaAccountDataDecoding {
         System.out.println("Mint: " + Base58.encode(mint));
         System.out.println("Owner: " + Base58.encode(owner));
 
-        long amountNum = 0;
-        for (int i = 0; i < amount.length; i++) {
-            amountNum |= (long) (amount[i] & 0xFF) << (8 * i);
-        }
-        System.out.println("Amount: " + amountNum);
+//        long amountNum = 0;
+//        for (int i = 0; i < amount.length; i++) {
+//            amountNum |= (long) (amount[i] & 0xFF) << (8 * i);
+//        }
+//        System.out.println("Amount: " + amountNum);
+        // need to read bytes & reverse it then put it into bigInteger
+        BigInteger bigInteger = ByteUtils.readUint64(amount, 0);
+        System.out.println("Amount: " + bigInteger);
+
     }
 
 
