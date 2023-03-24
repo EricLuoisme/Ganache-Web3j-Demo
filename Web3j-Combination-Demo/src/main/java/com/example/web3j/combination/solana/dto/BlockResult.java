@@ -1,4 +1,4 @@
-package com.example.web3j.combination.solana.fullBlock;
+package com.example.web3j.combination.solana.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

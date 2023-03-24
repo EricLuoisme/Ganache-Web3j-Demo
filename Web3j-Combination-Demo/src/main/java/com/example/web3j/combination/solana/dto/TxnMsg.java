@@ -1,4 +1,4 @@
-package com.example.web3j.combination.solana.fullBlock;
+package com.example.web3j.combination.solana.dto;
 
 import com.alibaba.fastjson2.JSONObject;
 import lombok.AllArgsConstructor;

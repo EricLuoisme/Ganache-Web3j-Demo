@@ -1,7 +1,4 @@
-package com.example.web3j.combination.solana.fullBlock;
-
-import com.example.web3j.combination.solana.dto.AssetChanging;
-import com.example.web3j.combination.solana.dto.TokenBalanceDif;
+package com.example.web3j.combination.solana.dto;
 
 import java.util.HashMap;
 import java.util.List;

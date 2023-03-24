@@ -2,8 +2,7 @@ package com.example.web3j.combination.solana;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.example.web3j.combination.solana.dto.AssetChanging;
-import com.example.web3j.combination.solana.fullBlock.*;
+import com.example.web3j.combination.solana.dto.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
