@@ -1,10 +1,15 @@
-package com.example.web3j.combination.solana.dto;
+package com.example.web3j.combination.solana.handler;
 
+import com.example.web3j.combination.solana.dto.*;
+
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.example.web3j.combination.solana.SolanaConstants.TOKEN_PROGRAM_ID;
 
 /**
  * For helping easier getting stuff from Solana full resp block
@@ -12,7 +17,18 @@ import java.util.stream.Collectors;
  * @author Roylic
  * 2023/2/2
  */
-public final class FullBlockDecHandler {
+public final class BalanceChangingHandler {
+
+    /**
+     * Get all related address's asset changing under single Txn
+     */
+    public static Map<String, AssetChanging> getAssetDifInTxn(String txnHash, SingleTxn singleTxn) {
+        List<String> accountKeys = singleTxn.getTransaction().getMessage().getAccountKeys();
+        Meta meta = singleTxn.getMeta();
+        Map<String, TokenBalanceDif> tokenBalanceChangingMap = fillAddressTokenBalanceChangingMap(accountKeys, meta, txnHash);
+        return fillAddressBalanceChangingMap(accountKeys, meta, txnHash, tokenBalanceChangingMap);
+    }
+
 
     /**
      * Get all related address's asset changing under single Txn
@@ -63,12 +79,17 @@ public final class FullBlockDecHandler {
 
         // flat preTokenBalance & postTokenBalance
         Map<String, Meta.TokenBalance> preTokenBalanceMap = meta.getPreTokenBalances().stream()
-                .collect(Collectors.toMap(Meta.TokenBalance::getOwner, Function.identity()));
+                .collect(Collectors.toMap((tokenBalance) -> accountKeys.get(tokenBalance.getAccountIndex()), Function.identity()));
 
         Map<String, Meta.TokenBalance> postTokenBalanceMap = meta.getPostTokenBalances().stream()
-                .collect(Collectors.toMap(Meta.TokenBalance::getOwner, Function.identity()));
+                .collect(Collectors.toMap((tokenBalance) -> accountKeys.get(tokenBalance.getAccountIndex()), Function.identity()));
 
         accountKeys.forEach(account -> {
+
+            if (account.equalsIgnoreCase(TOKEN_PROGRAM_ID)) {
+                return;
+            }
+
             Meta.TokenBalance preTokenBalance = preTokenBalanceMap.get(account);
             Meta.TokenBalance postTokenBalance = postTokenBalanceMap.get(account);
             if (null == preTokenBalance && null == postTokenBalance) {
@@ -98,15 +119,36 @@ public final class FullBlockDecHandler {
 
         for (int i = 0; i < accountKeys.size(); i++) {
             String address = accountKeys.get(i);
-            TokenBalanceDif tokenBalanceDif = tokenBalanceMap.get(address);
-            AssetChanging assetChanging = AssetChanging.builder()
+            Long preBalance = preBalances.get(i);
+            Long postBalance = postBalances.get(i);
+
+            AssetChanging.AssetChangingBuilder builder = AssetChanging.builder()
                     .address(address)
-                    .preBalance(preBalances.get(i))
-                    .postBalance(postBalances.get(i))
-                    .tokenBalanceDif(tokenBalanceDif)
-                    .txHash(txnHash)
-                    .build();
-            assetChangingMap.put(address, assetChanging);
+                    .preSolBalance(preBalance)
+                    .postSolBalance(postBalance)
+                    .signature(txnHash)
+                    .assetChangeEnum(preBalance.equals(postBalance) ? AssetChanging.ChangeEnum.STEADY :
+                            (preBalance.compareTo(postBalance) > 0 ? AssetChanging.ChangeEnum.SOL_DEBIT : AssetChanging.ChangeEnum.SOL_CREDIT));
+
+
+            TokenBalanceDif tokenBalanceDif = tokenBalanceMap.get(address);
+            if (null != tokenBalanceDif) {
+                BigInteger preRawTokenAmt = new BigInteger(tokenBalanceDif.getPreRawTokenAmt());
+                BigInteger postRawTokenAmt = new BigInteger(tokenBalanceDif.getPostRawTokenAmt());
+                int compareResult = preRawTokenAmt.compareTo(postRawTokenAmt);
+                builder.splTransfer(true)
+                        .owner(tokenBalanceDif.getOwner())
+                        .programId(tokenBalanceDif.getProgramId())
+                        .preRawTokenAmt(tokenBalanceDif.getPreRawTokenAmt())
+                        .postRawTokenAmt(tokenBalanceDif.getPostRawTokenAmt())
+                        .preTokenAmt(tokenBalanceDif.getPreTokenAmt())
+                        .postTokenAmt(tokenBalanceDif.getPostTokenAmt())
+                        .tokenDecimal(tokenBalanceDif.getTokenDecimal())
+                        .assetChangeEnum(compareResult == 0 ? AssetChanging.ChangeEnum.STEADY :
+                                (compareResult > 0 ? AssetChanging.ChangeEnum.SPL_DEBIT : AssetChanging.ChangeEnum.SPL_CREDIT));
+            }
+
+            assetChangingMap.put(address, builder.build());
         }
 
         return assetChangingMap;

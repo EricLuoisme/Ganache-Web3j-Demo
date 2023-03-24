@@ -3,6 +3,7 @@ package com.example.web3j.combination.solana;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.example.web3j.combination.solana.dto.*;
+import com.example.web3j.combination.solana.handler.BalanceChangingHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
@@ -107,7 +108,7 @@ public class SolanaBlockDecodingTest {
         }
 
         // decoding handler
-        Map<String, AssetChanging> assetDifInTxn = FullBlockDecHandler.getAssetDifInTxn(caredTxn.get(0));
+        Map<String, AssetChanging> assetDifInTxn = BalanceChangingHandler.getAssetDifInTxn(caredTxn.get(0));
 
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(assetDifInTxn.get(ADDRESS)));
         stopWatch.stop();

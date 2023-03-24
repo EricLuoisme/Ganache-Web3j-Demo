@@ -13,9 +13,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AssetChanging {
+
+    // basic
     private String address;
-    private Long preBalance;
-    private Long postBalance;
-    private TokenBalanceDif tokenBalanceDif;
-    private String txHash;
+    private Long preSolBalance;
+    private Long postSolBalance;
+    private String signature;
+    private boolean splTransfer;
+    private ChangeEnum assetChangeEnum;
+
+    // spl related
+    private String owner;
+    private String programId;
+    private String preRawTokenAmt;
+    private String postRawTokenAmt;
+    private String preTokenAmt;
+    private String postTokenAmt;
+    private Integer tokenDecimal;
+
+
+    public enum ChangeEnum {
+        STEADY, SOL_CREDIT, SOL_DEBIT, SPL_CREDIT, SPL_DEBIT
+    }
 }
