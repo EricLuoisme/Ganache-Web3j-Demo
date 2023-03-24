@@ -37,9 +37,9 @@ public class SolanaReqUtil {
     /**
      * Get account the latest signatures with limits
      */
-    public static List<SigResult> rpcAccountSignaturesWithLimit(OkHttpClient okHttpClient, String address, int limit) {
+    public static List<SigResult> rpcAccountSignaturesWithLimit(OkHttpClient okHttpClient, String account, int limit) {
         String req = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getSignaturesForAddress\",\"params\":[\"%s\",{\"limit\":%d}]}";
-        String resp = jsonRpcReq(okHttpClient, String.format(req, address, limit));
+        String resp = jsonRpcReq(okHttpClient, String.format(req, account, limit));
         if (!StringUtils.hasLength(resp)) {
             return new ArrayList<>();
         }
