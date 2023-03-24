@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignatureWithStatus {
+public class SigResult {
     private String confirmationStatus;
     private String signature;
     private Long slot;

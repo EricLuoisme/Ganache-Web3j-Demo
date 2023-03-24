@@ -1,6 +1,11 @@
 package com.example.web3j.combination.solana.handler;
 
-import com.example.web3j.combination.solana.dto.*;
+import com.example.web3j.combination.solana.dto.extra.AssetChanging;
+import com.example.web3j.combination.solana.dto.extra.TokenBalanceDif;
+import com.example.web3j.combination.solana.dto.InnerTxn;
+import com.example.web3j.combination.solana.dto.Meta;
+import com.example.web3j.combination.solana.dto.Txn;
+import com.example.web3j.combination.solana.dto.TxnResult;
 
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -22,9 +27,9 @@ public final class BalanceChangingHandler {
     /**
      * Get all related address's asset changing under single Txn
      */
-    public static Map<String, AssetChanging> getAssetDifInTxn(String txnHash, SingleTxn singleTxn) {
-        List<String> accountKeys = singleTxn.getTransaction().getMessage().getAccountKeys();
-        Meta meta = singleTxn.getMeta();
+    public static Map<String, AssetChanging> getAssetDifInTxn(String txnHash, TxnResult txnResult) {
+        List<String> accountKeys = txnResult.getTransaction().getMessage().getAccountKeys();
+        Meta meta = txnResult.getMeta();
         Map<String, TokenBalanceDif> tokenBalanceChangingMap = fillAddressTokenBalanceChangingMap(accountKeys, meta, txnHash);
         return fillAddressBalanceChangingMap(accountKeys, meta, txnHash, tokenBalanceChangingMap);
     }

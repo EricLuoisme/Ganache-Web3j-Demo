@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SingleTxn {
+public class TxnResult {
     private Long blockTime;
     private Meta meta;
     private Long slot;

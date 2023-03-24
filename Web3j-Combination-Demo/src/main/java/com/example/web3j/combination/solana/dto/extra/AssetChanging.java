@@ -1,4 +1,4 @@
-package com.example.web3j.combination.solana.dto;
+package com.example.web3j.combination.solana.dto.extra;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
