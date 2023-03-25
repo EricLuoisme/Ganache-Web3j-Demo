@@ -1,4 +1,4 @@
-package com.example.web3j.combination.solana;
+package com.example.web3j.combination.solana.constant;
 
 /**
  * Solana related constants

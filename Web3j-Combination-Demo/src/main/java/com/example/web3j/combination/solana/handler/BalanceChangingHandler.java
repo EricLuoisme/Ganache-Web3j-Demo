@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.example.web3j.combination.solana.SolanaConstants.TOKEN_PROGRAM_ID;
+import static com.example.web3j.combination.solana.constant.SolanaConstants.TOKEN_PROGRAM_ID;
 
 /**
  * For helping easier getting stuff from Solana full resp block

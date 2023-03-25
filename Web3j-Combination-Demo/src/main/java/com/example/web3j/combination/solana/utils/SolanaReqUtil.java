@@ -19,7 +19,8 @@ import java.util.List;
 public class SolanaReqUtil {
 
     private static final MediaType MEDIA_TYPE = MediaType.parse("application/json");
-    private static final String SOLANA_DEV_URL = HttpUrl.parse("https://api.devnet.solana.com").newBuilder().build().toString();
+    //    private static final String SOLANA_DEV_URL = HttpUrl.parse("https://api.devnet.solana.com").newBuilder().build().toString();
+    private static final String SOLANA_DEV_URL = HttpUrl.parse("https://solana-devnet.g.alchemy.com/v2/On35d8LdFc1QGYD-wCporecGj359qian").newBuilder().build().toString();
 
     /**
      * Get associated token accounts

@@ -5,8 +5,11 @@ import com.example.web3j.combination.solana.dto.TxnResult;
 import com.example.web3j.combination.solana.dto.extra.AssetChanging;
 import com.example.web3j.combination.solana.dto.extra.SigPair;
 import com.example.web3j.combination.solana.dto.extra.SigResultTask;
+import com.example.web3j.combination.solana.dto.extra.TxnResultTask;
 import com.example.web3j.combination.solana.utils.SolanaReqUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -28,10 +32,6 @@ import java.util.concurrent.Executors;
  */
 public class SolanaTxTest {
 
-    //    private static final String SOLANA_DEV_URL = HttpUrl.parse("https://solana-devnet.g.alchemy.com/v2/On35d8LdFc1QGYD-wCporecGj359qian").newBuilder().build().toString();
-    private static final String SOLANA_DEV_URL = HttpUrl.parse("https://api.devnet.solana.com").newBuilder().build().toString();
-
-    private static final MediaType mediaType = MediaType.parse("application/json");
 
     private static final String ADDRESS = "AnayTW335MabjhtXTJeBit5jdLhNeUVBVPXeRKCid79D";
 
@@ -41,26 +41,29 @@ public class SolanaTxTest {
 
 
     @Test
-    public void getAccountTxn() {
+    public void getAccountTxn() throws JsonProcessingException {
+        ObjectMapper om = new ObjectMapper();
 
         // 1. find all associated token accounts
         List<AccountInfo> accountInfos = SolanaReqUtil.rpcAssociatedTokenAccountByOwner(okHttpClient, ADDRESS);
+        System.out.println("Got all associated token accounts");
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(accountInfos));
+        System.out.println("\n\n");
 
         // 2. find all related accounts signatures
         List<CompletableFuture<SigResultTask>> futureList = new LinkedList<>();
         accountInfos.forEach(accountInfo -> {
             CompletableFuture<SigResultTask> futureTask = CompletableFuture.supplyAsync(
-                    () -> getAccountSignatureTask(okHttpClient, accountInfo.getPubkey(), 10), executorService);
+                    () -> getAccountSignatureTask(okHttpClient, accountInfo.getPubkey(), 3),
+                    executorService);
             futureList.add(futureTask);
         });
         CompletableFuture<Void> voidCompletableFuture = CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0]));
         voidCompletableFuture.join();
 
-
         // 3. using set + queue to find latest signatures
         Set<String> signatureSet = new HashSet<>();
         Queue<SigPair> sigAccPairQueue = new PriorityQueue<>((a, b) -> (int) (b.getBlockDt() - a.getBlockDt()));
-
 
         futureList.stream().map(CompletableFuture::join)
                 .forEach(sigResultTask -> sigResultTask.getSigResultList()
@@ -75,16 +78,45 @@ public class SolanaTxTest {
                                                 .build());
                             }
                         }));
+        System.out.println("Got all associated token accounts' signatures");
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(sigAccPairQueue));
+        System.out.println("\n\n");
 
-        // 4. TODO for top 10 signature -> go find full transaction
-        Queue<TxnResult> txnResultQueue = new PriorityQueue<>((a, b) -> (int) (b.getBlockTime() - a.getBlockTime()));
+
+        // 4. for top 10 signature -> go find full transaction
+        Queue<TxnResultTask> txnResultQueue = new PriorityQueue<>(
+                (a, b) -> (int) (b.getTxnResult().getBlockTime() - a.getTxnResult().getBlockTime()));
+        List<CompletableFuture<TxnResultTask>> txnFutureList = new LinkedList<>();
         int i = 0;
-        while (i++ < 10) {
-            SigPair peek = sigAccPairQueue.peek();
-            CompletableFuture.supplyAsync(() -> SolanaReqUtil.rpcTransactionBySignature(okHttpClient, peek.getSignature()))
+        while (i++ < 3) {
+            SigPair peek = sigAccPairQueue.poll();
+            CompletableFuture<TxnResultTask> txnResultFuture = CompletableFuture.supplyAsync(
+                    TxnResultTask.builder()
+                            .associatedTokenAccount(peek.getAccount())
+                            .txnResult(SolanaReqUtil.rpcTransactionBySignature(okHttpClient, peek.getSignature()))::build,
+                    executorService);
+            txnFutureList.add(txnResultFuture);
         }
+        CompletableFuture<Void> anotherFut = CompletableFuture.allOf(txnFutureList.toArray(new CompletableFuture[0]));
+        anotherFut.join();
+
+        // cause txnResult would contain blockDt, just get() them and add them all into the priority queue
+        for (CompletableFuture<TxnResultTask> txnFuture : txnFutureList) {
+            try {
+                TxnResultTask txnResultTask = txnFuture.get();
+                txnResultQueue.add(txnResultTask);
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Got all associated token accounts' transaction details");
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(txnResultQueue));
+        System.out.println("\n\n");
 
 
+        // 5. parsing the
+
+        System.out.println();
     }
 
 
@@ -94,14 +126,6 @@ public class SolanaTxTest {
                 .sigResultList(SolanaReqUtil.rpcAccountSignaturesWithLimit(okHttpClient, account, num))
                 .build();
     }
-
-
-
-
-
-
-
-
 
 
     /**
