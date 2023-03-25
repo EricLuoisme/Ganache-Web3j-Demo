@@ -6,6 +6,7 @@ import com.example.web3j.combination.solana.dto.InnerTxn;
 import com.example.web3j.combination.solana.dto.Meta;
 import com.example.web3j.combination.solana.dto.Txn;
 import com.example.web3j.combination.solana.dto.TxnResult;
+import org.springframework.util.StringUtils;
 
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -138,8 +139,11 @@ public final class BalanceChangingHandler {
 
             TokenBalanceDif tokenBalanceDif = tokenBalanceMap.get(address);
             if (null != tokenBalanceDif) {
-                BigInteger preRawTokenAmt = new BigInteger(tokenBalanceDif.getPreRawTokenAmt());
-                BigInteger postRawTokenAmt = new BigInteger(tokenBalanceDif.getPostRawTokenAmt());
+                String preRawTokenAmtStr = tokenBalanceDif.getPreRawTokenAmt();
+                String postRawTokenAmtStr = tokenBalanceDif.getPostRawTokenAmt();
+                BigInteger preRawTokenAmt = StringUtils.hasLength(preRawTokenAmtStr) ? new BigInteger(preRawTokenAmtStr) : BigInteger.ZERO;
+                BigInteger postRawTokenAmt = StringUtils.hasLength(postRawTokenAmtStr) ? new BigInteger(postRawTokenAmtStr) : BigInteger.ZERO;
+
                 int compareResult = preRawTokenAmt.compareTo(postRawTokenAmt);
                 builder.splTransfer(true)
                         .owner(tokenBalanceDif.getOwner())

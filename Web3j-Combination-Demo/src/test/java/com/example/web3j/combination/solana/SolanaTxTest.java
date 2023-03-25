@@ -6,6 +6,7 @@ import com.example.web3j.combination.solana.dto.extra.AssetChanging;
 import com.example.web3j.combination.solana.dto.extra.SigPair;
 import com.example.web3j.combination.solana.dto.extra.SigResultTask;
 import com.example.web3j.combination.solana.dto.extra.TxnResultTask;
+import com.example.web3j.combination.solana.handler.BalanceChangingHandler;
 import com.example.web3j.combination.solana.utils.SolanaReqUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,6 +19,8 @@ import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.StopWatch;
+import org.springframework.util.StringUtils;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -42,29 +45,47 @@ public class SolanaTxTest {
 
     @Test
     public void getAccountTxn() throws JsonProcessingException {
+
+        int topNum = 10;
+        StopWatch stopWatch = new StopWatch();
         ObjectMapper om = new ObjectMapper();
 
         // 1. find all associated token accounts
+        stopWatch.start("Get Associated Token Accounts");
         List<AccountInfo> accountInfos = SolanaReqUtil.rpcAssociatedTokenAccountByOwner(okHttpClient, ADDRESS);
+        stopWatch.stop();
         System.out.println("Got all associated token accounts");
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(accountInfos));
         System.out.println("\n\n");
 
+
         // 2. find all related accounts signatures
+        stopWatch.start("Get Account related Signatures");
         List<CompletableFuture<SigResultTask>> futureList = new LinkedList<>();
         accountInfos.forEach(accountInfo -> {
             CompletableFuture<SigResultTask> futureTask = CompletableFuture.supplyAsync(
-                    () -> getAccountSignatureTask(okHttpClient, accountInfo.getPubkey(), 3),
+                    () -> SigResultTask.builder()
+                            .account(accountInfo.getPubkey())
+                            .sigResultList(SolanaReqUtil.rpcAccountSignaturesWithLimit(okHttpClient, accountInfo.getPubkey(), topNum))
+                            .build(),
                     executorService);
             futureList.add(futureTask);
         });
+        // main account signatures
+        CompletableFuture<SigResultTask> futureTask = CompletableFuture.supplyAsync(
+                () -> SigResultTask.builder()
+                        .account(ADDRESS)
+                        .sigResultList(SolanaReqUtil.rpcAccountSignaturesWithLimit(okHttpClient, ADDRESS, topNum))
+                        .build(),
+                executorService);
+        futureList.add(futureTask);
+        // join
         CompletableFuture<Void> voidCompletableFuture = CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0]));
         voidCompletableFuture.join();
 
         // 3. using set + queue to find latest signatures
         Set<String> signatureSet = new HashSet<>();
         Queue<SigPair> sigAccPairQueue = new PriorityQueue<>((a, b) -> (int) (b.getBlockDt() - a.getBlockDt()));
-
         futureList.stream().map(CompletableFuture::join)
                 .forEach(sigResultTask -> sigResultTask.getSigResultList()
                         .forEach(sigResult -> {
@@ -78,22 +99,25 @@ public class SolanaTxTest {
                                                 .build());
                             }
                         }));
+        stopWatch.stop();
         System.out.println("Got all associated token accounts' signatures");
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(sigAccPairQueue));
         System.out.println("\n\n");
 
 
         // 4. for top 10 signature -> go find full transaction
+        stopWatch.start("Get top n full transactions");
         Queue<TxnResultTask> txnResultQueue = new PriorityQueue<>(
                 (a, b) -> (int) (b.getTxnResult().getBlockTime() - a.getTxnResult().getBlockTime()));
         List<CompletableFuture<TxnResultTask>> txnFutureList = new LinkedList<>();
         int i = 0;
-        while (i++ < 3) {
-            SigPair peek = sigAccPairQueue.poll();
+        while (i++ < topNum) {
+            SigPair sigPair = sigAccPairQueue.poll();
             CompletableFuture<TxnResultTask> txnResultFuture = CompletableFuture.supplyAsync(
                     TxnResultTask.builder()
-                            .associatedTokenAccount(peek.getAccount())
-                            .txnResult(SolanaReqUtil.rpcTransactionBySignature(okHttpClient, peek.getSignature()))::build,
+                            .associatedTokenAccount(sigPair.getAccount())
+                            .signature(sigPair.getSignature())
+                            .txnResult(SolanaReqUtil.rpcTransactionBySignature(okHttpClient, sigPair.getSignature()))::build,
                     executorService);
             txnFutureList.add(txnResultFuture);
         }
@@ -109,24 +133,30 @@ public class SolanaTxTest {
                 e.printStackTrace();
             }
         }
+        stopWatch.stop();
         System.out.println("Got all associated token accounts' transaction details");
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(txnResultQueue));
         System.out.println("\n\n");
 
 
-        // 5. parsing the
+        // 5. parsing the full txn -> what we needed
+        stopWatch.start("Extract txn needed");
+        List<TxnNeeded> txnNeededList = new LinkedList<>();
+        while (!txnResultQueue.isEmpty()) {
+            TxnResultTask txnResultTask = txnResultQueue.poll();
+            Map<String, AssetChanging> assetDifMap = BalanceChangingHandler.getAssetDifInTxn(
+                    txnResultTask.getSignature(), txnResultTask.getTxnResult());
+            TxnNeeded txnNeeded = constructTxnNeeded(assetDifMap, ADDRESS,
+                    txnResultTask.getAssociatedTokenAccount(), txnResultTask.getTxnResult().getBlockTime());
+            txnNeededList.add(txnNeeded);
+        }
+        stopWatch.stop();
+        System.out.println("Got all top txn");
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(txnNeededList));
+        System.out.println("\n\n");
 
-        System.out.println();
+        System.out.println(stopWatch);
     }
-
-
-    private SigResultTask getAccountSignatureTask(OkHttpClient okHttpClient, String account, int num) {
-        return SigResultTask.builder()
-                .account(account)
-                .sigResultList(SolanaReqUtil.rpcAccountSignaturesWithLimit(okHttpClient, account, num))
-                .build();
-    }
-
 
     /**
      * get txn
@@ -240,8 +270,19 @@ public class SolanaTxTest {
 
         public static TxnNeeded parseSingleTxn(AssetChanging relatedAssetChange, String relatedAccount, String counterAccount, Long blockDt) {
 
-            BigInteger preBalance = new BigInteger(relatedAssetChange.isSplTransfer() ? relatedAssetChange.getPreRawTokenAmt() : relatedAssetChange.getPreSolBalance().toString());
-            BigInteger postBalance = new BigInteger(relatedAssetChange.isSplTransfer() ? relatedAssetChange.getPostRawTokenAmt() : relatedAssetChange.getPostSolBalance().toString());
+            String preSolBalanceStr = relatedAssetChange.getPreSolBalance().toString();
+            String preRawTokenAmtStr = relatedAssetChange.getPreRawTokenAmt();
+            String postSolBalanceStr = relatedAssetChange.getPostSolBalance().toString();
+            String postRawTokenAmtStr = relatedAssetChange.getPostRawTokenAmt();
+
+            BigInteger preBalance = relatedAssetChange.isSplTransfer()
+                    ? StringUtils.hasLength(preRawTokenAmtStr) ? new BigInteger(preRawTokenAmtStr) : BigInteger.ZERO
+                    : StringUtils.hasLength(preSolBalanceStr) ? new BigInteger(preSolBalanceStr) : BigInteger.ZERO;
+
+            BigInteger postBalance = relatedAssetChange.isSplTransfer()
+                    ? StringUtils.hasLength(postRawTokenAmtStr) ? new BigInteger(postRawTokenAmtStr) : BigInteger.ZERO
+                    : StringUtils.hasLength(postSolBalanceStr) ? new BigInteger(postSolBalanceStr) : BigInteger.ZERO;
+
             BigInteger difBalance = postBalance.subtract(preBalance);
 
             return TxnNeeded.builder()

@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TxnResultTask {
     private String associatedTokenAccount;
+    private String signature;
     private TxnResult txnResult;
 }
