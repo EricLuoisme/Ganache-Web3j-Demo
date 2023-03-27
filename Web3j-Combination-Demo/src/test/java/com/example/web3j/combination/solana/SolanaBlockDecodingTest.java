@@ -2,12 +2,10 @@ package com.example.web3j.combination.solana;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.example.web3j.combination.solana.dto.BlockResult;
+import com.example.web3j.combination.solana.dto.Txn;
 import com.example.web3j.combination.solana.dto.extra.AssetChanging;
 import com.example.web3j.combination.solana.handler.BalanceChangingHandler;
-import com.example.web3j.combination.solana.dto.BlockResult;
-import com.example.web3j.combination.solana.dto.Instructions;
-import com.example.web3j.combination.solana.dto.Txn;
-import com.example.web3j.combination.solana.dto.TxnMsg;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
@@ -16,7 +14,6 @@ import org.openjdk.jmh.annotations.Benchmark;
 import org.springframework.util.StopWatch;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -121,14 +118,16 @@ public class SolanaBlockDecodingTest {
 
 
     @Test
-    public void specificBlockTxnDecoding() throws IOException {
+    public void specificAccountBlockTxnDecoding() throws IOException {
 
-        String nftCreationBlockHeight = "202616989";
-        String ops = "full";
-//        String ops = "accounts";
+        StopWatch stopWatch = new StopWatch("Account Block Decoding");
+        stopWatch.start("JsonRpc Request");
+
+        String tokenTxnBlockHeight = "203493212";
+        String ops = "accounts";
 
         String getBlock = "{\"jsonrpc\": \"2.0\",\"id\":1,\"method\":\"getBlock\",\"params\":["
-                + nftCreationBlockHeight + ", {\"encoding\": \"json\",\"maxSupportedTransactionVersion\":0,\"transactionDetails\":\""
+                + tokenTxnBlockHeight + ", {\"encoding\": \"json\",\"maxSupportedTransactionVersion\":0,\"transactionDetails\":\""
                 + ops + "\",\"rewards\":false}]}";
 
         RequestBody body = RequestBody.create(getBlock, mediaType);
@@ -138,6 +137,10 @@ public class SolanaBlockDecodingTest {
                 .addHeader("Content-Type", "application/json")
                 .build();
         Response response = okHttpClient.newCall(request).execute();
+        stopWatch.stop();
+
+
+        stopWatch.start("Parsing Obj");
         JSONObject respObj = JSONObject.parseObject(response.body().string());
 
         // parse & filter for only caring txns
@@ -163,42 +166,25 @@ public class SolanaBlockDecodingTest {
             }
         });
         blockResult.setTransactions(txns);
+        stopWatch.stop();
+
 
         System.out.println("Block Height: " + blockResult.getBlockHeight());
         System.out.println("Block Time: " + blockResult.getBlockHeight());
         System.out.println("Block Hash: " + blockResult.getBlockHeight());
 
-        List<Txn> caredTxn = null;
-        if (ops.equals("full")) {
-            caredTxn = blockResult.getTransactions().stream()
-                    .filter(txn -> txn.getTransaction().getMessage().getAccountKeys().contains(ADDRESS))
-                    .collect(Collectors.toList());
-        } else if (ops.equals("accounts")) {
-            caredTxn = blockResult.getTransactions().stream()
-                    .filter(txn -> txn.getTransaction().getAccountKeys().stream().anyMatch(key -> key.getPubkey().equalsIgnoreCase(ADDRESS)))
-                    .collect(Collectors.toList());
-        }
+        stopWatch.start("Filter + Decoding");
 
-        // 1. find user address's index
-        Txn realCareTxn = caredTxn.get(0);
-        TxnMsg message = realCareTxn.getTransaction().getMessage();
-        int idx = 0;
-        Iterator<String> iterator = message.getAccountKeys().iterator();
-        while (iterator.hasNext()) {
-            if (ADDRESS.equalsIgnoreCase(iterator.next())) {
-                break;
-            } else {
-                idx++;
-            }
-        }
-
-        // 2. find instructions that related to this index
-        int finalIdx = idx;
-        List<Instructions> collect = message.getInstructions().stream()
-                .filter(instructions -> instructions.getAccounts().contains(finalIdx))
+        List<Txn> caredTxn = blockResult.getTransactions().stream()
+                .filter(txn -> txn.getTransaction().getAccountKeys().stream().anyMatch(key -> key.getPubkey().equalsIgnoreCase(ADDRESS) || key.getPubkey().equalsIgnoreCase("GCTFHbBcLs3vsNkCKLz2uCq5boZhMHbuawuFuhbYttc8")))
                 .collect(Collectors.toList());
 
+        // decoding handler
+        Map<String, AssetChanging> assetDifInTxn = BalanceChangingHandler.getAssetDifInTxn(caredTxn.get(0));
 
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(assetDifInTxn.get(ADDRESS)));
+        stopWatch.stop();
+        System.out.println(stopWatch);
     }
 
 
