@@ -1,7 +1,7 @@
 package com.example.web3j.combination.solana;
 
 import com.example.web3j.combination.solana.dto.AccountInfo;
-import com.example.web3j.combination.solana.dto.TxnResult;
+import com.example.web3j.combination.solana.dto.SigResult;
 import com.example.web3j.combination.solana.dto.extra.AssetChanging;
 import com.example.web3j.combination.solana.dto.extra.SigPair;
 import com.example.web3j.combination.solana.dto.extra.SigResultTask;
@@ -15,8 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.StopWatch;
@@ -44,15 +42,18 @@ public class SolanaTxTest {
 
 
     @Test
-    public void getAccountTxn() throws JsonProcessingException {
+    public void getAllAssociatedTokenAccountFullTxn() throws JsonProcessingException {
 
         int topNum = 10;
-        StopWatch stopWatch = new StopWatch();
+        StopWatch stopWatch = new StopWatch("Get Account Related Transaction Full Details");
         ObjectMapper om = new ObjectMapper();
+
+        String checkingAccount = "GQ6V9ZLVibN7eAtxEQxLJjXX8L9RybMJPpUCwi16vVgL";
+
 
         // 1. find all associated token accounts
         stopWatch.start("Get Associated Token Accounts");
-        List<AccountInfo> accountInfos = SolanaReqUtil.rpcAssociatedTokenAccountByOwner(okHttpClient, ADDRESS);
+        List<AccountInfo> accountInfos = SolanaReqUtil.rpcAssociatedTokenAccountByOwner(okHttpClient, checkingAccount);
         stopWatch.stop();
         System.out.println("Got all associated token accounts");
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(accountInfos));
@@ -157,6 +158,75 @@ public class SolanaTxTest {
 
         System.out.println(stopWatch);
     }
+
+
+    @Test
+    public void getThisAccountFullTxn() throws Exception {
+        int topNum = 10;
+        StopWatch stopWatch = new StopWatch("Get Single Account Transaction Full Details");
+        ObjectMapper om = new ObjectMapper();
+
+        String checkingAccount = "GQ6V9ZLVibN7eAtxEQxLJjXX8L9RybMJPpUCwi16vVgL";
+
+
+        // 1. Get account's signature with limit
+        stopWatch.start("Get Account related Signatures");
+        List<SigResult> sigResults = SolanaReqUtil.rpcAccountSignaturesWithLimit(okHttpClient, checkingAccount, topNum);
+        Iterator<SigResult> iterator = sigResults.iterator();
+        stopWatch.stop();
+
+        // 2. Get Full Signature Details
+        stopWatch.start("Get top n full transactions");
+        int i = 0;
+        List<CompletableFuture<TxnResultTask>> txnFutureList = new LinkedList<>();
+        while (iterator.hasNext() && i++ < topNum) {
+            SigResult sigResult = iterator.next();
+            CompletableFuture<TxnResultTask> txnResultFuture = CompletableFuture.supplyAsync(
+                    TxnResultTask.builder()
+                            .associatedTokenAccount(checkingAccount)
+                            .signature(sigResult.getSignature())
+                            .txnResult(SolanaReqUtil.rpcTransactionBySignature(okHttpClient, sigResult.getSignature()))::build,
+                    executorService);
+            txnFutureList.add(txnResultFuture);
+        }
+        CompletableFuture<Void> anotherFut = CompletableFuture.allOf(txnFutureList.toArray(new CompletableFuture[0]));
+        anotherFut.join();
+
+        // cause txnResult would contain blockDt, just get() them and add them all into the priority queue
+        Queue<TxnResultTask> txnResultQueue = new PriorityQueue<>(
+                (a, b) -> (int) (b.getTxnResult().getBlockTime() - a.getTxnResult().getBlockTime()));
+        for (CompletableFuture<TxnResultTask> txnFuture : txnFutureList) {
+            try {
+                TxnResultTask txnResultTask = txnFuture.get();
+                txnResultQueue.add(txnResultTask);
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        stopWatch.stop();
+        System.out.println("Got accounts' transaction details");
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(txnResultQueue));
+        System.out.println("\n\n");
+
+        // 3. Construct return
+        List<TxnNeeded> txnNeededList = new LinkedList<>();
+        while (!txnResultQueue.isEmpty()) {
+            TxnResultTask txnResultTask = txnResultQueue.poll();
+            Map<String, AssetChanging> assetDifMap = BalanceChangingHandler.getAssetDifInTxn(
+                    txnResultTask.getSignature(), txnResultTask.getTxnResult());
+            TxnNeeded txnNeeded = constructTxnNeeded(assetDifMap, ADDRESS,
+                    txnResultTask.getAssociatedTokenAccount(), txnResultTask.getTxnResult().getBlockTime());
+            txnNeededList.add(txnNeeded);
+        }
+        stopWatch.start("Extract txn needed");
+
+        System.out.println("Got all top txn");
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(txnNeededList));
+        System.out.println("\n\n");
+
+        System.out.println(stopWatch);
+    }
+
 
     /**
      * get txn
