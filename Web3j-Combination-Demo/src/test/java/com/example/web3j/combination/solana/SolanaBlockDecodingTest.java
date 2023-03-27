@@ -1,5 +1,6 @@
 package com.example.web3j.combination.solana;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.example.web3j.combination.solana.dto.BlockResult;
@@ -33,6 +34,12 @@ public class SolanaBlockDecodingTest {
     private static final String ADDRESS = "AnayTW335MabjhtXTJeBit5jdLhNeUVBVPXeRKCid79D";
 
     private static final OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
+
+    @Test
+    public void getLatestBlockHash() throws IOException {
+        String getLatestBlock = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"getLatestBlockhash\",\"params\":[{\"commitment\":\"confirmed\"}]}";
+        callAndPrint(getLatestBlock);
+    }
 
 
     @Test
@@ -190,6 +197,20 @@ public class SolanaBlockDecodingTest {
 
     public static void main(String[] args) throws IOException {
         org.openjdk.jmh.Main.main(args);
+    }
+
+    private static String callAndPrint(String jsonMsg) throws IOException {
+        RequestBody body = RequestBody.create(jsonMsg, mediaType);
+        Request request = new Request.Builder()
+                .url(SOLANA_DEV_URL)
+                .method("POST", body)
+                .addHeader("Content-Type", "application/json")
+                .build();
+        Response response = okHttpClient.newCall(request).execute();
+        ObjectMapper om = new ObjectMapper();
+        String str = om.writerWithDefaultPrettyPrinter().writeValueAsString(JSON.parse(response.body().string()));
+        System.out.println(str);
+        return str;
     }
 
 }
