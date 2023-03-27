@@ -2,9 +2,7 @@ package com.example.web3j.combination.solana.utils;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
-import com.example.web3j.combination.solana.dto.AccountInfo;
-import com.example.web3j.combination.solana.dto.SigResult;
-import com.example.web3j.combination.solana.dto.TxnResult;
+import com.example.web3j.combination.solana.dto.*;
 import okhttp3.*;
 import org.springframework.util.StringUtils;
 
@@ -21,6 +19,32 @@ public class SolanaReqUtil {
     private static final MediaType MEDIA_TYPE = MediaType.parse("application/json");
     //    private static final String SOLANA_DEV_URL = HttpUrl.parse("https://api.devnet.solana.com").newBuilder().build().toString();
     private static final String SOLANA_DEV_URL = HttpUrl.parse("https://solana-devnet.g.alchemy.com/v2/On35d8LdFc1QGYD-wCporecGj359qian").newBuilder().build().toString();
+
+    /**
+     * Get LatestBlock
+     */
+    public static LatestBlock rpcLatestBlock(OkHttpClient okHttpClient) {
+        String getLatestBlock = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"getLatestBlockhash\",\"params\":[{\"commitment\":\"confirmed\"}]}";
+        String resp = jsonRpcReq(okHttpClient, getLatestBlock);
+        if (!StringUtils.hasLength(resp)) {
+            return new LatestBlock();
+        }
+        JSONObject respObject = JSONObject.parseObject(resp);
+        return JSONObject.parseObject(respObject.getJSONObject("result").getJSONObject("value").toJSONString(), LatestBlock.class);
+    }
+
+    /**
+     * Get Block Full Detail
+     */
+    public static BlockResult rpcFullBlockOnAccountInfo(OkHttpClient okHttpClient, Long blockHeight) {
+        String getBlock = "{\"jsonrpc\": \"2.0\",\"id\":1,\"method\":\"getBlock\",\"params\":[%d, {\"encoding\": \"json\",\"maxSupportedTransactionVersion\":0,\"transactionDetails\":\"accounts\",\"rewards\":false}]}";
+        String resp = jsonRpcReq(okHttpClient, String.format(getBlock, blockHeight));
+        if (!StringUtils.hasLength(resp)) {
+            return new BlockResult();
+        }
+        JSONObject respObject = JSONObject.parseObject(resp);
+        return JSONObject.parseObject(respObject.getJSONObject("result").toJSONString(), BlockResult.class);
+    }
 
     /**
      * Get associated token accounts
@@ -77,4 +101,13 @@ public class SolanaReqUtil {
         }
         return "";
     }
+
+
+//    public static void main(String[] args) throws JsonProcessingException {
+//        OkHttpClient client = new OkHttpClient.Builder().build();
+//        BlockResult blockResult = rpcFullBlockOnAccountInfo(client, 203493212L);
+//        ObjectMapper om = new ObjectMapper();
+//        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(blockResult));
+//    }
+
 }

@@ -52,8 +52,8 @@ public class SolanaBlockDecodingTest {
         String pureTxnBlockHeight = "192792360";
 //        String tokenTxnBlockHeight = "192792378";
         String tokenTxnBlockHeight = "203493212";
-//        String ops = "full";
-        String ops = "accounts";
+        String ops = "full";
+//        String ops = "accounts";
 
         String getBlock = "{\"jsonrpc\": \"2.0\",\"id\":1,\"method\":\"getBlock\",\"params\":["
                 + tokenTxnBlockHeight + ", {\"encoding\": \"json\",\"maxSupportedTransactionVersion\":0,\"transactionDetails\":\""
