@@ -3,6 +3,7 @@ package com.example.web3j.combination.solana.utils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.example.web3j.combination.solana.dto.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import okhttp3.*;
 import org.springframework.util.StringUtils;
 
@@ -34,11 +35,25 @@ public class SolanaReqUtil {
     }
 
     /**
+     * Get Latest slot
+     */
+    public static Long rpcLatestSlot(OkHttpClient okHttpClient) {
+        String getLatestBlock = "{\"jsonrpc\":\"2.0\",\"id\":1, \"method\":\"getSlot\"}";
+        String resp = jsonRpcReq(okHttpClient, getLatestBlock);
+        if (!StringUtils.hasLength(resp)) {
+            return null;
+        }
+        JSONObject respObject = JSONObject.parseObject(resp);
+        return respObject.getLong("result");
+    }
+
+
+    /**
      * Get Block Full Detail
      */
-    public static BlockResult rpcFullBlockOnAccountInfo(OkHttpClient okHttpClient, Long blockHeight) {
+    public static BlockResult rpcFullBlockOnAccountInfo(OkHttpClient okHttpClient, Long slot) {
         String getBlock = "{\"jsonrpc\": \"2.0\",\"id\":1,\"method\":\"getBlock\",\"params\":[%d, {\"encoding\": \"json\",\"maxSupportedTransactionVersion\":0,\"transactionDetails\":\"accounts\",\"rewards\":false}]}";
-        String resp = jsonRpcReq(okHttpClient, String.format(getBlock, blockHeight));
+        String resp = jsonRpcReq(okHttpClient, String.format(getBlock, slot));
         if (!StringUtils.hasLength(resp)) {
             return new BlockResult();
         }
@@ -103,11 +118,10 @@ public class SolanaReqUtil {
     }
 
 
-//    public static void main(String[] args) throws JsonProcessingException {
-//        OkHttpClient client = new OkHttpClient.Builder().build();
-//        BlockResult blockResult = rpcFullBlockOnAccountInfo(client, 203493212L);
-//        ObjectMapper om = new ObjectMapper();
-//        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(blockResult));
-//    }
+    public static void main(String[] args) throws JsonProcessingException {
+        OkHttpClient client = new OkHttpClient.Builder().build();
+        Long aLong = rpcLatestSlot(client);
+        System.out.println(aLong);
+    }
 
 }
