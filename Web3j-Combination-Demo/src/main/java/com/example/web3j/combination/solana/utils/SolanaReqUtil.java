@@ -3,7 +3,9 @@ package com.example.web3j.combination.solana.utils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.example.web3j.combination.solana.dto.*;
+import com.example.web3j.combination.solana.dto.metaplex.MetaplexStandardJsonObj;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.springframework.util.StringUtils;
 
@@ -46,7 +48,6 @@ public class SolanaReqUtil {
         JSONObject respObject = JSONObject.parseObject(resp);
         return respObject.getLong("result");
     }
-
 
     /**
      * Get Block Full Detail
@@ -100,6 +101,41 @@ public class SolanaReqUtil {
         return JSON.parseObject(respObject.getJSONObject("result").toJSONString(), TxnResult.class);
     }
 
+    /**
+     * Get AccountInfoData
+     *
+     * @param okHttpClient
+     * @param account
+     * @return
+     */
+    public static String rpcAccountInfoDataBase64(OkHttpClient okHttpClient, String account) {
+        String req = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getAccountInfo\",\"params\":[\"%s\",{\"encoding\":\"base64\"}]}";
+        String resp = jsonRpcReq(okHttpClient, String.format(req, account));
+        JSONObject respObject = JSONObject.parseObject(resp);
+
+        JSONObject valueObject = respObject.getJSONObject("result").getJSONObject("value");
+        if (null == valueObject) {
+            return "";
+        }
+        return valueObject.getJSONArray("data").get(0).toString();
+    }
+
+    /**
+     * Request external metaplex json result
+     */
+    public static MetaplexStandardJsonObj metaplexExternalJsonReq(OkHttpClient okHttpClient, String url) {
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        try {
+            Response response = okHttpClient.newCall(request).execute();
+            return JSONObject.parseObject(response.body().string(), MetaplexStandardJsonObj.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     private static String jsonRpcReq(OkHttpClient okHttpClient, String jsonMsg) {
         RequestBody body = RequestBody.create(jsonMsg, MEDIA_TYPE);
@@ -120,8 +156,14 @@ public class SolanaReqUtil {
 
     public static void main(String[] args) throws JsonProcessingException {
         OkHttpClient client = new OkHttpClient.Builder().build();
-        Long aLong = rpcLatestSlot(client);
-        System.out.println(aLong);
+
+
+        String dataBase64 = rpcAccountInfoDataBase64(client, "Nydyy2KdUiTCgUzJ8L2RP3YPUJJngrMAjgvKBdTzXeA");
+
+
+//        MetaplexStandardJsonObj metaplexStandardJsonObj = metaplexExternalJsonReq(client, "https://arweave.net/fNZ8QibswNTn6OIxM8fH0VppQac0mtk2VNG2UDOzm-E");
+        ObjectMapper om = new ObjectMapper();
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(dataBase64));
     }
 
 }
