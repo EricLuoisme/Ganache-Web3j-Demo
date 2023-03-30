@@ -27,6 +27,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import static com.solana.custom.utils.atom.ByteUtils.trimRight;
+
 /**
  * @author Roylic
  * 2023/3/24
@@ -111,7 +113,7 @@ public class SolanaNftTest {
         // nft
         byte[] uri = new byte[204];
         System.arraycopy(decode, 115, uri, 0, 204);
-        byte[] trimUri = AccInfoDecodeHandler.trimRight(uri);
+        byte[] trimUri = trimRight(uri);
         if (trimUri.length < 4) {
             return NftFileItem.builder().build();
         }
