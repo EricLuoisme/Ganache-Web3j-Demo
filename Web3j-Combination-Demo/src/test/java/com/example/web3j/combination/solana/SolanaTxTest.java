@@ -1,16 +1,16 @@
 package com.example.web3j.combination.solana;
 
-import com.example.web3j.combination.solana.dto.AccountInfo;
-import com.example.web3j.combination.solana.dto.SigResult;
-import com.example.web3j.combination.solana.dto.extra.AssetChanging;
-import com.example.web3j.combination.solana.dto.extra.SigPair;
-import com.example.web3j.combination.solana.dto.extra.SigResultTask;
-import com.example.web3j.combination.solana.dto.extra.TxnResultTask;
-import com.example.web3j.combination.solana.handler.BalanceChangingHandler;
-import com.example.web3j.combination.solana.utils.SolanaReqUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.solana.custom.dto.AccountInfo;
+import com.solana.custom.dto.SigResult;
+import com.solana.custom.dto.extra.AssetChanging;
+import com.solana.custom.dto.extra.SigPair;
+import com.solana.custom.dto.extra.SigResultTask;
+import com.solana.custom.dto.extra.TxnResultTask;
+import com.solana.custom.handler.AssetDiffHandler;
+import com.solana.custom.utils.req.SolanaRequestUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,6 +38,8 @@ public class SolanaTxTest {
 
     private static final OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
 
+    private static final String SOL_DEV = "https://solana-devnet.g.alchemy.com/v2/On35d8LdFc1QGYD-wCporecGj359qian";
+
     private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
 
@@ -53,7 +55,7 @@ public class SolanaTxTest {
 
         // 1. find all associated token accounts
         stopWatch.start("Get Associated Token Accounts");
-        List<AccountInfo> accountInfos = SolanaReqUtil.rpcAssociatedTokenAccountByOwner(okHttpClient, checkingAccount);
+        List<AccountInfo> accountInfos = SolanaRequestUtil.rpcAssociatedTokenAccountByOwner(okHttpClient, SOL_DEV, checkingAccount);
         stopWatch.stop();
         System.out.println("Got all associated token accounts");
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(accountInfos));
@@ -67,7 +69,7 @@ public class SolanaTxTest {
             CompletableFuture<SigResultTask> futureTask = CompletableFuture.supplyAsync(
                     () -> SigResultTask.builder()
                             .account(accountInfo.getPubkey())
-                            .sigResultList(SolanaReqUtil.rpcAccountSignaturesWithLimit(okHttpClient, accountInfo.getPubkey(), topNum))
+                            .sigResultList(SolanaRequestUtil.rpcAccountSignaturesWithLimit(okHttpClient, SOL_DEV, accountInfo.getPubkey(), topNum))
                             .build(),
                     executorService);
             futureList.add(futureTask);
@@ -76,7 +78,7 @@ public class SolanaTxTest {
         CompletableFuture<SigResultTask> futureTask = CompletableFuture.supplyAsync(
                 () -> SigResultTask.builder()
                         .account(ADDRESS)
-                        .sigResultList(SolanaReqUtil.rpcAccountSignaturesWithLimit(okHttpClient, ADDRESS, topNum))
+                        .sigResultList(SolanaRequestUtil.rpcAccountSignaturesWithLimit(okHttpClient, SOL_DEV, ADDRESS, topNum))
                         .build(),
                 executorService);
         futureList.add(futureTask);
@@ -118,7 +120,7 @@ public class SolanaTxTest {
                     TxnResultTask.builder()
                             .associatedTokenAccount(sigPair.getAccount())
                             .signature(sigPair.getSignature())
-                            .txnResult(SolanaReqUtil.rpcTransactionBySignature(okHttpClient, sigPair.getSignature()))::build,
+                            .txnResult(SolanaRequestUtil.rpcTransactionBySignature(okHttpClient, SOL_DEV, sigPair.getSignature()).get())::build,
                     executorService);
             txnFutureList.add(txnResultFuture);
         }
@@ -145,7 +147,7 @@ public class SolanaTxTest {
         List<TxnNeeded> txnNeededList = new LinkedList<>();
         while (!txnResultQueue.isEmpty()) {
             TxnResultTask txnResultTask = txnResultQueue.poll();
-            Map<String, AssetChanging> assetDifMap = BalanceChangingHandler.getAssetDifInTxn(
+            Map<String, AssetChanging> assetDifMap = AssetDiffHandler.getAssetDifInTxn(
                     txnResultTask.getSignature(), txnResultTask.getTxnResult());
             TxnNeeded txnNeeded = constructTxnNeeded(assetDifMap, ADDRESS,
                     txnResultTask.getAssociatedTokenAccount(), txnResultTask.getTxnResult().getBlockTime());
@@ -171,7 +173,7 @@ public class SolanaTxTest {
 
         // 1. Get account's signature with limit
         stopWatch.start("Get Account related Signatures");
-        List<SigResult> sigResults = SolanaReqUtil.rpcAccountSignaturesWithLimit(okHttpClient, checkingAccount, topNum);
+        List<SigResult> sigResults = SolanaRequestUtil.rpcAccountSignaturesWithLimit(okHttpClient, SOL_DEV, checkingAccount, topNum);
         Iterator<SigResult> iterator = sigResults.iterator();
         stopWatch.stop();
 
@@ -185,7 +187,7 @@ public class SolanaTxTest {
                     TxnResultTask.builder()
                             .associatedTokenAccount(checkingAccount)
                             .signature(sigResult.getSignature())
-                            .txnResult(SolanaReqUtil.rpcTransactionBySignature(okHttpClient, sigResult.getSignature()))::build,
+                            .txnResult(SolanaRequestUtil.rpcTransactionBySignature(okHttpClient, SOL_DEV, sigResult.getSignature()).get())::build,
                     executorService);
             txnFutureList.add(txnResultFuture);
         }
@@ -212,7 +214,7 @@ public class SolanaTxTest {
         List<TxnNeeded> txnNeededList = new LinkedList<>();
         while (!txnResultQueue.isEmpty()) {
             TxnResultTask txnResultTask = txnResultQueue.poll();
-            Map<String, AssetChanging> assetDifMap = BalanceChangingHandler.getAssetDifInTxn(
+            Map<String, AssetChanging> assetDifMap = AssetDiffHandler.getAssetDifInTxn(
                     txnResultTask.getSignature(), txnResultTask.getTxnResult());
             TxnNeeded txnNeeded = constructTxnNeeded(assetDifMap, ADDRESS,
                     txnResultTask.getAssociatedTokenAccount(), txnResultTask.getTxnResult().getBlockTime());

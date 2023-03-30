@@ -21,6 +21,14 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Solana own -->
+        <dependency>
+            <groupId>com.solana.custom</groupId>
+            <artifactId>solana-custom-decoding</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+
         <!-- 包含ECC相关依赖 -->
         <dependency>
             <groupId>org.bitcoinj</groupId>
@@ -39,7 +47,6 @@
             <artifactId>contracts</artifactId>
             <version>4.9.5</version>
         </dependency>
-
 
         <!-- Web3j for Eth 2.0 -->
         <dependency>

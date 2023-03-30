@@ -1,14 +1,14 @@
-package com.example.web3j.combination.solana;
+package com.example.web3j.combination.solana.sdk;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.example.web3j.combination.solana.dto.BlockResult;
-import com.example.web3j.combination.solana.dto.Txn;
-import com.example.web3j.combination.solana.dto.extra.AssetChanging;
-import com.example.web3j.combination.solana.handler.BalanceChangingHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.solana.custom.dto.BlockResult;
+import com.solana.custom.dto.Txn;
+import com.solana.custom.dto.extra.AssetChanging;
+import com.solana.custom.handler.AssetDiffHandler;
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -116,7 +116,7 @@ public class SolanaBlockDecodingTest {
         }
 
         // decoding handler
-        Map<String, AssetChanging> assetDifInTxn = BalanceChangingHandler.getAssetDifInTxn(caredTxn.get(0));
+        Map<String, AssetChanging> assetDifInTxn = AssetDiffHandler.getAssetDifInTxn(caredTxn.get(0));
 
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(assetDifInTxn.get(ADDRESS)));
         stopWatch.stop();
@@ -187,7 +187,7 @@ public class SolanaBlockDecodingTest {
                 .collect(Collectors.toList());
 
         // decoding handler
-        Map<String, AssetChanging> assetDifInTxn = BalanceChangingHandler.getAssetDifInTxn(caredTxn.get(0));
+        Map<String, AssetChanging> assetDifInTxn = AssetDiffHandler.getAssetDifInTxn(caredTxn.get(0));
 
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(assetDifInTxn.get(ADDRESS)));
         stopWatch.stop();

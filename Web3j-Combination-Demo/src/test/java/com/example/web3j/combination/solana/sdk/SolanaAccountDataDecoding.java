@@ -1,9 +1,9 @@
-package com.example.web3j.combination.solana;
+package com.example.web3j.combination.solana.sdk;
 
 import com.alibaba.fastjson2.JSON;
-import com.example.web3j.combination.solana.utils.ByteUtils;
-import com.example.web3j.combination.solana.utils.PublicKey;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.solana.custom.utils.atom.ByteUtils;
+import com.solana.custom.utils.atom.PublicKey;
 import okhttp3.*;
 import org.bitcoinj.core.Base58;
 import org.bouncycastle.util.encoders.Base64;

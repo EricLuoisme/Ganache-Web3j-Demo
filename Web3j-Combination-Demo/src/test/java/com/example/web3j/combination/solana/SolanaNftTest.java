@@ -1,12 +1,12 @@
 package com.example.web3j.combination.solana;
 
-import com.example.web3j.combination.solana.dto.AccountInfo;
-import com.example.web3j.combination.solana.dto.extra.AccountInfoFlat;
-import com.example.web3j.combination.solana.dto.metaplex.MetaplexStandardJsonObj;
-import com.example.web3j.combination.solana.handler.AccountInfoDecoder;
-import com.example.web3j.combination.solana.utils.SolanaReqUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.solana.custom.dto.AccountInfo;
+import com.solana.custom.dto.extra.AccountInfoFlat;
+import com.solana.custom.dto.metaplex.MetaplexStandardJsonObj;
+import com.solana.custom.handler.AccInfoDecodeHandler;
+import com.solana.custom.utils.req.SolanaRequestUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,6 +38,8 @@ public class SolanaNftTest {
 
     private static final OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
 
+    private static final String SOL_DEV = "https://solana-devnet.g.alchemy.com/v2/On35d8LdFc1QGYD-wCporecGj359qian";
+
     private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
 
@@ -51,7 +53,7 @@ public class SolanaNftTest {
 
         // 1. find all associated token accounts
         stopWatch.start("Get Associated Token Accounts");
-        List<AccountInfo> accountInfos = SolanaReqUtil.rpcAssociatedTokenAccountByOwner(okHttpClient, checkingAccount);
+        List<AccountInfo> accountInfos = SolanaRequestUtil.rpcAssociatedTokenAccountByOwner(okHttpClient, SOL_DEV, checkingAccount);
         stopWatch.stop();
         System.out.println("Got all associated token accounts");
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(accountInfos));
@@ -60,12 +62,12 @@ public class SolanaNftTest {
         // 2. derive nft pub-key address
         stopWatch.start("Filter & Derive Nft-Pub account");
         List<AccountInfoFlat> accountInfoFlatList = accountInfos.parallelStream()
-                .map(AccountInfoDecoder::parseFlat)
+                .map(AccInfoDecodeHandler::parseFlat)
                 .filter(accountInfoFlat -> accountInfoFlat.getAmount() > 0)
                 .collect(Collectors.toList());
         Map<String, String> atAddressDerivedAddressMap = accountInfoFlatList.parallelStream().collect(
                 Collectors.toMap(AccountInfoFlat::getAtAddress,
-                        accountInfoFlat -> AccountInfoDecoder.deriveNftAddress(accountInfoFlat.getMintAddress())));
+                        accountInfoFlat -> AccInfoDecodeHandler.deriveNftTokenAddress(accountInfoFlat.getMintAddress())));
         stopWatch.stop();
 
         // 3. request for account info
@@ -97,7 +99,7 @@ public class SolanaNftTest {
     }
 
     private NftFileItem constructNftFileTask(String nftAstAccount, String nftMintAccount) {
-        String dataBase64 = SolanaReqUtil.rpcAccountInfoDataBase64(okHttpClient, nftMintAccount);
+        String dataBase64 = SolanaRequestUtil.rpcAccountInfoDataBase64(okHttpClient, SOL_DEV, nftMintAccount).get();
         if (!StringUtils.hasLength(dataBase64)) {
             return NftFileItem.builder().build();
         }
@@ -109,12 +111,12 @@ public class SolanaNftTest {
         // nft
         byte[] uri = new byte[204];
         System.arraycopy(decode, 115, uri, 0, 204);
-        byte[] trimUri = AccountInfoDecoder.trimRight(uri);
+        byte[] trimUri = AccInfoDecodeHandler.trimRight(uri);
         if (trimUri.length < 4) {
             return NftFileItem.builder().build();
         }
         String uriStr = new String(trimUri, 4, trimUri.length - 4, StandardCharsets.UTF_8);
-        MetaplexStandardJsonObj metaplexStandardJsonObj = SolanaReqUtil.metaplexExternalJsonReq(okHttpClient, uriStr);
+        MetaplexStandardJsonObj metaplexStandardJsonObj = SolanaRequestUtil.metaplexExternalJsonReq(okHttpClient, uriStr).get();
         // construct
         return NftFileItem.builder()
                 .contractAddress(nftMintAccount)
