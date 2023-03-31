@@ -1,4 +1,4 @@
-package com.example.web3j.combination.solana;
+package com.example.web3j.combination.solana.sdk;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;

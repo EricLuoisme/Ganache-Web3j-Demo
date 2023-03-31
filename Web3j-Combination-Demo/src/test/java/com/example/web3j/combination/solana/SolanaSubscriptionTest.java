@@ -6,8 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 /**
  * @author Roylic
  * 2023/2/2
@@ -15,7 +13,8 @@ import java.io.IOException;
 public class SolanaSubscriptionTest {
 
 
-    private static final String SOLANA_DEV_WS_URL = "wss://solana-devnet.g.alchemy.com/v2/On35d8LdFc1QGYD-wCporecGj359qian";
+    //    private static final String SOLANA_DEV_WS_URL = "wss://solana-devnet.g.alchemy.com/v2/On35d8LdFc1QGYD-wCporecGj359qian";
+    private static final String SOLANA_DEV_WS_URL = "ws://api.devnet.solana.com";
 
     private static final MediaType mediaType = MediaType.parse("application/json");
 
@@ -25,10 +24,11 @@ public class SolanaSubscriptionTest {
 
     private static final String SUBSCRIBE_EVENT_LOG = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"logsSubscribe\",\"params\":[\"all\"]}";
     private static final String SUBSCRIBE_BLOCK = "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"blockSubscribe\",\"params\":[\"all\"]}";
+    private static final String SUBSCRIBE_SLOT = "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"slotSubscribe\"}";
 
 
     @Test
-    public void subscriptionTest() throws IOException, InterruptedException {
+    public void subscriptionTest() throws InterruptedException {
 
         Request request = new Request.Builder().url(SOLANA_DEV_WS_URL).build();
         okHttpClient.newWebSocket(request, new WebSocketListener() {
@@ -61,7 +61,7 @@ public class SolanaSubscriptionTest {
             @Override
             public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
                 System.out.println("Web Socket Opened");
-                webSocket.send(SUBSCRIBE_BLOCK);
+                webSocket.send(SUBSCRIBE_SLOT);
             }
         });
 
