@@ -53,6 +53,7 @@ public class SolanaSubscriptionTest {
             @Override
             public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
                 System.out.println("received event: " + text);
+                // for the account subscription, the slot return would be one less than the txn occurred slot
                 super.onMessage(webSocket, text);
             }
 
