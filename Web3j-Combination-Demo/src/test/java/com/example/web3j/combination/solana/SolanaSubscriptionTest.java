@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author Roylic
  * 2023/2/2
@@ -25,14 +27,14 @@ public class SolanaSubscriptionTest {
     private static final String SUBSCRIBE_EVENT_LOG = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"logsSubscribe\",\"params\":[\"all\"]}";
     private static final String SUBSCRIBE_BLOCK = "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"blockSubscribe\",\"params\":[\"all\"]}";
     private static final String SUBSCRIBE_SLOT = "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"slotSubscribe\"}";
-    private static final String SUBSCRIBE_ACCOUNT = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"accountSubscribe\",\"params\":[\"AnayTW335MabjhtXTJeBit5jdLhNeUVBVPXeRKCid79D\",{\"encoding\":\"jsonParsed\",\"commitment\":\"finalized\"}]}";
+    private static final String SUBSCRIBE_ACCOUNT = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"accountSubscribe\",\"params\":[\"%s\",{\"encoding\":\"jsonParsed\",\"commitment\":\"finalized\"}]}";
 
 
     @Test
     public void subscriptionTest() throws InterruptedException {
 
         Request request = new Request.Builder().url(SOLANA_DEV_WS_URL).build();
-        okHttpClient.newWebSocket(request, new WebSocketListener() {
+        WebSocket webSocket = okHttpClient.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
                 super.onClosed(webSocket, code, reason);
@@ -62,9 +64,14 @@ public class SolanaSubscriptionTest {
             @Override
             public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
                 System.out.println("Web Socket Opened");
-                webSocket.send(SUBSCRIBE_ACCOUNT);
+                String subscribeMsg = String.format(SUBSCRIBE_ACCOUNT, "AnayTW335MabjhtXTJeBit5jdLhNeUVBVPXeRKCid79D");
+                webSocket.send(subscribeMsg);
             }
         });
+
+        TimeUnit.SECONDS.sleep(3);
+        webSocket.send(String.format(SUBSCRIBE_ACCOUNT, "GQ6V9ZLVibN7eAtxEQxLJjXX8L9RybMJPpUCwi16vVgL"));
+
 
         Thread.currentThread().join();
     }
