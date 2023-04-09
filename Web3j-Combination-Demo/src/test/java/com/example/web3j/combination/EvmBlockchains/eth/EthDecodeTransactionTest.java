@@ -45,7 +45,7 @@ public class EthDecodeTransactionTest {
 //        String txHash = "0x066665f26ebab1a4eff812c245e2308b6554ca44114c5e0232367a52686c9d4a";
 
         // eth transfer -> input == 0x
-        String txHash = "0x7faba547af0b637cf0890486ab41d23ae048b6d6bea149eeb818fd4bddbfcc53";
+        String txHash = "0x6b373df3d9b7e6ce097dfe32a5fb4f4a9324fe3142eb9c7d9e444213d215f07f";
         EthTransaction txn = web3j.ethGetTransactionByHash(txHash).send();
         System.out.println(txn);
     }
