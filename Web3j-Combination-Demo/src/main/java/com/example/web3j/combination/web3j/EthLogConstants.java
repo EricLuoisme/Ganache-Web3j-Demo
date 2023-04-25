@@ -23,19 +23,29 @@ import java.util.stream.Stream;
  */
 public class EthLogConstants {
 
-    /** Method id for ERC-165 supportsInterface(bytes4) */
+    /**
+     * Method id for ERC-165 supportsInterface(bytes4)
+     */
     public static final String ERC_165_SUPPORT_METHOD_ID_HEX = "0x01ffc9a7";
 
-    /** Bytes4 input for ERC-165 supportsInterface(bytes4) */
+    /**
+     * Bytes4 input for ERC-165 supportsInterface(bytes4)
+     */
     public static final Bytes4 ERC_165_SUPPORT_BYTES_4 = new Bytes4(Numeric.hexStringToByteArray(ERC_165_SUPPORT_METHOD_ID_HEX));
 
-    /** ERC-20 Log Topic Minimum Number */
+    /**
+     * ERC-20 Log Topic Minimum Number
+     */
     public static final int ERC_20_TOPIC_NUMS = 3;
 
-    /** ERC-721 Log Topic Minimum Number */
+    /**
+     * ERC-721 Log Topic Minimum Number
+     */
     public static final int ERC_721_TOPIC_NUMS = 4;
 
-    /** ERC-1155 Log Topic Minimum Number */
+    /**
+     * ERC-1155 Log Topic Minimum Number
+     */
     public static final int ERC_1155_TOPIC_NUMS = 4;
 
     public static final String ERC_20 = "20";
@@ -83,8 +93,10 @@ public class EthLogConstants {
                         TypeReference.create(Address.class, true),
                         TypeReference.create(Address.class, true),
                         TypeReference.create(Address.class, true),
-                        new TypeReference<DynamicArray<Uint256>>() {},
-                        new TypeReference<DynamicArray<Uint256>>() {})
+                        new TypeReference<DynamicArray<Uint256>>() {
+                        },
+                        new TypeReference<DynamicArray<Uint256>>() {
+                        })
         ));
 
         public final Event event;
@@ -143,5 +155,11 @@ public class EthLogConstants {
          * get func output params for ease
          */
         public abstract List<TypeReference<?>> getFuncOutputParams();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(EventEncoder.encode(EthEventTopics.TRANSFER_TOPIC_ERC_20_721.event).substring(0, 10));
+        System.out.println(EventEncoder.encode(EthEventTopics.TRANSFER_TOPIC_ERC_1155_SINGLE.event).substring(0, 10));
+        System.out.println(EventEncoder.encode(EthEventTopics.TRANSFER_TOPIC_ERC_1155_BATCH.event).substring(0, 10));
     }
 }
