@@ -155,6 +155,23 @@ public class EthSpecialContractSignatureV2 {
     }
 
     @Test
+    public void revokeToken() throws Exception {
+        // disapprove just set value to 0
+        BigInteger disApprove = BigInteger.ZERO;
+        Function approveFunc = new Function(
+                "approve",
+                Arrays.asList(new Address("0x1bBB032517033C866Afd83D37234d3F6E8d4Fcc2"), new Uint256(disApprove)),
+                Collections.singletonList(TypeReference.create(Bool.class))
+        );
+        String data = FunctionEncoder.encode(approveFunc);
+        System.out.println("Dis Approve Func input data coding: " + data);
+
+        // call contract, 0x6b373df3d9b7e6ce097dfe32a5fb4f4a9324fe3142eb9c7d9e444213d215f07f
+        constructAndCallingContractFunction(data, supportTokenAddress, "");
+    }
+
+
+    @Test
     public void constructMsgHash() throws Exception {
 
         // construct eip-712 structured data
