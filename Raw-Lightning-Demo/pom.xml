@@ -102,7 +102,7 @@
                         io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}
                     </pluginArtifact>
 
-                    <protoSourceRoot>src/main/proto</protoSourceRoot>
+                    <protoSourceRoot>src/main/lightningProto</protoSourceRoot>
                     <clearOutputDirectory>true</clearOutputDirectory>
 
                 </configuration>
