@@ -13,6 +13,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>2.3.7.RELEASE</spring-boot.version>
+
+        <protobuf.version>3.19.1</protobuf.version>
+        <protobuf-plugin.version>0.6.1</protobuf-plugin.version>
+        <grpc.version>1.42.1</grpc.version>
     </properties>
 
     <dependencies>
@@ -107,11 +111,11 @@
             <artifactId>fastjson</artifactId>
             <version>2.0.5</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.alibaba</groupId>-->
-<!--            <artifactId>fastjson</artifactId>-->
-<!--            <version>1.2.83</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.alibaba</groupId>-->
+        <!--            <artifactId>fastjson</artifactId>-->
+        <!--            <version>1.2.83</version>-->
+        <!--        </dependency>-->
 
 
         <!-- Web Crawler Reader Use -->
@@ -201,6 +205,15 @@
     </dependencyManagement>
 
     <build>
+
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.7.0</version>
+            </extension>
+        </extensions>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -229,33 +242,60 @@
                 </executions>
             </plugin>
 
-            <!-- For Compile the Protocol Buffer File -->
+            <!-- old-fashion way on compiling protobuf but work-->
             <plugin>
-                <groupId>com.github.os72</groupId>
-                <artifactId>protoc-jar-maven-plugin</artifactId>
-                <version>3.11.4</version>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.6.1</version>
+                <configuration>
+                    <protocArtifact>
+                        com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}
+                    </protocArtifact>
+                    <pluginId>grpc-java</pluginId>
+                    <pluginArtifact>
+                        io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}
+                    </pluginArtifact>
+                    <protoSourceRoot>src/main/proto</protoSourceRoot>
+                    <clearOutputDirectory>true</clearOutputDirectory>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>protoc.main</id>
-                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>run</goal>
+                            <goal>compile</goal>
+                            <goal>compile-custom</goal>
                         </goals>
-                        <configuration>
-                            <protocVersion>3.20.0</protocVersion>
-                            <addSources>main</addSources>
-                            <includeMavenTypes>direct</includeMavenTypes>
-                            <includeStdTypes>true</includeStdTypes>
-                            <includeDirectories>
-                                <include>src/main/proto</include>
-                            </includeDirectories>
-                            <inputDirectories>
-                                <include>src/main/proto</include>
-                            </inputDirectories>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+
+
+            <!--            &lt;!&ndash; For Compile the Protocol Buffer File &ndash;&gt;-->
+            <!--            <plugin>-->
+            <!--                <groupId>com.github.os72</groupId>-->
+            <!--                <artifactId>protoc-jar-maven-plugin</artifactId>-->
+            <!--                <version>3.11.4</version>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <id>protoc.main</id>-->
+            <!--                        <phase>generate-sources</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>run</goal>-->
+            <!--                        </goals>-->
+            <!--                        <configuration>-->
+            <!--                            <protocVersion>3.20.0</protocVersion>-->
+            <!--                            <addSources>main</addSources>-->
+            <!--                            <includeMavenTypes>direct</includeMavenTypes>-->
+            <!--                            <includeStdTypes>true</includeStdTypes>-->
+            <!--                            <includeDirectories>-->
+            <!--                                <include>src/main/proto</include>-->
+            <!--                            </includeDirectories>-->
+            <!--                            <inputDirectories>-->
+            <!--                                <include>src/main/proto</include>-->
+            <!--                            </inputDirectories>-->
+            <!--                        </configuration>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
         </plugins>
     </build>
 
