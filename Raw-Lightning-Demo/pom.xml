@@ -102,7 +102,8 @@
                         io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}
                     </pluginArtifact>
 
-                    <protoSourceRoot>src/main/zcosmosProto</protoSourceRoot>
+                    <protoSourceRoot>src/main/proto/lightningProto</protoSourceRoot>
+                    <!--                    <protoSourceRoot>src/main/proto/zcosmosProto</protoSourceRoot>-->
                     <clearOutputDirectory>true</clearOutputDirectory>
 
                 </configuration>
