@@ -1,14 +1,11 @@
 package com.example.web3j.combination.cosmos;
 
-import cosmos.base.tendermint.v1beta1.Query;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import com.example.web3j.combination.ssl.TrustAllX509CertManager;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,27 +20,25 @@ public class CosmosConnectionTest {
             .readTimeout(10, TimeUnit.SECONDS)
             .writeTimeout(10, TimeUnit.SECONDS)
             .connectTimeout(10, TimeUnit.SECONDS)
+            .sslSocketFactory(TrustAllX509CertManager.getSslSocketFactory(), new TrustAllX509CertManager()) // trust all certs
+            .hostnameVerifier((s, sslSession) -> true) // trust for all hostname
             .retryOnConnectionFailure(false)
             .build();
 
     @Test
-    public void connectionTest() throws IOException {
-
-        ManagedChannel build = ManagedChannelBuilder.forAddress("https://testnet-fx-grpc.functionx.io", 9090)
-                .usePlaintext()
-                .build();
+    public void connectionTest() {
 
         Request req = new Request.Builder()
-                .url("https://testnet-fx-grpc.functionx.io:9090/status")
-                .get()
+                .url("https://testnet-fx-json.functionx.io:26657/status")
                 .build();
 
-        Response execute = okHttpClient.newCall(req).execute();
-        System.out.println();
+        try (Response resp = okHttpClient.newCall(req).execute()) {
 
+            System.out.println(resp.body().string());
 
-        Query.GetLatestBlockRequest request = Query.GetLatestBlockRequest.newBuilder().build();
-
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
