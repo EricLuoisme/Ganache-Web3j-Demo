@@ -63,6 +63,20 @@ public class CosmosConnectionTest {
     }
 
     @Test
+    public void accountBalanceTest() {
+        Request request = new Request.Builder()
+                .url("https://testnet-fx-json.functionx.io:26657/cosmos/bank/v1/balances/" + "fx1nperuyt9ag7zdmqw35axdjuxw675ttksdvkpds")
+                .build();
+
+        try (Response response = okHttpClient.newCall(request).execute()) {
+            System.out.println(response.body().string());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
     public void abciCallingTest() throws IOException {
 
         Query.GetBlockByHeightRequest request = Query.GetBlockByHeightRequest.newBuilder()
