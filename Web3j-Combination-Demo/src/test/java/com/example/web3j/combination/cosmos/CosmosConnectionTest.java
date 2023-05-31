@@ -1,9 +1,12 @@
 package com.example.web3j.combination.cosmos;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson.JSONArray;
 import com.example.web3j.combination.ssl.TrustAllX509CertManager;
 import cosmos.base.tendermint.v1beta1.Query;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import okhttp3.*;
 import org.bouncycastle.util.encoders.Hex;
 import org.example.cosmos.ABCIQueryParam;
@@ -11,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -72,22 +76,37 @@ public class CosmosConnectionTest {
                 .path("/cosmos.base.tendermint.v1beta1.Service/GetBlockByHeight")
                 .build();
 
-        JSONObject rpcRequest = new JSONObject();
-        rpcRequest.put("jsonRpc", "2.0");
-        rpcRequest.put("id", "java-roy01cup");
-        rpcRequest.put("method", "abci_query");
-        rpcRequest.put("params", JSON.toJSONString(queryParam));
 
+        ArrayList<JsonRpcStandard> listInput = new ArrayList<>();
+        listInput.add(
+                JsonRpcStandard.builder()
+                        .jsonRpc("2.0")
+                        .id("java-roy01cup")
+                        .method("abci_query")
+                        .params(queryParam)
+                        .build());
+
+        String postBody = JSONArray.toJSONString(listInput);
 
         Request jsonRpcRequest = new Request.Builder()
                 .url("https://testnet-fx-json.functionx.io:26657")
-                .post(RequestBody.create(rpcRequest.toJSONString().getBytes(StandardCharsets.UTF_8), JSON_MEDIA_TYPE))
+                .post(RequestBody.create(postBody.getBytes(StandardCharsets.UTF_8), JSON_MEDIA_TYPE))
                 .build();
 
         Response response = okHttpClient.newCall(jsonRpcRequest).execute();
         String string = response.body().string();
-        System.out.println();
+        System.out.println(string);
+    }
 
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class JsonRpcStandard<T> {
+        private String jsonRpc;
+        private String id;
+        private String method;
+        private T params;
     }
 
 }
