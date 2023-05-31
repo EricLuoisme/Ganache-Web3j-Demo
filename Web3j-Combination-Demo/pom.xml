@@ -34,7 +34,7 @@
 
         <!-- Cosmos protobuf -->
         <dependency>
-            <groupId>org.example</groupId>
+            <groupId>com.own</groupId>
             <artifactId>Cosmos-Sdk-Protobuf</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>

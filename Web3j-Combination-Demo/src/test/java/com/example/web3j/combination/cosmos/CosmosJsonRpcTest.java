@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * @author Roylic
  * 2023/5/23
  */
-public class CosmosConnectionTest {
+public class CosmosJsonRpcTest {
 
     private static final MediaType JSON_MEDIA_TYPE = MediaType.get("application/json; charset=utf-8");
 
