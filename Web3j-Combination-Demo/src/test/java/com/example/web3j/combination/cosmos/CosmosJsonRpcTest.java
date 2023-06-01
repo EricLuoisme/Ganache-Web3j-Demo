@@ -2,6 +2,7 @@ package com.example.web3j.combination.cosmos;
 
 import com.alibaba.fastjson.JSONArray;
 import com.example.web3j.combination.ssl.TrustAllX509CertManager;
+import com.own.cosmos.ABCIQueryParam;
 import cosmos.base.tendermint.v1beta1.Query;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +10,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import okhttp3.*;
 import org.bouncycastle.util.encoders.Hex;
-import org.example.cosmos.ABCIQueryParam;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
