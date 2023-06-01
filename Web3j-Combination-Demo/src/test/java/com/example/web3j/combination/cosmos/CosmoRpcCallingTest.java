@@ -1,4 +1,4 @@
-package com.example.web3j.combination;
+package com.example.web3j.combination.cosmos;
 
 
 import com.example.web3j.combination.web3j.okhttp.interceptor.ApplicationInterceptorImp;
