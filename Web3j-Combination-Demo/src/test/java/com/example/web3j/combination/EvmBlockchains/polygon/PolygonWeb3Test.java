@@ -56,7 +56,6 @@ public class PolygonWeb3Test {
                 .collect(Collectors.toList());
 
 
-
         EthFilter filter = new EthFilter(
                 DefaultBlockParameter.valueOf(blockNum),
                 DefaultBlockParameter.valueOf(blockNum.add(BigInteger.ONE)),
