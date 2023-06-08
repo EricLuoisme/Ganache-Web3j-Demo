@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -101,7 +102,12 @@ public class SolanaNftTest {
     }
 
     private NftFileItem constructNftFileTask(String nftAstAccount, String nftMintAccount) {
-        String dataBase64 = SolanaRequestUtil.rpcAccountInfoDataBase64(okHttpClient, SOL_DEV, nftMintAccount).get();
+        Optional<String> opDataBase64 = SolanaRequestUtil.rpcAccountInfoDataBase64(okHttpClient, SOL_DEV, nftMintAccount);
+        if (!opDataBase64.isPresent()) {
+            return NftFileItem.builder().build();
+        }
+
+        String dataBase64 = opDataBase64.get();
         if (!StringUtils.hasLength(dataBase64)) {
             return NftFileItem.builder().build();
         }
