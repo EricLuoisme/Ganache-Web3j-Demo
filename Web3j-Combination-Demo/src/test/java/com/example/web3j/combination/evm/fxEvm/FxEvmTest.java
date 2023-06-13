@@ -135,20 +135,53 @@ public class FxEvmTest {
     @Test
     public void delegationRelatedSigs() {
 
-        // 0xc5cb9b51
-        String transferCrossChain = FunctionEncoder.encode(new Function(
-                "transferCrossChain",
-                Arrays.asList(Utf8String.DEFAULT, Uint256.DEFAULT, Uint256.DEFAULT, Bytes32.DEFAULT),
-                Collections.singletonList(TypeReference.create(Bool.class))));
-        System.out.println("old contract's abi signature: " + cutSignature(transferCrossChain));
+        // 0x9ddb511a
+        String delegate = FunctionEncoder.encode(new Function(
+                "delegate",
+                Collections.singletonList(Utf8String.DEFAULT),
+                Arrays.asList(TypeReference.create(Uint256.class), TypeReference.create(Uint256.class))));
+        System.out.println("delegate signature: " + cutSignature(delegate));
 
-        // 0x160d7c73
-        String crossChain = FunctionEncoder.encode(new Function(
-                "crossChain",
-                Arrays.asList(Address.DEFAULT, Utf8String.DEFAULT, Uint256.DEFAULT, Uint256.DEFAULT, Bytes32.DEFAULT, Utf8String.DEFAULT),
+        // 0x8dfc8897
+        String unDelegate = FunctionEncoder.encode(new Function(
+                "undelegate",
+                Arrays.asList(Utf8String.DEFAULT, Uint256.DEFAULT),
+                Arrays.asList(TypeReference.create(Uint256.class), TypeReference.create(Uint256.class), TypeReference.create(Uint256.class))
+        ));
+        System.out.println("unDelegate signature: " + cutSignature(unDelegate));
+
+        // 0x31fb67c2
+        String withdraw = FunctionEncoder.encode(new Function(
+                "withdraw",
+                Collections.singletonList(Utf8String.DEFAULT),
+                Collections.singletonList(TypeReference.create(Uint256.class))
+        ));
+        System.out.println("withdraw signature: " + cutSignature(withdraw));
+
+        // 0x49da433e
+        String approveShares = FunctionEncoder.encode(new Function(
+                "approveShares",
+                Arrays.asList(Utf8String.DEFAULT, Address.DEFAULT, Uint256.DEFAULT),
                 Collections.singletonList(TypeReference.create(Bool.class))
         ));
-        System.out.println("new contract's abi signature: " + cutSignature(crossChain));
+        System.out.println("approveShares signature: " + cutSignature(approveShares));
+
+        // 0x161298c1
+        String transferShares = FunctionEncoder.encode(new Function(
+                "transferShares",
+                Arrays.asList(Utf8String.DEFAULT, Address.DEFAULT, Uint256.DEFAULT),
+                Arrays.asList(TypeReference.create(Uint256.class), TypeReference.create(Uint256.class))
+        ));
+        System.out.println("transferShares signature: " + cutSignature(transferShares));
+
+        // 0xdc6ffc7d
+        String transferFromShares = FunctionEncoder.encode(new Function(
+                "transferFromShares",
+                Arrays.asList(Utf8String.DEFAULT, Address.DEFAULT, Address.DEFAULT, Uint256.DEFAULT),
+                Arrays.asList(TypeReference.create(Uint256.class), TypeReference.create(Uint256.class))
+        ));
+        System.out.println("transferFromShares signature: " + cutSignature(transferFromShares));
+
     }
 
 
