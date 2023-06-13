@@ -1,6 +1,7 @@
 package com.example.web3j.combination.evm.polygon;
 
 import org.junit.jupiter.api.Test;
+import org.web3j.abi.EventEncoder;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
@@ -10,8 +11,11 @@ import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
+import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Numeric;
@@ -20,6 +24,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
+
+import static com.example.web3j.combination.web3j.EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_20_721;
 
 /**
  * Polygon NFT Related
@@ -138,6 +144,16 @@ public class PolygonNftTest {
 
         // insert
         System.out.println("Accessible token url >>> " + tokenBaseUrl.getValue().replace("{id}", Numeric.toHexStringNoPrefix(tokenId)));
+    }
+
+    @Test
+    public void getBigLogChecking() throws IOException {
+        final EthFilter filter = new EthFilter(
+                new DefaultBlockParameterNumber(36779600),
+                new DefaultBlockParameterNumber(36790015), Collections.emptyList());
+        filter.addSingleTopic(EventEncoder.encode(TRANSFER_TOPIC_ERC_20_721.event));
+        EthLog send = web3j.ethGetLogs(filter).send();
+        System.out.println();
     }
 
 }
