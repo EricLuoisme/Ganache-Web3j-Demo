@@ -3,10 +3,13 @@ package com.example.web3j.combination.evm.fxEvm;
 import com.example.web3j.combination.web3j.EthLogConstants;
 import com.example.web3j.combination.web3j.handler.NftUriDecodeHandler;
 import org.junit.jupiter.api.Test;
+import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
+import org.web3j.abi.TypeReference;
 import org.web3j.abi.Utils;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.*;
+import org.web3j.abi.datatypes.generated.Bytes32;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.methods.request.EthFilter;
@@ -18,6 +21,7 @@ import org.web3j.protocol.http.HttpService;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -100,13 +104,56 @@ public class FxEvmTest {
 
 
     @Test
-    public void FoxContractNftDecoding() throws IOException {
+    public void FoxContractNftDecoding() {
 
         String contract = "0x9E4df6f08ceEcfEF170FCbF036B97789d5320ec3";
         String tokenIdStr = "105";
 
         String tokenBaseUri = NftUriDecodeHandler.tokenBaseUriRetrieving(web3j, contract, Collections.singletonList(tokenIdStr), NftUriDecodeHandler.SupportErc.ERC_721);
         System.out.println(tokenBaseUri);
+    }
+
+    @Test
+    public void crossChainAbiEncoding() {
+
+        // 0xc5cb9b51
+        String transferCrossChain = FunctionEncoder.encode(new Function(
+                "transferCrossChain",
+                Arrays.asList(Utf8String.DEFAULT, Uint256.DEFAULT, Uint256.DEFAULT, Bytes32.DEFAULT),
+                Collections.singletonList(TypeReference.create(Bool.class))));
+        System.out.println("old contract's abi signature: " + cutSignature(transferCrossChain));
+
+        // 0x160d7c73
+        String crossChain = FunctionEncoder.encode(new Function(
+                "crossChain",
+                Arrays.asList(Address.DEFAULT, Utf8String.DEFAULT, Uint256.DEFAULT, Uint256.DEFAULT, Bytes32.DEFAULT, Utf8String.DEFAULT),
+                Collections.singletonList(TypeReference.create(Bool.class))
+        ));
+        System.out.println("new contract's abi signature: " + cutSignature(crossChain));
+    }
+
+    @Test
+    public void delegationRelatedSigs() {
+
+        // 0xc5cb9b51
+        String transferCrossChain = FunctionEncoder.encode(new Function(
+                "transferCrossChain",
+                Arrays.asList(Utf8String.DEFAULT, Uint256.DEFAULT, Uint256.DEFAULT, Bytes32.DEFAULT),
+                Collections.singletonList(TypeReference.create(Bool.class))));
+        System.out.println("old contract's abi signature: " + cutSignature(transferCrossChain));
+
+        // 0x160d7c73
+        String crossChain = FunctionEncoder.encode(new Function(
+                "crossChain",
+                Arrays.asList(Address.DEFAULT, Utf8String.DEFAULT, Uint256.DEFAULT, Uint256.DEFAULT, Bytes32.DEFAULT, Utf8String.DEFAULT),
+                Collections.singletonList(TypeReference.create(Bool.class))
+        ));
+        System.out.println("new contract's abi signature: " + cutSignature(crossChain));
+    }
+
+
+    private static String cutSignature(String wholeSignature) {
+        return wholeSignature.length() > 10 ? wholeSignature.substring(0, 10) : wholeSignature;
     }
 
 
