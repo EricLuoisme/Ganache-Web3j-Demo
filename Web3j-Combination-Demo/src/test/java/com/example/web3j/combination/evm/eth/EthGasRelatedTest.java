@@ -1,6 +1,7 @@
 package com.example.web3j.combination.evm.eth;
 
 import com.example.web3j.combination.ssl.TrustAllX509CertManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -26,7 +27,9 @@ public class EthGasRelatedTest {
 
     private static final String web3Url = "https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467";
 
-    public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
+    private static final Web3j web3j = Web3j.build(new HttpService(web3Url));
+
+    private static final ObjectMapper om = new ObjectMapper();
 
     private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .readTimeout(10, TimeUnit.SECONDS)
@@ -94,6 +97,26 @@ public class EthGasRelatedTest {
                 .url(String.format(gasTimeEstimationUrl, totalGas.toPlainString()))
                 .get()
                 .build();
+        try (Response resp = okHttpClient.newCall(req).execute()) {
+            String respStr = resp.body().string();
+            System.out.println(respStr);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void gasOracle_BlockNative() {
+
+        String apiKey = "";
+
+        String estimateOracle = "https://api.blocknative.com/gasprices/blockprices";
+        Request req = new Request.Builder()
+                .url(estimateOracle)
+                .header("Authorization", apiKey)
+                .get()
+                .build();
+
         try (Response resp = okHttpClient.newCall(req).execute()) {
             String respStr = resp.body().string();
             System.out.println(respStr);
