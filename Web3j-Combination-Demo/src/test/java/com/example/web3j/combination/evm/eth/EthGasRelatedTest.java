@@ -91,7 +91,7 @@ public class EthGasRelatedTest {
 
     @Test
     public void gasTimeEstimation_Etherscan() {
-        BigDecimal totalGas = Convert.toWei("18", Convert.Unit.GWEI);
+        BigDecimal totalGas = Convert.toWei("10", Convert.Unit.GWEI);
         String gasTimeEstimationUrl = "https://api.etherscan.io/api?module=gastracker&action=gasestimate&gasprice=%s";
         Request req = new Request.Builder()
                 .url(String.format(gasTimeEstimationUrl, totalGas.toPlainString()))
