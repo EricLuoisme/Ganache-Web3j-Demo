@@ -125,5 +125,25 @@ public class EthGasRelatedTest {
         }
     }
 
+    @Test
+    public void gasDistribution_BlockNative() {
+
+        String apiKey = "";
+
+        String estimateOracle = "https://api.blocknative.com/gasprices/distribution";
+        Request req = new Request.Builder()
+                .url(estimateOracle)
+                .header("Authorization", apiKey)
+                .get()
+                .build();
+
+        try (Response resp = okHttpClient.newCall(req).execute()) {
+            String respStr = resp.body().string();
+            System.out.println(respStr);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
