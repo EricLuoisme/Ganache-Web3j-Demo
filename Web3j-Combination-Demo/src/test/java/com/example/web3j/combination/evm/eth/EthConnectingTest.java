@@ -18,8 +18,8 @@ import java.io.IOException;
 public class EthConnectingTest {
 
     public static final Web3j web3j
-//            = Web3j.build(new HttpService("https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467"));
-            = Web3j.build(new HttpService(""));
+            = Web3j.build(new HttpService("https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467"));
+//            = Web3j.build(new HttpService(""));
 
     @Test
     public void testConnection() {
@@ -37,6 +37,7 @@ public class EthConnectingTest {
 
     @Test
     public void getLatestBlock() throws IOException {
+        // get null if the block height is greater than the latest height
         EthBlock.Block block = web3j.ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false)
                 .send().getBlock();
         System.out.println(block.getNumber().toString());
