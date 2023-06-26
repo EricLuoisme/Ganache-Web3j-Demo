@@ -1,16 +1,28 @@
 package com.example.web3j.combination.evm.optimism;
 
 import org.junit.jupiter.api.Test;
+import org.web3j.abi.EventEncoder;
+import org.web3j.abi.FunctionReturnDecoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Event;
+import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
+import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,7 +35,7 @@ import java.util.stream.Collectors;
 public class OptimismTest {
 
     private static final String web3Url_l1 = "https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467";
-    private static final String web3Url = "https://opt-goerli.g.alchemy.com/v2/h_8ml7t3FxTmkRzww_NvLqiw0ZbusFwN";
+    private static final String web3Url = "https://opt-goerli.g.alchemy.com/v2/SpOc-iVOBJaN_rdUndJ3P7d7FiRqSPUD";
 
     public static final Web3j web3j_l1 = Web3j.build(new HttpService(web3Url_l1));
     public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
@@ -78,6 +90,55 @@ public class OptimismTest {
         }).collect(Collectors.toList());
 
         System.out.println();
+    }
+
+    @Test
+    public void approveLogDecode() throws IOException {
+
+        BigInteger blockHeight = new BigInteger("11160241");
+
+        // filter
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(blockHeight),
+                DefaultBlockParameter.valueOf(blockHeight),
+                Collections.emptyList());
+
+        // approve event
+        Event approveEvt = new Event("Approval",
+                Arrays.asList(
+                        TypeReference.create(Address.class, true),
+                        TypeReference.create(Address.class, true),
+                        TypeReference.create(Uint256.class)));
+        String encodeEvt = EventEncoder.encode(approveEvt);
+        // add into filter
+        filter.addOptionalTopics(encodeEvt);
+
+        // get log and decode
+        EthLog logs = web3j.ethGetLogs(filter).send();
+        logs.getLogs()
+                .forEach(
+                        sinEthLog -> {
+
+                            EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
+                            Iterator<String> topicIterator = curLogObj.getTopics().iterator();
+
+                            // 1. function signature
+                            System.out.println("Signature: " + topicIterator.next().substring(0, 10));
+
+                            // 2. owner address
+                            String ownerAddress = new Address(topicIterator.next()).getValue();
+                            System.out.println("Owner address: " + ownerAddress);
+
+                            // 3. spender address (another contract)
+                            String spenderAddress = new Address(topicIterator.next()).getValue();
+                            System.out.println("Spender address: " + spenderAddress);
+
+                            // 4. non-indexed stuff in data -> value
+                            List<Type> nonIndexedParams = FunctionReturnDecoder.decode(curLogObj.getData(), approveEvt.getNonIndexedParameters());
+                            Uint256 val256 = (Uint256) nonIndexedParams.get(0);
+                            System.out.println("Approval amount: " + val256.getValue());
+                        });
+
     }
 
 }
