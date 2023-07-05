@@ -4,6 +4,7 @@ import com.example.web3j.combination.web3j.EthLogConstants;
 import org.junit.jupiter.api.Test;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
@@ -23,7 +24,8 @@ import java.util.stream.Collectors;
  */
 public class PolygonWeb3Test {
 
-    private static final String web3Url = "https://polygon-mumbai.g.alchemy.com/v2/0AvU4bENYqbsSI6km3CEwrgBbyFY_NZX";
+    //    private static final String web3Url = "https://polygon-mumbai.g.alchemy.com/v2/0AvU4bENYqbsSI6km3CEwrgBbyFY_NZX";
+    private static final String web3Url = "";
 
     public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
@@ -41,6 +43,17 @@ public class PolygonWeb3Test {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void getLatestHeight() {
+        try {
+            EthBlock block = web3j.ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false).send();
+            System.out.println(block.getBlock().getNumber());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Test
     public void decodeSpecificBlock() throws InterruptedException, IOException {
