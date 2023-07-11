@@ -17,7 +17,9 @@
         <okhttp3.ver>4.5.0</okhttp3.ver>
         <jackson.ver>2.15.2</jackson.ver>
         <fastjson2.ver>2.0.34</fastjson2.ver>
-        <jsonrpc4j.ver>1.6</jsonrpc4j.ver>
+        <lombok.ver>1.18.28</lombok.ver>
+
+<!--        <jsonrpc4j.ver>1.6</jsonrpc4j.ver>-->
     </properties>
 
     <dependencies>
@@ -49,6 +51,14 @@
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
             <version>${fastjson2.ver}</version>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.ver}</version>
+            <scope>provided</scope>
         </dependency>
 
 <!--        &lt;!&ndash; JsonRpc &ndash;&gt;-->
