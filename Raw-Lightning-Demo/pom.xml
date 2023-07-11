@@ -74,6 +74,13 @@
             <version>1.33</version>
         </dependency>
 
+        <!-- for upgrade from jdk8 -->
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -115,5 +122,19 @@
         </plugins>
 
     </build>
+
+    <profiles>
+        <profile>
+            <id>mac</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <os.detected.classifier>osx-x86_64</os.detected.classifier>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
