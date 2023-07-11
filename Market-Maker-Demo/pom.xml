@@ -20,7 +20,7 @@
 
         <springboot.version>2.7.1</springboot.version>
         <okhttp.version>4.9.3</okhttp.version>
-        <web3j.version>4.9.5</web3j.version>
+        <web3j.version>4.9.8</web3j.version>
     </properties>
 
     <dependencies>
