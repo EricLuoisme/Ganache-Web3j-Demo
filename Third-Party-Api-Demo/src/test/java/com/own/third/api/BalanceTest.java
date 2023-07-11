@@ -1,16 +1,20 @@
 package com.own.third.api;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.own.third.api.alchemy.dto.AddressTokenBalance;
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
+import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class BalanceTest {
 
-    private final String apiKey = "docs-demo";
+    private final String apiKey = "";
 
     private final MediaType mediaType = MediaType.parse("application/json");
 
@@ -47,8 +51,15 @@ public class BalanceTest {
                 .build();
 
         Response response = okHttpClient.newCall(request).execute();
-        String respStr = response.body().string();
-        System.out.println(respStr);
+        JSONObject respJson = JSON.parseObject(response.body().string());
+        AddressTokenBalance tokenBalance = JSON.parseObject(respJson.getJSONObject("result").toJSONString(), AddressTokenBalance.class);
+        tokenBalance.getTokenBalances().forEach(curTokenBal -> {
+            String hexTokenBalance = curTokenBal.getTokenBalance();
+            curTokenBal.setRawBalance(Numeric.toBigInt(hexTokenBalance));
+        });
+
+        ObjectMapper om = new ObjectMapper();
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(tokenBalance));
     }
 
 }
