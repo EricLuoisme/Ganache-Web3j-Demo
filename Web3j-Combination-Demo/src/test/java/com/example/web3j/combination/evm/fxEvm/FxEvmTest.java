@@ -7,14 +7,14 @@ import org.web3j.abi.*;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
-import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.EthLog;
-import org.web3j.protocol.core.methods.response.EthTransaction;
-import org.web3j.protocol.core.methods.response.Web3ClientVersion;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -28,11 +28,12 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * chainId -> 90001
+ *
  * @author Roylic
  * 2022/11/7
  */
 public class FxEvmTest {
-
 
     //    private static final String web3Url = "https://fx-json-web3.functionx.io:8545";
     private static final String web3Url = "https://testnet-fx-json-web3.functionx.io:8545";
@@ -45,9 +46,11 @@ public class FxEvmTest {
         Web3ClientVersion web3ClientVersion = null;
         try {
             web3ClientVersion = web3j.web3ClientVersion().send();
+            EthChainId send = web3j.ethChainId().send();
             String clientVersion = web3ClientVersion.getWeb3ClientVersion();
             System.out.println();
             System.out.println(clientVersion);
+            System.out.println(send.getChainId());
             System.out.println();
         } catch (IOException e) {
             e.printStackTrace();
@@ -287,7 +290,6 @@ public class FxEvmTest {
         String input = txn.getTransaction().get().getInput();
 
 
-
         // how to decode transaction raw input
         List<Type> decode = FunctionReturnDecoder.decode(input.substring(10),
                 Utils.convert(
@@ -336,9 +338,84 @@ public class FxEvmTest {
     }
 
 
+    @Test
+    public void sendCrossChain_FxEvm2Others() throws IOException {
+
+        String mnemonic = "";
+        Credentials credentials = WalletUtils.loadBip39Credentials("", mnemonic);
+        String priKey = credentials.getEcKeyPair().getPrivateKey().toString(16);
+
+
+        Function crossChainFunc = new Function("crossChain",
+                Arrays.asList(
+                        new Address("0x3515f25ab7637adcf1b69f4d384ed5936b83431f"), // token
+                        new Utf8String("0x70076F9f8e221d4729314f99a8AB410C117560aB"), // receipt
+                        new Uint256(1532000L), // amount
+                        new Uint256(10746121L), // fee
+                        new Bytes32(strToLittleEndianBytes32("eth")), // your destination
+                        Utf8String.DEFAULT // memo
+                ),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+
+        String data = FunctionEncoder.encode(crossChainFunc);
+        System.out.println("crossChain function encoded data: " + data);
+
+        // call contract
+        constructAndCallingContractFunction(data, "0x0000000000000000000000000000000000001004", priKey);
+    }
+
+
     private static String cutSignature(String wholeSignature) {
         return wholeSignature.length() > 10 ? wholeSignature.substring(0, 10) : wholeSignature;
     }
 
+    public static byte[] strToLittleEndianBytes32(String input) {
+        // Convert the string to bytes using UTF-8 encoding
+        byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+
+        // Ensure the byte array length matches the Bytes32 size
+        byte[] paddedBytes = new byte[Bytes32.MAX_BYTE_LENGTH];
+        System.arraycopy(bytes, 0, paddedBytes, 0, Math.min(bytes.length, paddedBytes.length));
+
+        // Reverse the byte order
+        ByteBuffer buffer = ByteBuffer.allocate(Bytes32.MAX_BYTE_LENGTH);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.put(paddedBytes);
+        buffer.flip();
+
+        // Get the reversed bytes
+        byte[] littleEndianBytes = new byte[buffer.remaining()];
+        buffer.get(littleEndianBytes);
+
+        return littleEndianBytes;
+    }
+
+    /**
+     * Construct txn inputs & execute
+     */
+    private void constructAndCallingContractFunction(String data, String callingContract, String priKey) throws IOException {
+        Credentials credentials = Credentials.create(priKey);
+        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST).send();
+        BigInteger nonce = ethGetTransactionCount.getTransactionCount();
+        // another stuff need to be filled
+        long chainId = 90001; // for fx-evm
+        BigInteger maxPriorityFeePerGas = BigInteger.valueOf(5_000_000_000L);
+        BigInteger maxFeePerGas = BigInteger.valueOf(50_000_000_000L);
+        BigInteger gasLimit = BigInteger.valueOf(1_000_000L);
+        // for interact with contract, value have to input 0
+        BigInteger value = BigInteger.valueOf(0L);
+        RawTransaction rawTransaction = RawTransaction.createTransaction(chainId, nonce, gasLimit, callingContract, value, data, maxPriorityFeePerGas, maxFeePerGas);
+        byte[] signedMsg = TransactionEncoder.signMessage(rawTransaction, credentials);
+        String hexValue = Numeric.toHexString(signedMsg);
+
+        String txHash = Hash.sha3(hexValue);
+        System.out.println("OffChain txHash: " + txHash);
+        EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
+        if (ethSendTransaction.hasError()) {
+            System.out.println("Error received: " + ethSendTransaction.getError().getMessage());
+        } else {
+            System.out.println("OnChain txHash: " + ethSendTransaction.getTransactionHash());
+        }
+    }
 
 }
