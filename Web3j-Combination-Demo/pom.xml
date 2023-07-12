@@ -9,7 +9,8 @@
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>2.3.7.RELEASE</spring-boot.version>
@@ -51,12 +52,12 @@
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>core</artifactId>
-            <version>4.9.5</version>
+            <version>4.9.8</version>
         </dependency>
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>contracts</artifactId>
-            <version>4.9.5</version>
+            <version>4.9.8</version>
         </dependency>
 
         <!-- Web3j for Eth 2.0 -->

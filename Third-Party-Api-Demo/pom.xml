@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>Third-Party-Api-Demo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <java.version>11</java.version>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+
+        <junit5.ver>5.6.3</junit5.ver>
+        <okhttp3.ver>4.5.0</okhttp3.ver>
+        <jackson.ver>2.15.2</jackson.ver>
+        <fastjson2.ver>2.0.34</fastjson2.ver>
+        <lombok.ver>1.18.28</lombok.ver>
+
+<!--        <jsonrpc4j.ver>1.6</jsonrpc4j.ver>-->
+    </properties>
+
+    <dependencies>
+
+        <!-- JUnit 5 Test -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit5.ver}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Okhttp3 -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp3.ver}</version>
+        </dependency>
+
+        <!-- Jackson (object mapper) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.ver}</version>
+        </dependency>
+
+        <!-- FastJson2 -->
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>${fastjson2.ver}</version>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.ver}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Web3j依赖 -->
+        <dependency>
+            <groupId>org.web3j</groupId>
+            <artifactId>core</artifactId>
+            <version>4.9.8</version>
+        </dependency>
+
+<!--        &lt;!&ndash; JsonRpc &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.github.briandilley.jsonrpc4j</groupId>-->
+<!--            <artifactId>jsonrpc4j</artifactId>-->
+<!--            <version>${jsonrpc4j.ver}</version>-->
+<!--        </dependency>-->
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

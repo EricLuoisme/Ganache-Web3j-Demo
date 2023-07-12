@@ -1,4 +1,4 @@
-package com.example.web3j.combination;
+package com.example.web3j.combination.evm.polygon;
 
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
