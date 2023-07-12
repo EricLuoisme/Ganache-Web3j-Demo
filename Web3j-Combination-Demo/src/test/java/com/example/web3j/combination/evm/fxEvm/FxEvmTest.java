@@ -12,6 +12,7 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Numeric;
@@ -337,14 +338,43 @@ public class FxEvmTest {
         System.out.println();
     }
 
+    @Test
+    public void estimateTxnFee() throws IOException {
+
+        // data
+        Function crossChainFunc = new Function("crossChain",
+                Arrays.asList(
+                        new Address("0x3515f25ab7637adcf1b69f4d384ed5936b83431f"), // token
+                        new Utf8String("0x70076F9f8e221d4729314f99a8AB410C117560aB"), // receipt
+                        new Uint256(1532000L), // amount
+                        new Uint256(10746121L), // fee
+                        new Bytes32(strToLittleEndianBytes32("eth")), // your destination
+                        Utf8String.DEFAULT // memo
+                ),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+
+        String data = FunctionEncoder.encode(crossChainFunc);
+
+        // get nonce
+        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(
+                "0x70076F9f8e221d4729314f99a8AB410C117560aB", DefaultBlockParameterName.PENDING).send();
+        BigInteger transactionCount = ethGetTransactionCount.getTransactionCount();
+        System.out.println("Nonce: " + transactionCount);
+
+        // get estimation fee
+        Transaction transaction = Transaction.createFunctionCallTransaction("0x70076F9f8e221d4729314f99a8AB410C117560aB",
+                transactionCount, new BigInteger("500000000000000000"), new BigInteger("1000000"), "0x0000000000000000000000000000000000001004", data);
+        EthEstimateGas estimateGas = web3j.ethEstimateGas(transaction).send();
+        System.out.println("Estimate Gas: " + estimateGas.getAmountUsed());
+
+    }
+
 
     @Test
     public void sendCrossChain_FxEvm2Others() throws IOException {
 
         String mnemonic = "";
         Credentials credentials = WalletUtils.loadBip39Credentials("", mnemonic);
-        String priKey = credentials.getEcKeyPair().getPrivateKey().toString(16);
-
 
         Function crossChainFunc = new Function("crossChain",
                 Arrays.asList(
@@ -360,8 +390,23 @@ public class FxEvmTest {
         String data = FunctionEncoder.encode(crossChainFunc);
         System.out.println("crossChain function encoded data: " + data);
 
+        // get nonce
+        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(
+                "0x70076F9f8e221d4729314f99a8AB410C117560aB", DefaultBlockParameterName.PENDING).send();
+        BigInteger transactionCount = ethGetTransactionCount.getTransactionCount();
+        System.out.println("Nonce: " + transactionCount);
+
+        EthGetBalance send = web3j.ethGetBalance("0x70076F9f8e221d4729314f99a8AB410C117560aB", DefaultBlockParameterName.LATEST).send();
+        System.out.println("Balance: " + send.getBalance());
+
         // call contract
-        constructAndCallingContractFunction(data, "0x0000000000000000000000000000000000001004", priKey);
+        constructAndCallingContractFunction(transactionCount.add(BigInteger.ONE), data, "0x0000000000000000000000000000000000001004", credentials);
+    }
+
+    @Test
+    public void checkTxn() throws IOException {
+        EthGetTransactionReceipt send = web3j.ethGetTransactionReceipt("0x800c3ef87b2848c6e6cccea4d4fa749cdc8255ccb55abb97f9ba1f45419c7d31").send();
+        System.out.println(send.getTransactionReceipt().get());
     }
 
 
@@ -391,30 +436,30 @@ public class FxEvmTest {
     }
 
     /**
-     * Construct txn inputs & execute
+     * Construct txn inputs & execute, for some reason, the nonce could not be correctly get from web3j.ethGetTransactionCount
      */
-    private void constructAndCallingContractFunction(String data, String callingContract, String priKey) throws IOException {
-        Credentials credentials = Credentials.create(priKey);
-        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST).send();
-        BigInteger nonce = ethGetTransactionCount.getTransactionCount();
+    private void constructAndCallingContractFunction(BigInteger nonce, String data, String callingContract, Credentials credentials) throws IOException {
         // another stuff need to be filled
         long chainId = 90001; // for fx-evm
-        BigInteger maxPriorityFeePerGas = BigInteger.valueOf(5_000_000_000L);
-        BigInteger maxFeePerGas = BigInteger.valueOf(50_000_000_000L);
-        BigInteger gasLimit = BigInteger.valueOf(1_000_000L);
+        BigInteger maxPriorityFeePerGas = BigInteger.valueOf(60_000_000_000L);
+        BigInteger maxFeePerGas = BigInteger.valueOf(70_000_000_000L);
+        BigInteger gasLimit = BigInteger.valueOf(100_000_000L);
         // for interact with contract, value have to input 0
         BigInteger value = BigInteger.valueOf(0L);
         RawTransaction rawTransaction = RawTransaction.createTransaction(chainId, nonce, gasLimit, callingContract, value, data, maxPriorityFeePerGas, maxFeePerGas);
         byte[] signedMsg = TransactionEncoder.signMessage(rawTransaction, credentials);
         String hexValue = Numeric.toHexString(signedMsg);
 
+        System.out.println(maxPriorityFeePerGas.multiply(gasLimit));
+        System.out.println(maxFeePerGas.multiply(gasLimit));
+
         String txHash = Hash.sha3(hexValue);
         System.out.println("OffChain txHash: " + txHash);
         EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
         if (ethSendTransaction.hasError()) {
-            System.out.println("Error received: " + ethSendTransaction.getError().getMessage());
+            System.out.println("Error received: " + Keys.toChecksumAddress(ethSendTransaction.getTransactionHash()));
         } else {
-            System.out.println("OnChain txHash: " + ethSendTransaction.getTransactionHash());
+            System.out.println("OnChain txHash: " + Keys.toChecksumAddress(ethSendTransaction.getTransactionHash()));
         }
     }
 
