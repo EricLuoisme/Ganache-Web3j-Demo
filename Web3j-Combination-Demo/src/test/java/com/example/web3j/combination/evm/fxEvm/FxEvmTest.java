@@ -3,10 +3,7 @@ package com.example.web3j.combination.evm.fxEvm;
 import com.example.web3j.combination.web3j.EthLogConstants;
 import com.example.web3j.combination.web3j.handler.NftUriDecodeHandler;
 import org.junit.jupiter.api.Test;
-import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.FunctionReturnDecoder;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.Utils;
+import org.web3j.abi.*;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
@@ -21,6 +18,9 @@ import org.web3j.protocol.http.HttpService;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -33,7 +33,8 @@ import java.util.List;
 public class FxEvmTest {
 
 
-    private static final String web3Url = "https://fx-json-web3.functionx.io:8545";
+    //    private static final String web3Url = "https://fx-json-web3.functionx.io:8545";
+    private static final String web3Url = "https://testnet-fx-json-web3.functionx.io:8545";
 
     public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
@@ -182,6 +183,89 @@ public class FxEvmTest {
         ));
         System.out.println("transferFromShares signature: " + cutSignature(transferFromShares));
 
+    }
+
+
+    @Test
+    public void crossChainLogDecoding() throws IOException {
+
+//        Function crossChainFunc = new Function("crossChain",
+//                Arrays.asList(
+//                        Address.DEFAULT,
+//                        Utf8String.DEFAULT,
+//                        Uint256.DEFAULT,
+//                        Uint256.DEFAULT,
+//                        Bytes32.DEFAULT,
+//                        Utf8String.DEFAULT
+//                ),
+//                Collections.singletonList(TypeReference.create(Bool.class)));
+//        String funcSig = FunctionEncoder.encode(crossChainFunc);
+//        System.out.println(funcSig);
+
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(9303183)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(9303183)),
+                Collections.emptyList());
+
+        Event crossChainEvt = new Event("CrossChain", Arrays.asList(
+                TypeReference.create(Address.class, true), // sender
+                TypeReference.create(Address.class, true), // token
+                TypeReference.create(Utf8String.class), // denom
+                TypeReference.create(Utf8String.class), // receipt
+                TypeReference.create(Uint256.class), // amount
+                TypeReference.create(Uint256.class), // fee
+                TypeReference.create(Bytes32.class), // target
+                TypeReference.create(Utf8String.class) // memo
+        ));
+        String crossChainTopic = EventEncoder.encode(crossChainEvt);
+        System.out.println("cross chain signature: " + cutSignature(crossChainTopic));
+
+        filter.addOptionalTopics(crossChainTopic);
+        EthLog logs = web3j.ethGetLogs(filter).send();
+
+        logs.getLogs().forEach(sinEthLog -> {
+
+            EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
+            Iterator<String> iterator = curLogObj.getTopics().iterator();
+
+            // 1. signature
+            iterator.next();
+
+            // 2. sender
+            String sender = new Address(iterator.next()).getValue();
+            System.out.println("Sender " + sender);
+
+            // 3. token
+            String token = new Address(iterator.next()).getValue();
+            System.out.println("Token " + token);
+
+            // 4. non-indexed stuff
+            String valueStr = curLogObj.getData();
+            List<Type> valueDecodeList = FunctionReturnDecoder.decode(valueStr, crossChainEvt.getNonIndexedParameters());
+
+            String denom = (String) valueDecodeList.get(0).getValue();
+            System.out.println("Denom " + denom);
+
+            String receipt = (String) valueDecodeList.get(1).getValue();
+            System.out.println("Receipt " + receipt);
+
+            BigInteger amount = (BigInteger) valueDecodeList.get(2).getValue();
+            System.out.println("Amount " + amount);
+
+            BigInteger fee = (BigInteger) valueDecodeList.get(3).getValue();
+            System.out.println("Fee " + fee);
+
+            byte[] bytesArr = (byte[]) valueDecodeList.get(4).getValue();
+            ByteBuffer buffer = ByteBuffer.wrap(bytesArr);
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            String targetVal = new String(bytesArr, StandardCharsets.UTF_8);
+            System.out.println("Target " + targetVal);
+
+            String memo = (String) valueDecodeList.get(5).getValue();
+            System.out.println("Memo " + memo);
+
+            System.out.println();
+        });
     }
 
 
