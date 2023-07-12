@@ -233,36 +233,46 @@ public class FxEvmTest {
 
             // 2. sender
             String sender = new Address(iterator.next()).getValue();
-            System.out.println("Sender " + sender);
+            System.out.println("Sender: " + sender);
 
             // 3. token
             String token = new Address(iterator.next()).getValue();
-            System.out.println("Token " + token);
+            System.out.println("Token: " + token);
 
             // 4. non-indexed stuff
             String valueStr = curLogObj.getData();
             List<Type> valueDecodeList = FunctionReturnDecoder.decode(valueStr, crossChainEvt.getNonIndexedParameters());
 
             String denom = (String) valueDecodeList.get(0).getValue();
-            System.out.println("Denom " + denom);
+            System.out.println("Denom: " + denom);
 
             String receipt = (String) valueDecodeList.get(1).getValue();
-            System.out.println("Receipt " + receipt);
+            System.out.println("Receipt: " + receipt);
 
             BigInteger amount = (BigInteger) valueDecodeList.get(2).getValue();
-            System.out.println("Amount " + amount);
+            System.out.println("Amount: " + amount);
 
             BigInteger fee = (BigInteger) valueDecodeList.get(3).getValue();
-            System.out.println("Fee " + fee);
+            System.out.println("Fee: " + fee);
 
             byte[] bytesArr = (byte[]) valueDecodeList.get(4).getValue();
-            ByteBuffer buffer = ByteBuffer.wrap(bytesArr);
+            int nonZeroIdx = 0;
+            while (nonZeroIdx < bytesArr.length) {
+                if (bytesArr[nonZeroIdx] == 0) {
+                    break;
+                }
+                nonZeroIdx++;
+            }
+            byte[] conciseArr = new byte[nonZeroIdx];
+            System.arraycopy(bytesArr, 0, conciseArr, 0, nonZeroIdx);
+
+            ByteBuffer buffer = ByteBuffer.wrap(conciseArr);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
-            String targetVal = new String(bytesArr, StandardCharsets.UTF_8);
-            System.out.println("Target " + targetVal);
+            String targetVal = new String(conciseArr, StandardCharsets.UTF_8);
+            System.out.println("Target: " + targetVal);
 
             String memo = (String) valueDecodeList.get(5).getValue();
-            System.out.println("Memo " + memo);
+            System.out.println("Memo: " + memo);
 
             System.out.println();
         });
