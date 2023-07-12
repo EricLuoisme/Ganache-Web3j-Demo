@@ -12,6 +12,7 @@ import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthLog;
+import org.web3j.protocol.core.methods.response.EthTransaction;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 
@@ -189,19 +190,6 @@ public class FxEvmTest {
     @Test
     public void crossChainLogDecoding() throws IOException {
 
-//        Function crossChainFunc = new Function("crossChain",
-//                Arrays.asList(
-//                        Address.DEFAULT,
-//                        Utf8String.DEFAULT,
-//                        Uint256.DEFAULT,
-//                        Uint256.DEFAULT,
-//                        Bytes32.DEFAULT,
-//                        Utf8String.DEFAULT
-//                ),
-//                Collections.singletonList(TypeReference.create(Bool.class)));
-//        String funcSig = FunctionEncoder.encode(crossChainFunc);
-//        System.out.println(funcSig);
-
         EthFilter filter = new EthFilter(
                 DefaultBlockParameter.valueOf(BigInteger.valueOf(9303183)),
                 DefaultBlockParameter.valueOf(BigInteger.valueOf(9303183)),
@@ -276,6 +264,75 @@ public class FxEvmTest {
 
             System.out.println();
         });
+    }
+
+    @Test
+    public void crossChainFuncDecoding() throws IOException {
+
+        Function crossChainFunc = new Function("crossChain",
+                Arrays.asList(
+                        Address.DEFAULT,
+                        Utf8String.DEFAULT,
+                        Uint256.DEFAULT,
+                        Uint256.DEFAULT,
+                        Bytes32.DEFAULT,
+                        Utf8String.DEFAULT
+                ),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+        String funcSig = FunctionEncoder.encode(crossChainFunc);
+        System.out.println("Function signature: " + cutSignature(funcSig));
+
+
+        EthTransaction txn = web3j.ethGetTransactionByHash("0x648d869985a0b6fd444b9ef32fcd528f7bd446cc1f4ccf8203f8a81adc348a44").send();
+        String input = txn.getTransaction().get().getInput();
+
+
+
+        // how to decode transaction raw input
+        List<Type> decode = FunctionReturnDecoder.decode(input.substring(10),
+                Utils.convert(
+                        Arrays.asList(
+                                TypeReference.create(Address.class),
+                                TypeReference.create(Utf8String.class),
+                                TypeReference.create(Uint256.class),
+                                TypeReference.create(Uint256.class),
+                                TypeReference.create(Bytes32.class),
+                                TypeReference.create(Utf8String.class)
+                        )));
+
+        // 2. sender
+        String sender = ((Address) decode.get(0)).getValue();
+        System.out.println("Sender: " + sender);
+
+        String receiver = ((Utf8String) decode.get(1)).getValue();
+        System.out.println("Receiver: " + receiver);
+
+        BigInteger amount = ((Uint256) decode.get(2)).getValue();
+        System.out.println("Amount: " + amount);
+
+        BigInteger fee = ((Uint256) decode.get(3)).getValue();
+        System.out.println("Fee: " + fee);
+
+        byte[] bytesArr = ((Bytes32) decode.get(4)).getValue();
+        int nonZeroIdx = 0;
+        while (nonZeroIdx < bytesArr.length) {
+            if (bytesArr[nonZeroIdx] == 0) {
+                break;
+            }
+            nonZeroIdx++;
+        }
+        byte[] conciseArr = new byte[nonZeroIdx];
+        System.arraycopy(bytesArr, 0, conciseArr, 0, nonZeroIdx);
+
+        ByteBuffer buffer = ByteBuffer.wrap(conciseArr);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        String targetVal = new String(conciseArr, StandardCharsets.UTF_8);
+        System.out.println("Target: " + targetVal);
+
+        String memo = ((Utf8String) decode.get(5)).getValue();
+        System.out.println("Memo: " + memo);
+
+        System.out.println();
     }
 
 
