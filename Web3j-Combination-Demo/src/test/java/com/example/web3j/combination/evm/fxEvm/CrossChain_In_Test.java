@@ -1,20 +1,19 @@
 package com.example.web3j.combination.evm.fxEvm;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import org.web3j.abi.EventEncoder;
-import org.web3j.abi.FunctionReturnDecoder;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Event;
-import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.*;
+import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthLog;
+import org.web3j.protocol.core.methods.response.EthTransaction;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.utils.Convert;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -92,6 +91,57 @@ public class CrossChain_In_Test {
             System.out.println();
         });
     }
+
+    @Test
+    public void decodeTxnInputData() throws IOException {
+
+        String txnHash = "0x38343d736ec80c58f861212c83cce18b60968168a2102cef2a0fa834ec59b9f2";
+
+        Function send2FxFunc = new Function("sendToFx",
+                Arrays.asList(
+                        Address.DEFAULT, // token contract
+                        Bytes32.DEFAULT, // destination
+                        Bytes32.DEFAULT, // targetIBC
+                        Uint256.DEFAULT // amount
+                ),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+        String funcSig = FunctionEncoder.encode(send2FxFunc);
+        System.out.println("Function signature: " + cutSignature(funcSig));
+
+        EthTransaction txn = web3j.ethGetTransactionByHash(txnHash).send();
+        org.web3j.protocol.core.methods.response.Transaction transaction = txn.getTransaction().get();
+        String input = transaction.getInput();
+        System.out.println("gas: " + transaction.getGas());
+        System.out.println("gas price: " + transaction.getGasPrice());
+
+        // how to decode transaction raw input
+        List<Type> decode = FunctionReturnDecoder.decode(input.substring(10),
+                Utils.convert(
+                        Arrays.asList(
+                                TypeReference.create(Address.class),
+                                TypeReference.create(Bytes32.class),
+                                TypeReference.create(Bytes32.class),
+                                TypeReference.create(Uint256.class)
+                        )));
+
+        // 1. token contract
+        String token = ((Address) decode.get(0)).getValue();
+        System.out.println("Token: " + token);
+
+        // 2. destination
+        String destination = Hex.toHexString(((Bytes32) decode.get(1)).getValue());
+        System.out.println("Destination: " + destination);
+
+        // 3. targetIBC
+        String targetIBC = littleEndianByte32ArrToStr(((Bytes32) decode.get(2)).getValue());
+        System.out.println("TargetIBC: " + targetIBC);
+
+        // 4. amount
+        BigInteger amount = ((Uint256) decode.get(3)).getValue();
+        System.out.println("Amount: " + amount);
+        System.out.println();
+    }
+
 
     @NotNull
     private String littleEndianByte32ArrToStr(byte[] bytesArr) {
