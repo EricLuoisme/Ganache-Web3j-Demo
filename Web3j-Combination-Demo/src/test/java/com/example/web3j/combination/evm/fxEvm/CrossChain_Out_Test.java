@@ -280,40 +280,6 @@ public class CrossChain_Out_Test {
         constructAndCallingContractFunction(sender, data, crossBridgeContract, credential);
     }
 
-    @NotNull
-    private Credentials loadBip44Mnemonic2Credential(String mnemonic, String password, int addressIdx) {
-        byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
-        Bip32ECKeyPair masterKeypair = Bip32ECKeyPair.generateKeyPair(seed);
-        final int[] path = {44 | HARDENED_BIT, 60 | HARDENED_BIT, 0 | HARDENED_BIT, 0, addressIdx};
-        Bip32ECKeyPair childKeypair = Bip32ECKeyPair.deriveKeyPair(masterKeypair, path);
-        return Credentials.create(childKeypair);
-    }
-
-
-    private static String cutSignature(String wholeSignature) {
-        return wholeSignature.length() > 10 ? wholeSignature.substring(0, 10) : wholeSignature;
-    }
-
-    public static byte[] strToLittleEndianBytes32(String input) {
-        // Convert the string to bytes using UTF-8 encoding
-        byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
-
-        // Ensure the byte array length matches the Bytes32 size
-        byte[] paddedBytes = new byte[Bytes32.MAX_BYTE_LENGTH];
-        System.arraycopy(bytes, 0, paddedBytes, 0, Math.min(bytes.length, paddedBytes.length));
-
-        // Reverse the byte order
-        ByteBuffer buffer = ByteBuffer.allocate(Bytes32.MAX_BYTE_LENGTH);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        buffer.put(paddedBytes);
-        buffer.flip();
-
-        // Get the reversed bytes
-        byte[] littleEndianBytes = new byte[buffer.remaining()];
-        buffer.get(littleEndianBytes);
-
-        return littleEndianBytes;
-    }
 
     /**
      * Construct txn inputs & execute, for some reason, the nonce could not be correctly get from web3j.ethGetTransactionCount
@@ -369,6 +335,40 @@ public class CrossChain_Out_Test {
 
         JSONObject jsonObject = JSONObject.parseObject(respStr);
         return jsonObject.getJSONObject("data").getString("standard");
+    }
+
+    @NotNull
+    public static Credentials loadBip44Mnemonic2Credential(String mnemonic, String password, int addressIdx) {
+        byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
+        Bip32ECKeyPair masterKeypair = Bip32ECKeyPair.generateKeyPair(seed);
+        final int[] path = {44 | HARDENED_BIT, 60 | HARDENED_BIT, 0 | HARDENED_BIT, 0, addressIdx};
+        Bip32ECKeyPair childKeypair = Bip32ECKeyPair.deriveKeyPair(masterKeypair, path);
+        return Credentials.create(childKeypair);
+    }
+
+    public static String cutSignature(String wholeSignature) {
+        return wholeSignature.length() > 10 ? wholeSignature.substring(0, 10) : wholeSignature;
+    }
+
+    public static byte[] strToLittleEndianBytes32(String input) {
+        // Convert the string to bytes using UTF-8 encoding
+        byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+
+        // Ensure the byte array length matches the Bytes32 size
+        byte[] paddedBytes = new byte[Bytes32.MAX_BYTE_LENGTH];
+        System.arraycopy(bytes, 0, paddedBytes, 0, Math.min(bytes.length, paddedBytes.length));
+
+        // Reverse the byte order
+        ByteBuffer buffer = ByteBuffer.allocate(Bytes32.MAX_BYTE_LENGTH);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.put(paddedBytes);
+        buffer.flip();
+
+        // Get the reversed bytes
+        byte[] littleEndianBytes = new byte[buffer.remaining()];
+        buffer.get(littleEndianBytes);
+
+        return littleEndianBytes;
     }
 
 }
