@@ -1,5 +1,10 @@
 package com.example.web3j.combination.evm.fxEvm;
 
+import com.alibaba.fastjson2.JSONObject;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.*;
 import org.web3j.abi.datatypes.*;
@@ -13,6 +18,7 @@ import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.utils.Convert;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
@@ -30,7 +36,10 @@ public class CrossChainTest {
     //    private static final String web3Url = "https://fx-json-web3.functionx.io:8545";
     private static final String web3Url = "https://testnet-fx-json-web3.functionx.io:8545";
 
-    public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
+    private static final Web3j web3j = Web3j.build(new HttpService(web3Url));
+
+    private final MediaType mediaType = MediaType.parse("application/json");
+
 
     @Test
     public void crossChainLogDecoding() throws IOException {
@@ -129,8 +138,16 @@ public class CrossChainTest {
 
 
         EthTransaction txn = web3j.ethGetTransactionByHash("0x648d869985a0b6fd444b9ef32fcd528f7bd446cc1f4ccf8203f8a81adc348a44").send();
-        String input = txn.getTransaction().get().getInput();
+        org.web3j.protocol.core.methods.response.Transaction transaction = txn.getTransaction().get();
+        String input = transaction.getInput();
 
+        BigInteger maxPriorityFeePerGas = transaction.getMaxPriorityFeePerGas();
+        BigInteger maxFeePerGas = transaction.getMaxFeePerGas();
+        System.out.println("maxPriorityFeePerGas: " + Convert.fromWei(maxPriorityFeePerGas.toString(), Convert.Unit.GWEI) + " GWei");
+        System.out.println("maxPriorityFeePerGas raw: " + maxPriorityFeePerGas);
+        System.out.println("maxFeePerGas: " + Convert.fromWei(maxFeePerGas.toString(), Convert.Unit.GWEI) + " GWei");
+        System.out.println("maxFeePerGas raw: " + maxFeePerGas);
+        System.out.println("gas: " + transaction.getGas() + " Wei");
 
         // how to decode transaction raw input
         List<Type> decode = FunctionReturnDecoder.decode(input.substring(10),
@@ -144,9 +161,9 @@ public class CrossChainTest {
                                 TypeReference.create(Utf8String.class)
                         )));
 
-        // 2. sender
-        String sender = ((Address) decode.get(0)).getValue();
-        System.out.println("Sender: " + sender);
+        // 2. token
+        String token = ((Address) decode.get(0)).getValue();
+        System.out.println("Token: " + token);
 
         String receiver = ((Utf8String) decode.get(1)).getValue();
         System.out.println("Receiver: " + receiver);
@@ -216,13 +233,22 @@ public class CrossChainTest {
         String mnemonic = "";
         Credentials credentials = WalletUtils.loadBip39Credentials("", mnemonic);
 
+        String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        String tokenContract = "0x3515f25ab7637adcf1b69f4d384ed5936b83431f";
+        String crossBridgeContract = "0x0000000000000000000000000000000000001004";
+
+
+        // estimate bridgeFee
+        String bridgeFeeStr = getCrossBridgeFeeStandard("ethereum", tokenContract);
+
+        // construct txn
         Function crossChainFunc = new Function("crossChain",
                 Arrays.asList(
-                        new Address("0x3515f25ab7637adcf1b69f4d384ed5936b83431f"), // token
-                        new Utf8String("0x70076F9f8e221d4729314f99a8AB410C117560aB"), // receipt
-                        new Uint256(1532000), // amount
-                        new Uint256(10746121), // fee
-                        new Bytes32(strToLittleEndianBytes32("gravity")), // your destination
+                        new Address(tokenContract), // token
+                        new Utf8String(sender), // receipt
+                        new Uint256(1523000), // amount
+                        new Uint256(new BigInteger(bridgeFeeStr)), // fee
+                        new Bytes32(strToLittleEndianBytes32("eth")), // your destination
                         Utf8String.DEFAULT // memo
                 ),
                 Collections.singletonList(TypeReference.create(Bool.class)));
@@ -230,17 +256,23 @@ public class CrossChainTest {
         String data = FunctionEncoder.encode(crossChainFunc);
         System.out.println("crossChain function encoded data: " + data);
 
-        EthGetBalance send = web3j.ethGetBalance("0x70076F9f8e221d4729314f99a8AB410C117560aB", DefaultBlockParameterName.LATEST).send();
-        System.out.println("Balance: " + send.getBalance());
+        // native balance
+        EthGetBalance send = web3j.ethGetBalance(sender, DefaultBlockParameterName.LATEST).send();
+        System.out.println("balance: " + send.getBalance());
+
+        // token balance
+        Function balanceOfFunc = new Function("balanceOf",
+                Collections.singletonList(new Address(sender)),
+                Collections.singletonList(TypeReference.create(Uint256.class)));
+        String balanceFuncEnc = FunctionEncoder.encode(balanceOfFunc);
+
+        Transaction ethCallTransaction = Transaction.createEthCallTransaction(tokenContract, tokenContract, balanceFuncEnc);
+        EthCall ethCallResp = web3j.ethCall(ethCallTransaction, DefaultBlockParameterName.LATEST).send();
+        List<Type> decodeList = FunctionReturnDecoder.decode(ethCallResp.getValue(), balanceOfFunc.getOutputParameters());
+        System.out.println("Token Balance: " + ((Uint256) decodeList.get(0)).getValue());
 
         // call contract
-        constructAndCallingContractFunction("0x70076F9f8e221d4729314f99a8AB410C117560aB", data, "0x0000000000000000000000000000000000001004", credentials);
-    }
-
-    @Test
-    public void checkTxn() throws IOException {
-        EthGetTransactionReceipt send = web3j.ethGetTransactionReceipt("0x800c3ef87b2848c6e6cccea4d4fa749cdc8255ccb55abb97f9ba1f45419c7d31").send();
-        System.out.println(send.getTransactionReceipt().get());
+        constructAndCallingContractFunction(sender, data, crossBridgeContract, credentials);
     }
 
 
@@ -279,29 +311,59 @@ public class CrossChainTest {
         EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(senderAddress, DefaultBlockParameterName.LATEST).send();
         BigInteger nonce = ethGetTransactionCount.getTransactionCount();
 
-        BigInteger maxPriorityFeePerGas = BigInteger.valueOf(1_000_000_000L);
-        BigInteger maxFeePerGas = BigInteger.valueOf(5_000_000_000L);
-        BigInteger gasLimit = BigInteger.valueOf(100_000_000L);
+        BigInteger gl = new BigInteger("94884");
+        BigInteger mpf = Convert.toWei("1", Convert.Unit.GWEI).toBigInteger();
+        BigInteger mf = Convert.toWei("563.5", Convert.Unit.GWEI).toBigInteger();
+
+        BigInteger gasLimit = new BigInteger("63292");
+        BigInteger maxPriorityFeePerGas = Convert.toWei("1", Convert.Unit.GWEI).toBigInteger();
+        BigInteger maxFeePerGas = Convert.toWei("563.5", Convert.Unit.GWEI).toBigInteger();
+
+//        BigInteger maxPriorityFeePerGas = mpf.divide(gl);
+//        BigInteger maxFeePerGas = mf.divide(gl);
+//        BigInteger gasLimit = gl;
+
+        System.out.println("maxPriorityFee: " + maxPriorityFeePerGas.multiply(gasLimit));
+        System.out.println("maxFee        : " + maxFeePerGas.multiply(gasLimit));
+
+
         // for interact with contract, value have to input 0
         BigInteger value = BigInteger.valueOf(0L);
         RawTransaction rawTransaction = RawTransaction.createTransaction(
-                chainId, nonce.add(BigInteger.ONE), gasLimit, callingContract, value, data, maxPriorityFeePerGas, maxFeePerGas);
+                chainId, nonce, gasLimit, callingContract, value, data, maxPriorityFeePerGas, maxFeePerGas);
         byte[] signedMsg = TransactionEncoder.signMessage(rawTransaction, credentials);
         String hexValue = Numeric.toHexString(signedMsg);
 
-        System.out.println(maxPriorityFeePerGas.multiply(gasLimit));
-        System.out.println(maxFeePerGas.multiply(gasLimit));
-
         String txHash = Hash.sha3(hexValue);
         System.out.println("OffChain txHash: " + txHash);
+
         EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
         if (ethSendTransaction.hasError()) {
-            System.out.println("Error received: " + Keys.toChecksumAddress(ethSendTransaction.getTransactionHash()));
+            System.out.println("Error received: " + ethSendTransaction.getError().getMessage());
         } else {
             System.out.println("OnChain txHash: " + Keys.toChecksumAddress(ethSendTransaction.getTransactionHash()));
             EthGetTransactionReceipt receiptResp = web3j.ethGetTransactionReceipt(ethSendTransaction.getTransactionHash()).send();
             System.out.println(receiptResp.getTransactionReceipt());
         }
+    }
+
+    private String getCrossBridgeFeeStandard(String forwardChain, String tokenContract) throws IOException {
+
+        JSONObject param = new JSONObject();
+        param.put("chainName", forwardChain);
+        param.put("tokenContract", tokenContract);
+
+        RequestBody body = RequestBody.create(param.toJSONString(), mediaType);
+        Request request = new Request.Builder()
+                .url("https://testnet-fx-cross-chain-api.functionx.io/common/queryWithdrawFee")
+                .post(body)
+                .build();
+
+        String respStr = new OkHttpClient.Builder().build().newCall(request).execute().body().string();
+        System.out.println(respStr);
+
+        JSONObject jsonObject = JSONObject.parseObject(respStr);
+        return jsonObject.getJSONObject("data").getString("standard");
     }
 
 }

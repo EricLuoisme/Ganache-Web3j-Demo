@@ -3,26 +3,25 @@ package com.example.web3j.combination.evm.fxEvm;
 import com.example.web3j.combination.web3j.EthLogConstants;
 import com.example.web3j.combination.web3j.handler.NftUriDecodeHandler;
 import org.junit.jupiter.api.Test;
-import org.web3j.abi.*;
+import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.FunctionReturnDecoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.Utils;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
-import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
-import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
-import org.web3j.protocol.core.methods.request.Transaction;
-import org.web3j.protocol.core.methods.response.*;
+import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.EthChainId;
+import org.web3j.protocol.core.methods.response.EthLog;
+import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -190,10 +189,8 @@ public class FxEvmTest {
 
     }
 
-
-
-
     private static String cutSignature(String wholeSignature) {
         return wholeSignature.length() > 10 ? wholeSignature.substring(0, 10) : wholeSignature;
     }
+
 }
