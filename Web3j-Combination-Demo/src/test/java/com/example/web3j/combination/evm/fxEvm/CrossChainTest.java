@@ -5,6 +5,7 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.*;
 import org.web3j.abi.datatypes.*;
@@ -30,6 +31,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import static org.web3j.crypto.Bip32ECKeyPair.HARDENED_BIT;
 
 public class CrossChainTest {
 
@@ -137,7 +140,7 @@ public class CrossChainTest {
         System.out.println("Function signature: " + cutSignature(funcSig));
 
 
-        EthTransaction txn = web3j.ethGetTransactionByHash("0x648d869985a0b6fd444b9ef32fcd528f7bd446cc1f4ccf8203f8a81adc348a44").send();
+        EthTransaction txn = web3j.ethGetTransactionByHash("0x25b4e5a66d1b255a44ac4e8293fb7adebf8c6179da0b5e851c28578ab11412e5").send();
         org.web3j.protocol.core.methods.response.Transaction transaction = txn.getTransaction().get();
         String input = transaction.getInput();
 
@@ -228,13 +231,15 @@ public class CrossChainTest {
     }
 
     @Test
-    public void sendCrossChain_FxEvm2Others() throws IOException {
+    public void sendCrossChain_FxEvm2Others() throws IOException, CipherException {
 
         String mnemonic = "";
-        Credentials credentials = WalletUtils.loadBip39Credentials("", mnemonic);
+        String password = "";
+        Credentials credential = loadBip44Mnemonic2Credential(mnemonic, password, 0);
+        System.out.println("Derived address: " + credential.getAddress());
 
-        String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
-        String tokenContract = "0x3515f25ab7637adcf1b69f4d384ed5936b83431f";
+        String sender = "0x70076F9f8e221d4729314f99a8AB410C117560aB";
+        String tokenContract = "0x3515F25AB7637adcF1b69F4D384ed5936B83431F";
         String crossBridgeContract = "0x0000000000000000000000000000000000001004";
 
 
@@ -246,7 +251,7 @@ public class CrossChainTest {
                 Arrays.asList(
                         new Address(tokenContract), // token
                         new Utf8String(sender), // receipt
-                        new Uint256(1523000), // amount
+                        new Uint256(1100000), // amount
                         new Uint256(new BigInteger(bridgeFeeStr)), // fee
                         new Bytes32(strToLittleEndianBytes32("eth")), // your destination
                         Utf8String.DEFAULT // memo
@@ -272,7 +277,16 @@ public class CrossChainTest {
         System.out.println("Token Balance: " + ((Uint256) decodeList.get(0)).getValue());
 
         // call contract
-        constructAndCallingContractFunction(sender, data, crossBridgeContract, credentials);
+        constructAndCallingContractFunction(sender, data, crossBridgeContract, credential);
+    }
+
+    @NotNull
+    private Credentials loadBip44Mnemonic2Credential(String mnemonic, String password, int addressIdx) {
+        byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
+        Bip32ECKeyPair masterKeypair = Bip32ECKeyPair.generateKeyPair(seed);
+        final int[] path = {44 | HARDENED_BIT, 60 | HARDENED_BIT, 0 | HARDENED_BIT, 0, addressIdx};
+        Bip32ECKeyPair childKeypair = Bip32ECKeyPair.deriveKeyPair(masterKeypair, path);
+        return Credentials.create(childKeypair);
     }
 
 
@@ -311,21 +325,12 @@ public class CrossChainTest {
         EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(senderAddress, DefaultBlockParameterName.LATEST).send();
         BigInteger nonce = ethGetTransactionCount.getTransactionCount();
 
-        BigInteger gl = new BigInteger("94884");
-        BigInteger mpf = Convert.toWei("1", Convert.Unit.GWEI).toBigInteger();
-        BigInteger mf = Convert.toWei("563.5", Convert.Unit.GWEI).toBigInteger();
-
         BigInteger gasLimit = new BigInteger("63292");
         BigInteger maxPriorityFeePerGas = Convert.toWei("1", Convert.Unit.GWEI).toBigInteger();
         BigInteger maxFeePerGas = Convert.toWei("563.5", Convert.Unit.GWEI).toBigInteger();
 
-//        BigInteger maxPriorityFeePerGas = mpf.divide(gl);
-//        BigInteger maxFeePerGas = mf.divide(gl);
-//        BigInteger gasLimit = gl;
-
         System.out.println("maxPriorityFee: " + maxPriorityFeePerGas.multiply(gasLimit));
         System.out.println("maxFee        : " + maxFeePerGas.multiply(gasLimit));
-
 
         // for interact with contract, value have to input 0
         BigInteger value = BigInteger.valueOf(0L);
