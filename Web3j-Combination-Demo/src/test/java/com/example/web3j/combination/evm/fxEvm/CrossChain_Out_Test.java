@@ -34,7 +34,7 @@ import java.util.List;
 
 import static org.web3j.crypto.Bip32ECKeyPair.HARDENED_BIT;
 
-public class CrossChainTest {
+public class CrossChain_Out_Test {
 
     //    private static final String web3Url = "https://fx-json-web3.functionx.io:8545";
     private static final String web3Url = "https://testnet-fx-json-web3.functionx.io:8545";
@@ -231,7 +231,7 @@ public class CrossChainTest {
     }
 
     @Test
-    public void sendCrossChain_FxEvm2Others() throws IOException, CipherException {
+    public void sendCrossChain_FxEvm2Others() throws IOException {
 
         String mnemonic = "";
         String password = "";
