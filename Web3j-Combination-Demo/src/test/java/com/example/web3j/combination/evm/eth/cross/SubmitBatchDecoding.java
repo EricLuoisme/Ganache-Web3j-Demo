@@ -1,9 +1,11 @@
 package com.example.web3j.combination.evm.eth.cross;
 
+import com.example.web3j.combination.web3j.EthLogConstants;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.EventEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
+import org.web3j.abi.Utils;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Event;
 import org.web3j.abi.datatypes.Type;
@@ -16,6 +18,7 @@ import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
@@ -78,6 +81,45 @@ public class SubmitBatchDecoding {
             System.out.println("Event Nonce: " + eventNonce.getValue());
 
             System.out.println();
+        });
+    }
+
+    @Test
+    public void decodeSimpleEvent() throws IOException {
+
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(9342713L)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(9342713L)),
+                Collections.emptyList());
+
+        filter.addOptionalTopics(EthLogConstants.EthEventTopics.getTopicStr(EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_20_721));
+
+        EthLog logs = web3j.ethGetLogs(filter).send();
+        logs.getLogs().forEach(sinEthLog -> {
+
+            EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
+
+            if ("0x6528105b9c3d11dd0a2644d1e10350fcd5664320a313b6e75c47f0a3437b97e1".equalsIgnoreCase(curLogObj.getTransactionHash())) {
+                Iterator<String> iterator = curLogObj.getTopics().iterator();
+
+                // 1. signature
+                iterator.next();
+
+                // 2. from address
+                String from = new Address(iterator.next()).getValue();
+                System.out.println("From address: " + from);
+
+                // 3. to address
+                String to = new Address(iterator.next()).getValue();
+                System.out.println("To address: " + to);
+
+                // 4. amount
+                String valueStr = curLogObj.getData();
+                List<Type> valueDecodeList = FunctionReturnDecoder.decode(valueStr, Utils.convert(EthLogConstants.EthFuncOutput.UINT256.getFuncOutputParams()));
+                BigDecimal amount = new BigDecimal((BigInteger) valueDecodeList.get(0).getValue());
+                System.out.println("Amount: " + amount);
+                System.out.println();
+            }
         });
     }
 }
