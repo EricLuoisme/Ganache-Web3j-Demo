@@ -2,16 +2,24 @@ package com.example.web3j.combination.evm.polygon;
 
 import com.example.web3j.combination.web3j.EthLogConstants;
 import org.junit.jupiter.api.Test;
+import org.web3j.abi.EventEncoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Event;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,6 +58,31 @@ public class PolygonWeb3Test {
             EthBlock block = web3j.ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false).send();
             System.out.println(block.getBlock().getNumber());
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void getPeriodEthLogging() {
+        try {
+
+            EthFilter filter = new EthFilter(
+                    new DefaultBlockParameterNumber(45056699),
+                    new DefaultBlockParameterNumber(45056699 + 50),
+                    Collections.emptyList());
+
+            filter.addOptionalTopics(
+                    EventEncoder.encode(
+                            new Event("Transfer", Arrays.asList(
+                                    TypeReference.create(Address.class),
+                                    TypeReference.create(Address.class),
+                                    TypeReference.create(Uint256.class)
+                            ))));
+
+            EthLog ethLog = web3j.ethGetLogs(filter).send();
+            System.out.println(ethLog.getLogs());
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
