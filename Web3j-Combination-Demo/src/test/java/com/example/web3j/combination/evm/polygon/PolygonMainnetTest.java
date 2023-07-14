@@ -30,10 +30,10 @@ import java.util.stream.Collectors;
  * @author Roylic
  * 2022/9/22
  */
-public class PolygonWeb3Test {
+public class PolygonMainnetTest {
 
-    //    private static final String web3Url = "https://polygon-mumbai.g.alchemy.com/v2/0AvU4bENYqbsSI6km3CEwrgBbyFY_NZX";
-    private static final String web3Url = "";
+    private static final String web3Url = "https://polygon-mainnet.g.alchemy.com/v2/";
+//    private static final String web3Url = "https://chain-gateway.functionx.io/v1/polygon-mainnet/";
 
     public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
@@ -132,5 +132,19 @@ public class PolygonWeb3Test {
 
     }
 
+
+    public static void main(String[] args) {
+        String x = "cf5124d8cec67b1b41152ddd6c8f5161";
+        int i = 5;
+        char[] chars = x.toCharArray();
+        for (int i1 = 0; i1 < chars.length; i1++) {
+            if (i1 <= i || i1 >= chars.length - i) {
+                continue;
+            } else {
+                chars[i1] = '*';
+            }
+        }
+        System.out.println(chars);
+    }
 
 }
