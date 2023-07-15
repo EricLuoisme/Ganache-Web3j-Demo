@@ -20,6 +20,7 @@ public class AddressTokenBalance {
     public static class TokenBalance {
         private String contractAddress;
         private String tokenBalance;
+        // extra
         private BigInteger rawBalance;
     }
 }
