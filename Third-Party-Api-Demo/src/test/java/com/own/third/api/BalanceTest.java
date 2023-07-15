@@ -5,7 +5,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.own.third.api.alchemy.dto.AddressTokenBalance;
-import com.own.third.api.alchemy.dto.Erc20TokenMetadata;
+import com.own.third.api.alchemy.dto.Erc20Metadata;
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
 import org.web3j.utils.Numeric;
@@ -87,7 +87,7 @@ public class BalanceTest {
 
         Response response = okHttpClient.newCall(request).execute();
         JSONObject respJson = JSON.parseObject(response.body().string());
-        Erc20TokenMetadata result = JSON.parseObject(respJson.getJSONObject("result").toJSONString(), Erc20TokenMetadata.class);
+        Erc20Metadata result = JSON.parseObject(respJson.getJSONObject("result").toJSONString(), Erc20Metadata.class);
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(result));
     }
 

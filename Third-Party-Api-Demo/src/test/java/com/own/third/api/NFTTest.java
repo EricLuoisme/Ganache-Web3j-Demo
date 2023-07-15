@@ -1,11 +1,9 @@
 package com.own.third.api;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.own.third.api.alchemy.dto.AddressNFTBalance;
-import com.own.third.api.alchemy.dto.Erc20TokenMetadata;
+import com.own.third.api.alchemy.dto.NFTMetadata;
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
 import org.web3j.utils.Numeric;
@@ -16,8 +14,6 @@ import java.util.concurrent.TimeUnit;
 public class NFTTest {
 
     private final String apiKey = "";
-
-    private final MediaType mediaType = MediaType.parse("application/json");
 
     private final ObjectMapper om = new ObjectMapper();
 
@@ -31,13 +27,12 @@ public class NFTTest {
             .build();
 
     @Test
-    public void getAccountNfts() throws IOException {
+    public void getHoldingNFTsByAddress() throws IOException {
         String owner = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
 
         HttpUrl.Builder urlBuilder = HttpUrl.parse("https://eth-goerli.g.alchemy.com/nft/v2/" + apiKey).newBuilder();
         urlBuilder.addPathSegment("getNFTs").addQueryParameter("owner", owner);
         String url = urlBuilder.build().toString();
-        System.out.println(url);
 
         Request request = new Request.Builder()
                 .url(url)
@@ -47,7 +42,7 @@ public class NFTTest {
         Response response = okHttpClient.newCall(request).execute();
         if (response.isSuccessful()) {
             AddressNFTBalance addressNFTBalance = JSON.parseObject(response.body().string(), AddressNFTBalance.class);
-            addressNFTBalance.getOwnedNfts().forEach(ownedNft ->
+            addressNFTBalance.getNftMetadata().forEach(ownedNft ->
                     ownedNft.setUsedTokenId(Numeric.toBigInt(ownedNft.getId().getTokenId()).toString()));
             System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(addressNFTBalance));
         } else {
@@ -57,29 +52,32 @@ public class NFTTest {
     }
 
     @Test
-    public void tokenDetailRetrieving() throws IOException {
-        String contractAddress = "0x07865c6e87b9f70255377e024ace6630c1eaa37f";
+    public void nftMetadataQuery() throws IOException {
 
-        JSONObject jsonRpc = new JSONObject();
-        JSONArray params = new JSONArray();
-        params.add(contractAddress);
-        jsonRpc.put("id", 1);
-        jsonRpc.put("jsonrpc", "2.0");
-        jsonRpc.put("method", "alchemy_getTokenMetadata");
-        jsonRpc.put("params", params);
+        String nftContract = "0xb1fac5b5b535fbdb4323aa7a0aac6039ce731c7f";
+        String tokenId = "6390";
 
-        RequestBody body = RequestBody.create(jsonRpc.toJSONString(), mediaType);
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://eth-goerli.g.alchemy.com/nft/v2/" + apiKey).newBuilder();
+        urlBuilder.addPathSegment("getNFTMetadata")
+                .addQueryParameter("contractAddress", nftContract)
+                .addQueryParameter("tokenId", tokenId);
+        String url = urlBuilder.build().toString();
+
         Request request = new Request.Builder()
-                .url("https://eth-goerli.g.alchemy.com/v2/" + apiKey)
+                .url(url)
                 .addHeader("accept", "application/json")
-                .addHeader("content-type", "application/json")
-                .post(body)
                 .build();
 
         Response response = okHttpClient.newCall(request).execute();
-        JSONObject respJson = JSON.parseObject(response.body().string());
-        Erc20TokenMetadata result = JSON.parseObject(respJson.getJSONObject("result").toJSONString(), Erc20TokenMetadata.class);
-        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+        if (response.isSuccessful()) {
+            NFTMetadata nftMetadata = JSON.parseObject(response.body().string(), NFTMetadata.class);
+            System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(nftMetadata));
+        } else {
+            System.out.println("Error");
+        }
+        System.out.println();
+
+
     }
 
 }
