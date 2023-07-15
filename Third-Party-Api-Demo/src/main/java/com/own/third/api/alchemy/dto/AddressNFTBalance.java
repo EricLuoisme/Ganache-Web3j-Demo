@@ -10,5 +10,3 @@ public class AddressNFTBalance {
     private int totalCount;
     private String blockHash;
 }
-
-

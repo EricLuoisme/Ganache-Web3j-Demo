@@ -27,7 +27,7 @@ public class NFTTest {
             .build();
 
     @Test
-    public void getHoldingNFTsByAddress() throws IOException {
+    public void getHoldingNFTsByAddress_v2() throws IOException {
         String owner = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
 
         HttpUrl.Builder urlBuilder = HttpUrl.parse("https://eth-goerli.g.alchemy.com/nft/v2/" + apiKey).newBuilder();
@@ -51,8 +51,42 @@ public class NFTTest {
         System.out.println();
     }
 
+    /**
+     * V3 is about ->
+     * 1) query all holding NFTs by address, only return contract Address,
+     *
+     * @throws IOException
+     */
     @Test
-    public void nftMetadataQuery() throws IOException {
+    public void getHoldingNFTsByAddress_v3() throws IOException {
+        String owner = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://eth-goerli.g.alchemy.com/nft/v3/" + apiKey).newBuilder();
+        urlBuilder.addPathSegment("getNFTsForOwner")
+                .addQueryParameter("owner", owner)
+                .addQueryParameter("withMetadata", "false");
+        String url = urlBuilder.build().toString();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("accept", "application/json")
+                .build();
+
+        Response response = okHttpClient.newCall(request).execute();
+        if (response.isSuccessful()) {
+            AddressNFTBalance addressNFTBalance = JSON.parseObject(response.body().string(), AddressNFTBalance.class);
+            addressNFTBalance.getNftMetadata().forEach(ownedNft ->
+                    ownedNft.setUsedTokenId(Numeric.toBigInt(ownedNft.getId().getTokenId()).toString()));
+            System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(addressNFTBalance));
+        } else {
+            System.out.println("Error");
+        }
+        System.out.println();
+    }
+
+
+    @Test
+    public void nftMetadataQuery_v2() throws IOException {
 
         String nftContract = "0xb1fac5b5b535fbdb4323aa7a0aac6039ce731c7f";
         String tokenId = "6390";
