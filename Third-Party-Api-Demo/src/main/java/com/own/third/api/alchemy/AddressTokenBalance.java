@@ -1,4 +1,4 @@
-package com.own.third.api.alchemy.dto;
+package com.own.third.api.alchemy;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

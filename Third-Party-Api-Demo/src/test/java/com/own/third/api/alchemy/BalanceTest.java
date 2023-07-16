@@ -1,11 +1,10 @@
-package com.own.third.api;
+package com.own.third.api.alchemy;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.own.third.api.alchemy.dto.AddressTokenBalance;
-import com.own.third.api.alchemy.dto.Erc20Metadata;
+import com.own.third.api.TrustAllX509CertManager;
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
 import org.web3j.utils.Numeric;
