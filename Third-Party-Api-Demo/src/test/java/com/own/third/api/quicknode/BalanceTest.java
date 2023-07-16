@@ -31,7 +31,7 @@ public class BalanceTest {
 
 
     @Test
-    public void getBalanceByAddress() throws IOException {
+    public void getTokenBalanceByAddress() throws IOException {
 
         String wallet = "0xE16dF6503Acd3c79b6E032f62c61752bEC16eeF2";
 
@@ -58,4 +58,42 @@ public class BalanceTest {
         TokenBalances tokenBalances = JSON.parseObject(respJson.getJSONObject("result").toJSONString(), TokenBalances.class);
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(tokenBalances));
     }
+
+
+    @Test
+    public void getNftAssetsByAddress() throws IOException {
+
+        String wallet = "0xE16dF6503Acd3c79b6E032f62c61752bEC16eeF2";
+
+        JSONObject jsonRpc = new JSONObject();
+
+        JSONArray params = new JSONArray();
+        JSONObject singleParam = new JSONObject();
+        singleParam.put("wallet", wallet);
+        singleParam.put("page", 1);
+        singleParam.put("perPage", 10);
+        params.add(singleParam);
+
+        jsonRpc.put("id", 1);
+        jsonRpc.put("jsonrpc", "2.0");
+        jsonRpc.put("method", "qn_fetchNFTs");
+
+        JSONArray omitArr = new JSONArray();
+        omitArr.add("traits");
+        jsonRpc.put("omitFields", omitArr);
+        jsonRpc.put("params", params);
+
+        RequestBody body = RequestBody.create(jsonRpc.toJSONString(), mediaType);
+        Request request = new Request.Builder()
+                .url(webChainUrl)
+                .addHeader("content-type", "application/json")
+                .post(body)
+                .build();
+
+        Response response = okHttpClient.newCall(request).execute();
+        JSONObject respJson = JSON.parseObject(response.body().string());
+        NftAssets nftAssets = JSON.parseObject(respJson.getJSONObject("result").toJSONString(), NftAssets.class);
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(nftAssets));
+    }
+
 }
