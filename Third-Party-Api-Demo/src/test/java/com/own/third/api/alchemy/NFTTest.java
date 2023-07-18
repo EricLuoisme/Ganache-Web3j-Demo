@@ -3,9 +3,11 @@ package com.own.third.api.alchemy;
 import com.alibaba.fastjson2.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.own.third.api.TrustAllX509CertManager;
-import okhttp3.*;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.junit.jupiter.api.Test;
-import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -41,48 +43,12 @@ public class NFTTest {
         Response response = okHttpClient.newCall(request).execute();
         if (response.isSuccessful()) {
             AddressNFTBalance addressNFTBalance = JSON.parseObject(response.body().string(), AddressNFTBalance.class);
-            addressNFTBalance.getNftMetadata().forEach(ownedNft ->
-                    ownedNft.setUsedTokenId(Numeric.toBigInt(ownedNft.getId().getTokenId()).toString()));
             System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(addressNFTBalance));
         } else {
             System.out.println("Error");
         }
         System.out.println();
     }
-
-    /**
-     * V3 is about ->
-     * 1) query all holding NFTs by address, only return contract Address,
-     *
-     * @throws IOException
-     */
-    @Test
-    public void getHoldingNFTsByAddress_v3() throws IOException {
-        String owner = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
-
-        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://eth-goerli.g.alchemy.com/nft/v3/" + apiKey).newBuilder();
-        urlBuilder.addPathSegment("getNFTsForOwner")
-                .addQueryParameter("owner", owner)
-                .addQueryParameter("withMetadata", "false");
-        String url = urlBuilder.build().toString();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader("accept", "application/json")
-                .build();
-
-        Response response = okHttpClient.newCall(request).execute();
-        if (response.isSuccessful()) {
-            AddressNFTBalance addressNFTBalance = JSON.parseObject(response.body().string(), AddressNFTBalance.class);
-            addressNFTBalance.getNftMetadata().forEach(ownedNft ->
-                    ownedNft.setUsedTokenId(Numeric.toBigInt(ownedNft.getId().getTokenId()).toString()));
-            System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(addressNFTBalance));
-        } else {
-            System.out.println("Error");
-        }
-        System.out.println();
-    }
-
 
     @Test
     public void nftMetadataQuery_v2() throws IOException {
@@ -111,6 +77,47 @@ public class NFTTest {
         System.out.println();
 
 
+    }
+
+
+    /**
+     * V3 is about ->
+     * 1) query all holding NFTs by address, only return contract Address,
+     *
+     * @throws IOException
+     */
+    @Test
+    public void getHoldingNFTsByAddress_v3() throws IOException {
+        String owner = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        boolean withMetadata = true;
+
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://eth-goerli.g.alchemy.com/nft/v3/" + apiKey).newBuilder();
+        urlBuilder.addPathSegment("getNFTsForOwner")
+                .addQueryParameter("owner", owner)
+                .addQueryParameter("withMetadata", String.valueOf(withMetadata));
+        String url = urlBuilder.build().toString();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("accept", "application/json")
+                .build();
+
+        Response response = okHttpClient.newCall(request).execute();
+        if (response.isSuccessful()) {
+
+            if (withMetadata) {
+                AddressNFTBalance addressNFTBalance = JSON.parseObject(response.body().string(), AddressNFTBalance.class);
+                System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(addressNFTBalance));
+            } else {
+                AddressNFTBalanceConcise addressNFTBalance = JSON.parseObject(response.body().string(), AddressNFTBalanceConcise.class);
+                System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(addressNFTBalance));
+            }
+
+
+        } else {
+            System.out.println("Error");
+        }
+        System.out.println();
     }
 
 }

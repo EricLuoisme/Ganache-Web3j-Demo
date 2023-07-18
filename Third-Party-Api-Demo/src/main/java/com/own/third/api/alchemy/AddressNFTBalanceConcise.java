@@ -8,7 +8,8 @@ import java.util.List;
 public class AddressNFTBalanceConcise {
     private List<ConciseNFTMetadata> ownedNfts;
     private int totalCount;
-    private String blockHash;
+    private AddressNFTBalance.ValidAt validAt;
+    private String pageKey;
 
     @Data
     public static class ConciseNFTMetadata {

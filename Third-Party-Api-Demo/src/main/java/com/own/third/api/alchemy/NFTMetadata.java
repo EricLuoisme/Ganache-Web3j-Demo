@@ -6,50 +6,62 @@ import java.util.List;
 
 @Data
 public class NFTMetadata {
-    private Contract contract;
-    private Id id;
-    private String balance;
-    private String title;
-    private String description;
-    private TokenUri tokenUri;
-    private List<Media> media;
-    private Metadata metadata;
-    private String timeLastUpdated;
-    private ContractMetadata contractMetadata;
 
-    // extra
-    private String usedTokenId;
+    private Contract contract;
+    private String tokenId;
+    private String tokenType;
+    private String name;
+    private String description;
+    private Image image;
+    private Raw raw;
+    private String tokenUri;
+    private String timeLastUpdated;
+    private String balance;
+    private AcquiredAt acquiredAt;
 
 
     @Data
     public static class Contract {
         private String address;
-    }
-
-    @Data
-    public static class Id {
-        private String tokenId;
-        private NftTokenMetadata tokenMetadata;
-    }
-
-    @Data
-    public static class NftTokenMetadata {
+        private String name;
+        private String symbol;
+        private String totalSupply;
         private String tokenType;
+        private String contractDeployer;
+        private int deployedBlockNumber;
+        private OpenSeaMetadata openSeaMetadata;
+        private Boolean isSpam;
+        private List<String> spamClassifications;
     }
 
     @Data
-    public static class TokenUri {
-        private String gateway;
-        private String raw;
+    public static class OpenSeaMetadata {
+        private String floorPrice;
+        private String collectionName;
+        private String safelistRequestStatus;
+        private String imageUrl;
+        private String description;
+        private String externalUrl;
+        private String twitterUsername;
+        private String discordUrl;
+        private String lastIngestedAt;
     }
 
     @Data
-    public static class Media {
-        private String gateway;
-        private String thumbnail;
-        private String raw;
-        private String format;
-        private int bytes;
+    public static class Image {
+        private String cachedUrl;
+        private String thumbnailUrl;
+        private String pngUrl;
+        private String contentType;
+        private int size;
+        private String originalUrl;
+    }
+
+    @Data
+    public static class Raw {
+        private String tokenUri;
+        private Metadata metadata;
+        private String error;
     }
 
     @Data
@@ -64,22 +76,13 @@ public class NFTMetadata {
     public static class Attribute {
         private String value;
         private String trait_type;
+        private String display_type;
     }
 
     @Data
-    public static class ContractMetadata {
-        private String name;
-        private String symbol;
-        private String totalSupply;
-        private String tokenType;
-        private String contractDeployer;
-        private long deployedBlockNumber;
-        private OpenSea openSea;
-    }
-
-    @Data
-    public static class OpenSea {
-        private String lastIngestedAt;
+    public static class AcquiredAt {
+        private String blockTimestamp;
+        private String blockNumber;
     }
 }
 

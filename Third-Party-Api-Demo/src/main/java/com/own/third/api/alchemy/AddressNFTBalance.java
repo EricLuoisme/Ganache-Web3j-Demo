@@ -6,7 +6,15 @@ import java.util.List;
 
 @Data
 public class AddressNFTBalance {
-    private List<NFTMetadata> nftMetadata;
+    private List<NFTMetadata> ownedNfts;
     private int totalCount;
-    private String blockHash;
+    private ValidAt validAt;
+    private String pageKey;
+
+    @Data
+    public static class ValidAt {
+        private int blockNumber;
+        private String blockHash;
+        private String blockTimestamp;
+    }
 }
