@@ -76,8 +76,10 @@ public class FxEvmTest {
 
         System.out.println("Evt Sig: " + cutSignature(EventEncoder.encode(vestedEvt)));
 
-
-        filter.addOptionalTopics(EventEncoder.encode(vestedEvt));
+        // vest would not pop transfer event
+        filter.addOptionalTopics(
+                EventEncoder.encode(vestedEvt),
+                EthLogConstants.EthEventTopics.getTopicStr(EthLogConstants.EthEventTopics.TRANSFER_TOPIC_ERC_20_721));
         EthLog logs = web3j.ethGetLogs(filter).send();
 
         logs.getLogs().forEach(sinEthLog -> {
