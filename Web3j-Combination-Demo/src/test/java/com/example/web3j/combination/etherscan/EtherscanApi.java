@@ -35,13 +35,42 @@ public class EtherscanApi {
     @Test
     public void plainTxn() throws IOException {
 
-        String address = "0xE304450bF78e357C3edc790C98fcb28dDeb87830";
-        Long startBlock = 0L;
+        String address = "0x98eB6764a9765C21c08Ce679b831cd4CFd664C9E";
+        Long startBlock = 17732604L;
         Long endBlock = 99999999L;
 
         HttpUrl.Builder urlBuilder = HttpUrl.parse(ETHERSCAN_BASE_API).newBuilder();
         urlBuilder.addQueryParameter("module", "account")
                 .addQueryParameter("action", "txlist")
+                .addQueryParameter("address", address)
+                .addQueryParameter("startblock", startBlock.toString())
+                .addQueryParameter("endblock", endBlock.toString())
+                .addQueryParameter("sort", "desc");
+
+        Request request = new Request.Builder()
+                .url(urlBuilder.build().toString())
+                .addHeader("accept", "application/json")
+                .addHeader("content-type", "application/json")
+                .get()
+                .build();
+
+        Response response = okHttpClient.newCall(request).execute();
+        JSONObject respJson = JSON.parseObject(response.body().string());
+        System.out.println(respJson);
+    }
+
+    @Test
+    public void tokenTxn() throws IOException {
+
+        String address = "0xE304450bF78e357C3edc790C98fcb28dDeb87830";
+        String contractAddress = "0xEd04915c23f00A313a544955524EB7DBD823143d";
+        Long startBlock = 0L;
+        Long endBlock = 99999999L;
+
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(ETHERSCAN_BASE_API).newBuilder();
+        urlBuilder.addQueryParameter("module", "account")
+                .addQueryParameter("action", "tokentx")
+                .addQueryParameter("contractaddress", contractAddress)
                 .addQueryParameter("address", address)
                 .addQueryParameter("startblock", startBlock.toString())
                 .addQueryParameter("endblock", endBlock.toString())
