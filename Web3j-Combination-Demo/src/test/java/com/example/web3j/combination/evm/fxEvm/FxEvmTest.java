@@ -3,10 +3,7 @@ package com.example.web3j.combination.evm.fxEvm;
 import com.example.web3j.combination.web3j.EthLogConstants;
 import com.example.web3j.combination.web3j.handler.NftUriDecodeHandler;
 import org.junit.jupiter.api.Test;
-import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.FunctionReturnDecoder;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.Utils;
+import org.web3j.abi.*;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
@@ -61,6 +58,57 @@ public class FxEvmTest {
     public void getBlock() throws IOException {
         EthBlock block_5528640 = web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf(new BigInteger("5528640")), false).send();
         System.out.println(block_5528640.toString());
+    }
+
+    @Test
+    public void getVestLog() throws IOException {
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(9445924)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(9445924)),
+                Collections.singletonList("0x8E1D972703c0BbE65cbBa42bd75D0Eb41B8397b5"));
+
+        Event vestedEvt = new Event("Vested",
+                Arrays.asList(
+                        TypeReference.create(Address.class, true),
+                        TypeReference.create(Uint256.class),
+                        TypeReference.create(Uint256.class)
+                ));
+
+        System.out.println("Evt Sig: " + cutSignature(EventEncoder.encode(vestedEvt)));
+
+
+        filter.addOptionalTopics(EventEncoder.encode(vestedEvt));
+        EthLog logs = web3j.ethGetLogs(filter).send();
+
+        logs.getLogs().forEach(sinEthLog -> {
+
+            EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
+
+            // filter target txn
+            if (!"0x270e497b2633bd6a8825ee8b35920bbff2d6e91f9062715558c7adc0b81e32bd".equals(curLogObj.getTransactionHash())) {
+                return;
+            }
+
+            Iterator<String> iterator = curLogObj.getTopics().iterator();
+
+            // 1. signature
+            iterator.next();
+
+            // 2. beneficiary
+            String beneficiary = new Address(iterator.next()).getValue();
+            System.out.println("Beneficiary: " + beneficiary);
+
+
+            // 3. quantity
+            List<Type> valueDecodeList = FunctionReturnDecoder.decode(curLogObj.getData(), vestedEvt.getNonIndexedParameters());
+            BigInteger vestedQuantity = ((Uint256) valueDecodeList.get(0)).getValue();
+            System.out.println("Vested Quantity: " + vestedQuantity);
+
+            // 4. index
+            BigInteger index = ((Uint256) valueDecodeList.get(1)).getValue();
+            System.out.println("Index " + index);
+            System.out.println();
+        });
     }
 
 
