@@ -62,7 +62,7 @@ public class EtherscanApi {
     @Test
     public void tokenTxn() throws IOException {
 
-        String address = "0xE304450bF78e357C3edc790C98fcb28dDeb87830";
+        String address = "0x56a284ACbD7318380FC8a380CD5695bB14b5A0Ce";
         String contractAddress = "0xEd04915c23f00A313a544955524EB7DBD823143d";
         Long startBlock = 0L;
         Long endBlock = 99999999L;
@@ -70,7 +70,7 @@ public class EtherscanApi {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(ETHERSCAN_BASE_API).newBuilder();
         urlBuilder.addQueryParameter("module", "account")
                 .addQueryParameter("action", "tokentx")
-                .addQueryParameter("contractaddress", contractAddress)
+//                .addQueryParameter("contractaddress", contractAddress)
                 .addQueryParameter("address", address)
                 .addQueryParameter("startblock", startBlock.toString())
                 .addQueryParameter("endblock", endBlock.toString())
