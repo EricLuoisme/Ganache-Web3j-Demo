@@ -1,5 +1,6 @@
 package com.example.web3j.combination.evm.polygon;
 
+import com.alibaba.fastjson.JSON;
 import com.example.web3j.combination.web3j.EthLogConstants;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.EventEncoder;
@@ -32,8 +33,8 @@ import java.util.stream.Collectors;
  */
 public class PolygonMainnetTest {
 
-    private static final String web3Url = "https://polygon-mainnet.g.alchemy.com/v2/";
-//    private static final String web3Url = "https://chain-gateway.functionx.io/v1/polygon-mainnet/";
+    //    private static final String web3Url = "https://polygon-mainnet.g.alchemy.com/v2/";
+    private static final String web3Url = "https://chain-gateway.functionx.io/v1/polygon-mumbai/";
 
     public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
@@ -61,6 +62,17 @@ public class PolygonMainnetTest {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void getSpecificHeight() {
+        try {
+            EthBlock block = web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf(new BigInteger("38194293")), false).send();
+            System.out.println(JSON.toJSONString(block.getBlock()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Test
     public void getPeriodEthLogging() {
