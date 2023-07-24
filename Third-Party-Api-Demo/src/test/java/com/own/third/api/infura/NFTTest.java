@@ -10,6 +10,8 @@ import okhttp3.Response;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,6 +28,9 @@ public class NFTTest {
 
     private static final String CREDENTIAL = Credentials.basic("", "");
 
+    private static final String COMPACT_CREDENTIAL = "";
+
+
     private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .readTimeout(10, TimeUnit.SECONDS)
             .writeTimeout(10, TimeUnit.SECONDS)
@@ -39,19 +44,19 @@ public class NFTTest {
     @Test
     public void getAllNftOwnedByAddress() throws IOException {
 
-        String owner = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
-        Long chainId = 5L;
+        String owner = "0x70076F9f8e221d4729314f99a8AB410C117560aB";
+        Long chainId = 97L;
 
         Request request = new Request.Builder()
                 .url(String.format(NFT_REQUEST_URL, chainId, owner))
                 .addHeader("accept", "application/json")
-                .addHeader("Authorization", CREDENTIAL)
+//                .addHeader("Authorization", CREDENTIAL)
+                .addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(COMPACT_CREDENTIAL.getBytes(StandardCharsets.UTF_8)))
                 .build();
 
         Response response = okHttpClient.newCall(request).execute();
         NftResponse nftResponse = JSON.parseObject(response.body().string(), NftResponse.class);
-        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(nftResponse));
-        System.out.println();
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(nftResponse));System.out.println();
     }
 
 }
