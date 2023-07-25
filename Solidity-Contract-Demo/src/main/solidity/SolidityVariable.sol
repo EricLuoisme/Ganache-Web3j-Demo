@@ -19,6 +19,7 @@ contract SolidityVariable {
     }
     // use globally available variables
     function getSender() public view returns (address) {
+        storedData += 3;
         return msg.sender;
     }
 }
