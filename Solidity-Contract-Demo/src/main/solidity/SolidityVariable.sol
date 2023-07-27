@@ -49,4 +49,9 @@ contract SolidityVariable {
     function callMulMod() public pure returns (uint){
         return mulmod(4, 5, 3);
     }
+
+    // Solidity support -> keccak256, ripemd160, sha256 & ecrecover
+    function callKeccak256() public pure returns(bytes32 result){
+        return keccak256("ABC");
+    }
 }
