@@ -10,16 +10,25 @@ contract SolidityVariable {
         // using state variable
         storedData = 10;
     }
-    function getResult() public view returns (uint) {
+
+    // modifier for intercept illegal function calling
+    modifier onlyPositive {
+        require(storedData > 0); // after 'storedData' < 10, the function would not be executable
+        _;
+    }
+
+    // before the scope after the function input, modifier can be placed
+    function getResult() onlyPositive public returns (uint) {
         // local variable (also private variable)
         uint a = 1;
         uint b = 2;
         uint result = a + b + storedData;
+        // change state variable
+        storedData--;
         return result;
     }
     // use globally available variables
     function getSender() public view returns (address) {
-        storedData += 3;
         return msg.sender;
     }
 }
