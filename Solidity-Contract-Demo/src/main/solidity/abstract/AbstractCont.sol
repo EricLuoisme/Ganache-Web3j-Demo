@@ -1,9 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-// abstract contract can only make a statement of the function
+// abstract contract
 contract AbstractCont {
     function getResult() public view returns (uint);
+    // abstract contract can still have implemented functions
+}
+
+// interface can only have un-implemented functions
+interface AbstractInt {
+    function getAbstractResult() public view returns (uint);
 }
 
 // extends one abstract contract, must implement it's all funcs
