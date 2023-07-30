@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 // abstract contract
 contract AbstractCont {
     function getResult() public view returns (uint);
-    // abstract contract can still have implemented functions
+    // abstract contract can still have implemented functions or declar functions
 }
 
-// interface can only have un-implemented functions
+// interface can only declare functions
 interface AbstractInt {
     function getAbstractResult() public view returns (uint);
 }
