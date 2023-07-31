@@ -8,6 +8,7 @@ import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Event;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.crypto.Keys;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
@@ -157,6 +158,8 @@ public class PolygonMainnetTest {
             }
         }
         System.out.println(chars);
+
+        System.out.println(Keys.toChecksumAddress("0xacf44f78b1272b29624afa41101db7f7a388ce99cbb5805ed09363968bc68a85"));
     }
 
 }

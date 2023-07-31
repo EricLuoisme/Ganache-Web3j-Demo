@@ -41,13 +41,13 @@ public class NFTTest {
     @Test
     public void getAllNftOwnedByAddress() throws IOException {
 
-        String owner = "";
-        Long chainId = 97L;
+        String owner = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        Long chainId = 5L;
 
-        String cursor = "eyJhbGciOiJIUzI1NiJ9.ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmpkWE4wYjIxUVlYSmhiWE1pT25zaWQyRnNiR1YwUVdSa2NtVnpjeUk2SWpCNE56ZG1NakF5TWpVek1qQXdPV00xWldJMFl6WmpOekJtTXprMVpHVmhZV0UzT1RNME9ERmlZeUo5TENKclpYbHpJanBiSWpFMk5ESTFNRGt6TURFdU5UZzFJbDBzSW5kb1pYSmxJanA3SW05M2JtVnlYMjltSWpvaU1IZzNOMll5TURJeU5UTXlNREE1WXpWbFlqUmpObU0zTUdZek9UVmtaV0ZoWVRjNU16UTRNV0pqSW4wc0lteHBiV2wwSWpveE1EQXNJbTltWm5ObGRDSTZNQ3dpYjNKa1pYSWlPbHRkTENKa2FYTmhZbXhsWDNSdmRHRnNJanBtWVd4elpTd2lkRzkwWVd3aU9qUXpOU3dpY0dGblpTSTZNU3dpZEdGcGJFOW1abk5sZENJNk1Td2lhV0YwSWpveE5qa3dNVGsxTmpRd2ZRLkpLamJ6UTFTbUZXNzFaRHlkel9tLWt6VndWSjB2UXIxRS10NG5DTXg5UWc.wOgo9rWXDLADbydParU7L-cINbhqx5Z0VeuaJinmfDA";
+        String cursor = "";
 
         HttpUrl.Builder urlBuilder = HttpUrl.parse(String.format(NFT_REQUEST_URL, chainId, owner)).newBuilder();
-        urlBuilder.addQueryParameter("cursor", cursor);
+//        urlBuilder.addQueryParameter("cursor", cursor);
         String url = urlBuilder.build().toString();
 
         Request request = new Request.Builder()
