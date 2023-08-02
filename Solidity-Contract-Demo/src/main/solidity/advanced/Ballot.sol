@@ -25,6 +25,8 @@ contract Ballot {
     Proposal[] public proposals;
 
     // create a new ballot to choose one of the 'proposalNames'
+    // for the deployment, we should input: bytes32 arrays like:
+    // ["0x70726f706f73616c310000000000000000000000000000000000000000000000", "0x70726f706f73616c320000000000000000000000000000000000000000000000"]
     constructor(bytes32[] memory proposalNames){
         chairperson = msg.sender;
         voters[chairperson].weight = 1;
