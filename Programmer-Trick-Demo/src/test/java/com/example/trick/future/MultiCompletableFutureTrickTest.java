@@ -1,4 +1,4 @@
-package com.example.trick;
+package com.example.trick.future;
 
 import org.junit.Test;
 
