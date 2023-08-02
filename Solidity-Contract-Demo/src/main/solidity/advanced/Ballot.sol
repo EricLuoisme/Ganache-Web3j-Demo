@@ -5,7 +5,7 @@ contract Ballot {
 
     // complex type
     struct Voter {
-        unit weight;
+        uint weight;
         bool voted;
         address delegate;
         uint vote;
@@ -15,6 +15,8 @@ contract Ballot {
         bytes32 name;
         uint voteCount;
     }
+
+    address public chairperson;
 
     // store voter struct for each possible address
     mapping(address => Voter) public voters;
