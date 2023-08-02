@@ -9,7 +9,7 @@ contract BlindAuction {
     }
 
     address payable public beneficiary;
-    unit public biddingEnd;
+    uint public biddingEnd;
     uint public revealEnd;
     bool public ended;
 
