@@ -15,6 +15,7 @@ public class Token {
     private String symbol;
     private Object logo;
     private Object thumbnail;
+    // even decimals might -> null
     private Integer decimals;
     private String balance;
     @JSONField(name = "possible_spam")

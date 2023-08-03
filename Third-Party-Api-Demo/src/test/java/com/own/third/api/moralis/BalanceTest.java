@@ -36,7 +36,7 @@ public class BalanceTest {
     public void getTokenBalanceByAddress() throws IOException {
 
         String wallet = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
-        String chain = "bsc testnet";
+        String chain = "goerli";
 
         HttpUrl.Builder urlBuilder = HttpUrl.parse(MORALIS_URL + wallet).newBuilder();
         urlBuilder.addPathSegment("erc20")
