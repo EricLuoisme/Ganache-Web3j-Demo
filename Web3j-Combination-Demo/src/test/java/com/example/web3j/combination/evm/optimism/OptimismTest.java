@@ -11,6 +11,7 @@ import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
@@ -35,7 +36,8 @@ import java.util.stream.Collectors;
 public class OptimismTest {
 
     private static final String web3Url_l1 = "https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467";
-    private static final String web3Url = "https://opt-goerli.g.alchemy.com/v2/SpOc-iVOBJaN_rdUndJ3P7d7FiRqSPUD";
+    //    private static final String web3Url = "https://opt-goerli.g.alchemy.com/v2/SpOc-iVOBJaN_rdUndJ3P7d7FiRqSPUD";
+    private static final String web3Url = "https://opt-mainnet.g.alchemy.com/v2/";
 
     public static final Web3j web3j_l1 = Web3j.build(new HttpService(web3Url_l1));
     public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
@@ -139,6 +141,46 @@ public class OptimismTest {
                             System.out.println("Approval amount: " + val256.getValue());
                         });
 
+    }
+
+    @Test
+    public void decodeSpecificBlock() throws IOException {
+
+        String blockHeight = "107938697";
+        String txnHash = "0x49c1c804871abfc2e3a5d94fcde3f0da3336891c2570ec6157c27d1b1ede7689";
+
+        // block
+        EthBlock ethBlock = web3j.ethGetBlockByNumber(
+                DefaultBlockParameter.valueOf(new BigInteger(blockHeight)), true).send();
+        EthBlock.Block block = ethBlock.getBlock();
+        List<EthBlock.TransactionResult> collect = block.getTransactions().stream()
+                .filter(txn -> txnHash.equalsIgnoreCase(((EthBlock.TransactionObject) txn).getHash()))
+                .collect(Collectors.toList());
+
+        // log
+        Event transferEvent = new Event("Transfer",
+                Arrays.asList(
+                        // from
+                        TypeReference.create(Address.class),
+                        // to
+                        TypeReference.create(Address.class),
+                        // amount / tokenId
+                        TypeReference.create(Uint256.class)
+                ));
+        // encode event to topic
+        String transferTopic = EventEncoder.encode(transferEvent);
+        // add topic into filter
+        EthFilter ethFilter = new EthFilter(
+                new DefaultBlockParameterNumber(new BigInteger(blockHeight)),
+                new DefaultBlockParameterNumber(new BigInteger(blockHeight)),
+                Collections.emptyList());
+        ethFilter.addOptionalTopics(transferTopic);
+        // send request
+        EthLog logResult = web3j.ethGetLogs(ethFilter).send();
+        List<EthLog.LogResult> collect1 = logResult.getLogs().stream()
+                .filter(log -> txnHash.equalsIgnoreCase(((EthLog.LogObject) log).getTransactionHash()))
+                .collect(Collectors.toList());
+        System.out.println();
     }
 
 }
