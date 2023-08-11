@@ -37,7 +37,7 @@ public class OptimismTest {
 
     private static final String web3Url_l1 = "https://goerli.infura.io/v3/3f0482cf4c3545dbabaeab75f414e467";
     //    private static final String web3Url = "https://opt-goerli.g.alchemy.com/v2/SpOc-iVOBJaN_rdUndJ3P7d7FiRqSPUD";
-    private static final String web3Url = "https://opt-mainnet.g.alchemy.com/v2/";
+    private static final String web3Url = "https://chain-gateway.functionx.io/v1/optimism-mainnet/";
 
     public static final Web3j web3j_l1 = Web3j.build(new HttpService(web3Url_l1));
     public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
