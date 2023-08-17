@@ -18,8 +18,6 @@
         <jackson.ver>2.15.2</jackson.ver>
         <fastjson2.ver>2.0.34</fastjson2.ver>
         <lombok.ver>1.18.28</lombok.ver>
-
-<!--        <jsonrpc4j.ver>1.6</jsonrpc4j.ver>-->
     </properties>
 
     <dependencies>
@@ -61,19 +59,19 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Web3j依赖 -->
+        <!-- Web3j -->
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>core</artifactId>
             <version>4.9.8</version>
         </dependency>
 
-<!--        &lt;!&ndash; JsonRpc &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.github.briandilley.jsonrpc4j</groupId>-->
-<!--            <artifactId>jsonrpc4j</artifactId>-->
-<!--            <version>${jsonrpc4j.ver}</version>-->
-<!--        </dependency>-->
+        <!-- Geo Location -->
+        <dependency>
+            <groupId>com.maxmind.geoip2</groupId>
+            <artifactId>geoip2</artifactId>
+            <version>4.1.0</version>
+        </dependency>
 
 
     </dependencies>
