@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class BalanceTest {
 
 
-    private final String MORALIS_URL = "https://deep-index.moralis.io/api/v2/";
+    private final String MORALIS_URL = "https://deep-index.moralis.io/api/v2.2/";
 
     private final String API_KEY = "";
 
