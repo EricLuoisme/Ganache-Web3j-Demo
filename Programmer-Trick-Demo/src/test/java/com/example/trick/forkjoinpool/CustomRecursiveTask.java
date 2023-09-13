@@ -1,6 +1,7 @@
 package com.example.trick.forkjoinpool;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ForkJoinTask;
@@ -18,17 +19,24 @@ public class CustomRecursiveTask extends RecursiveTask<Integer> {
 
     @Override
     protected Integer compute() {
-
         if (arr.length > THRESHOLD) {
-//            return ForkJoinTask.invokeAll();
+            return ForkJoinTask.invokeAll(createSubtasks())
+                    .stream()
+                    .mapToInt(ForkJoinTask::join)
+                    .sum();
+        } else {
+            return processing(arr);
         }
-
-
-        return null;
     }
 
     private Collection<CustomRecursiveTask> createSubtasks() {
         List<CustomRecursiveTask> dividedTasks = new ArrayList<>();
-        return null;
+        dividedTasks.add(new CustomRecursiveTask(Arrays.copyOfRange(arr, 0, arr.length / 2)));
+        dividedTasks.add(new CustomRecursiveTask(Arrays.copyOfRange(arr, arr.length / 2, arr.length)));
+        return dividedTasks;
+    }
+
+    private Integer processing(int[] arr) {
+        return Arrays.stream(arr).filter(a -> a > 10 && a < 27).map(a -> a * 10).sum();
     }
 }
