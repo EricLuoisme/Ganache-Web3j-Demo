@@ -1,12 +1,11 @@
 package com.example.web3j.combination.evm.fxEvm;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Bool;
 import org.web3j.abi.datatypes.Function;
+import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
@@ -26,8 +25,6 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-import static org.web3j.crypto.Bip32ECKeyPair.HARDENED_BIT;
-
 public class Delegation_Test {
 
     private static final String web3Url = "https://testnet-fx-json-web3.functionx.io:8545";
@@ -38,9 +35,8 @@ public class Delegation_Test {
     @Test
     public void doDelegation() throws IOException {
 
-        String mnemonic = "";
-        String password = "";
-        Credentials credential = loadBip44Mnemonic2Credential(mnemonic, password, 0);
+        String priKeyStr = "";
+        Credentials credential = Credentials.create(priKeyStr);
         System.out.println("Derived address: " + credential.getAddress());
 
         String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
@@ -50,7 +46,7 @@ public class Delegation_Test {
 
         // construct txn
         Function delegateFunc = new Function("delegate",
-                Collections.singletonList(new Address(validatorAddress)),
+                Collections.singletonList(new Utf8String(validatorAddress)),
                 Collections.singletonList(TypeReference.create(Bool.class))
         );
 
@@ -61,13 +57,10 @@ public class Delegation_Test {
         constructAndCallingContractFunction(sender, data, delegateAmt, contract, credential);
     }
 
-    @NotNull
-    private static Credentials loadBip44Mnemonic2Credential(String mnemonic, String password, int addressIdx) {
-        byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
-        Bip32ECKeyPair masterKeypair = Bip32ECKeyPair.generateKeyPair(seed);
-        final int[] path = {44 | HARDENED_BIT, 60 | HARDENED_BIT, 0 | HARDENED_BIT, 0, addressIdx};
-        Bip32ECKeyPair childKeypair = Bip32ECKeyPair.deriveKeyPair(masterKeypair, path);
-        return Credentials.create(childKeypair);
+
+    @Test
+    public void decodeDelegation() {
+        
     }
 
 
@@ -82,9 +75,9 @@ public class Delegation_Test {
         EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(senderAddress, DefaultBlockParameterName.LATEST).send();
         BigInteger nonce = ethGetTransactionCount.getTransactionCount();
 
-        BigInteger gasLimit = new BigInteger("21000");
+        BigInteger gasLimit = new BigInteger("25000");
         BigInteger maxPriorityFeePerGas = Convert.toWei("1", Convert.Unit.GWEI).toBigInteger();
-        BigInteger maxFeePerGas = Convert.toWei("300", Convert.Unit.GWEI).toBigInteger();
+        BigInteger maxFeePerGas = Convert.toWei("500", Convert.Unit.GWEI).toBigInteger();
 
         System.out.println("maxPriorityFee: " + maxPriorityFeePerGas.multiply(gasLimit));
         System.out.println("maxFee        : " + maxFeePerGas.multiply(gasLimit));
