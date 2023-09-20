@@ -232,6 +232,33 @@ public class Delegation_Test {
 
     }
 
+    @Test
+    public void doUndelegation() throws IOException {
+
+        String priKeyStr = "";
+        Credentials credential = Credentials.create(priKeyStr);
+        System.out.println("Derived address: " + credential.getAddress());
+
+        String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        String contract = "0x0000000000000000000000000000000000001003";
+        String validatorAddress = "fxvaloper1t67ryvnqmnud5g3vpmck00l3umelwkz7huh0s3";
+        BigInteger unDelegateShares = Convert.toWei(new BigDecimal("10"), Convert.Unit.ETHER).toBigInteger();
+
+        // construct txn
+        Function unDelegateFunc = new Function("undelegate",
+                Arrays.asList(
+                        new Utf8String(validatorAddress), new Uint256(unDelegateShares)),
+                Arrays.asList(
+                        TypeReference.create(Uint256.class), TypeReference.create(Uint256.class), TypeReference.create(Uint256.class))
+        );
+
+        String data = FunctionEncoder.encode(unDelegateFunc);
+        System.out.println("unDelegateFunc function encoded data: " + data);
+
+        // call contract
+        constructAndCallingContractFunction(sender, data, BigInteger.ZERO, contract, credential);
+    }
+
 
     /**
      * Construct txn inputs & execute, for some reason, the nonce could not be correctly get from web3j.ethGetTransactionCount
