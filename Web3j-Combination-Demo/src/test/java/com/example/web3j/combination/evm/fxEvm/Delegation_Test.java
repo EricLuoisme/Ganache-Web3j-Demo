@@ -173,18 +173,15 @@ public class Delegation_Test {
         String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
         String contract = "0x0000000000000000000000000000000000001003";
         String validatorAddress = "fxvaloper1t67ryvnqmnud5g3vpmck00l3umelwkz7huh0s3";
-        BigInteger unDelegateAmt = Convert.toWei(new BigDecimal("15"), Convert.Unit.ETHER).toBigInteger();
 
         // construct txn
-        Function delegateFunc = new Function("undelegate",
-                Arrays.asList(
-                        new Utf8String(validatorAddress), new Uint256(unDelegateAmt)),
-                Arrays.asList(
-                        TypeReference.create(Uint256.class), TypeReference.create(Uint256.class), TypeReference.create(Uint256.class))
+        Function withdrawFunc = new Function("withdraw",
+                Collections.singletonList(new Utf8String(validatorAddress)),
+                Collections.singletonList(TypeReference.create(Uint256.class))
         );
 
-        String data = FunctionEncoder.encode(delegateFunc);
-        System.out.println("delegation function encoded data: " + data);
+        String data = FunctionEncoder.encode(withdrawFunc);
+        System.out.println("withdraw function encoded data: " + data);
 
         // call contract
         constructAndCallingContractFunction(sender, data, BigInteger.ZERO, contract, credential);
