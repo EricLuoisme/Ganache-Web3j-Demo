@@ -314,6 +314,35 @@ public class Delegation_Test {
 
     }
 
+    @Test
+    public void transferShare() throws IOException {
+
+        String priKeyStr = "";
+        Credentials credential = Credentials.create(priKeyStr);
+        System.out.println("Derived address: " + credential.getAddress());
+
+        String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        String shareAddress = "0x70076F9f8e221d4729314f99a8AB410C117560aB";
+        String contract = "0x0000000000000000000000000000000000001003";
+        String validatorAddress = "fxvaloper1t67ryvnqmnud5g3vpmck00l3umelwkz7huh0s3";
+        BigInteger transferredShares = Convert.toWei(new BigDecimal("10"), Convert.Unit.ETHER).toBigInteger();
+
+        // construct txn
+        Function transferSharesFunc = new Function("transferShares",
+                Arrays.asList(
+                        new Utf8String(validatorAddress), new Address(shareAddress), new Uint256(transferredShares)),
+                Arrays.asList(
+                        TypeReference.create(Uint256.class), TypeReference.create(Uint256.class))
+        );
+
+        String data = FunctionEncoder.encode(transferSharesFunc);
+        System.out.println("transferSharesFunc function encoded data: " + data);
+        System.out.println("signature: " + cutSignature(data));
+
+        // call contract
+        constructAndCallingContractFunction(sender, data, BigInteger.ZERO, contract, credential);
+    }
+
 
     /**
      * Construct txn inputs & execute, for some reason, the nonce could not be correctly get from web3j.ethGetTransactionCount
