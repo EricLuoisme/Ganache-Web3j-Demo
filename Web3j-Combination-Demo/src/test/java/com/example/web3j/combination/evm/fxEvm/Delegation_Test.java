@@ -62,7 +62,6 @@ public class Delegation_Test {
         constructAndCallingContractFunction(sender, data, delegateAmt, contract, credential);
     }
 
-
     @Test
     public void decodeDelegation() throws IOException {
 
@@ -181,6 +180,7 @@ public class Delegation_Test {
 
         String data = FunctionEncoder.encode(withdrawFunc);
         System.out.println("withdraw function encoded data: " + data);
+        System.out.println("signature: " + cutSignature(data));
 
         // call contract
         constructAndCallingContractFunction(sender, data, BigInteger.ZERO, contract, credential);
@@ -254,6 +254,7 @@ public class Delegation_Test {
 
         String data = FunctionEncoder.encode(unDelegateFunc);
         System.out.println("unDelegateFunc function encoded data: " + data);
+        System.out.println("signature: " + cutSignature(data));
 
         // call contract
         constructAndCallingContractFunction(sender, data, BigInteger.ZERO, contract, credential);
@@ -369,6 +370,10 @@ public class Delegation_Test {
         buffer.get(littleEndianBytes);
 
         return littleEndianBytes;
+    }
+
+    public static String cutSignature(String wholeSignature) {
+        return wholeSignature.length() > 10 ? wholeSignature.substring(0, 10) : wholeSignature;
     }
 
 }
