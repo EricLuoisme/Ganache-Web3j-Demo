@@ -1,17 +1,21 @@
 package com.example.web3j.combination.evm.fxEvm;
 
 import org.junit.jupiter.api.Test;
+import org.web3j.abi.EventEncoder;
 import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Bool;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
+import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Convert;
@@ -23,7 +27,10 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 public class Delegation_Test {
 
@@ -59,8 +66,52 @@ public class Delegation_Test {
 
 
     @Test
-    public void decodeDelegation() {
-        
+    public void decodeDelegation() throws IOException {
+
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10438509)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10438509)),
+                Collections.emptyList());
+
+        Event delegateEvt = new Event("Delegate", Arrays.asList(
+                TypeReference.create(Address.class, true),
+                TypeReference.create(Utf8String.class),
+                TypeReference.create(Uint256.class),
+                TypeReference.create(Uint256.class)
+        ));
+        String delegateTopic = EventEncoder.encode(delegateEvt);
+
+        filter.addOptionalTopics(delegateTopic);
+        EthLog logs = web3j.ethGetLogs(filter).send();
+
+        logs.getLogs().forEach(sinEthLog -> {
+
+            EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
+            Iterator<String> iterator = curLogObj.getTopics().iterator();
+
+            // 1. signature
+            iterator.next();
+
+            // 2. delegator
+            String delegator = new Address(iterator.next()).getValue();
+            System.out.println("Delegator: " + delegator);
+
+            // 3. non-indexed stuff
+            String valueStr = curLogObj.getData();
+            List<Type> valueDecodeList = FunctionReturnDecoder.decode(valueStr, delegateEvt.getNonIndexedParameters());
+
+            String validator = (String) valueDecodeList.get(0).getValue();
+            System.out.println("Validator: " + validator);
+
+            BigInteger amount = (BigInteger) valueDecodeList.get(1).getValue();
+            System.out.println("Amount: " + Convert.fromWei(amount.toString(), Convert.Unit.ETHER) + " FX");
+
+            BigInteger shares = (BigInteger) valueDecodeList.get(2).getValue();
+            System.out.println("Shares: " + shares);
+            System.out.println();
+        });
+
+
     }
 
 
@@ -75,9 +126,9 @@ public class Delegation_Test {
         EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(senderAddress, DefaultBlockParameterName.LATEST).send();
         BigInteger nonce = ethGetTransactionCount.getTransactionCount();
 
-        BigInteger gasLimit = new BigInteger("25000");
-        BigInteger maxPriorityFeePerGas = Convert.toWei("1", Convert.Unit.GWEI).toBigInteger();
-        BigInteger maxFeePerGas = Convert.toWei("500", Convert.Unit.GWEI).toBigInteger();
+        BigInteger gasLimit = new BigInteger("100000");
+        BigInteger maxPriorityFeePerGas = Convert.toWei("5", Convert.Unit.GWEI).toBigInteger();
+        BigInteger maxFeePerGas = Convert.toWei("600", Convert.Unit.GWEI).toBigInteger();
 
         System.out.println("maxPriorityFee: " + maxPriorityFeePerGas.multiply(gasLimit));
         System.out.println("maxFee        : " + maxFeePerGas.multiply(gasLimit));
