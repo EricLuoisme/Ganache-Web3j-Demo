@@ -139,7 +139,6 @@ public class Delegation_Test {
         System.out.println();
     }
 
-
     @Test
     public void queryDelegationRewards() throws IOException {
         String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
@@ -185,6 +184,52 @@ public class Delegation_Test {
 
         // call contract
         constructAndCallingContractFunction(sender, data, BigInteger.ZERO, contract, credential);
+    }
+
+    // would not emit transfer event
+    @Test
+    public void decodeWithdrawDelegationRewards() throws IOException {
+
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10438806)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10438806)),
+                Collections.emptyList());
+
+        Event delegateEvt = new Event("Withdraw", Arrays.asList(
+                TypeReference.create(Address.class, true),
+                TypeReference.create(Utf8String.class),
+                TypeReference.create(Uint256.class)
+        ));
+        String delegateTopic = EventEncoder.encode(delegateEvt);
+
+        filter.addOptionalTopics(delegateTopic);
+        EthLog logs = web3j.ethGetLogs(filter).send();
+
+        logs.getLogs().forEach(sinEthLog -> {
+
+            EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
+            Iterator<String> iterator = curLogObj.getTopics().iterator();
+
+            // 1. signature
+            iterator.next();
+
+            // 2. sender
+            String delegator = new Address(iterator.next()).getValue();
+            System.out.println("Sender: " + delegator);
+
+            // 3. non-indexed stuff
+            String valueStr = curLogObj.getData();
+            List<Type> valueDecodeList = FunctionReturnDecoder.decode(valueStr, delegateEvt.getNonIndexedParameters());
+
+            String validator = (String) valueDecodeList.get(0).getValue();
+            System.out.println("Validator: " + validator);
+
+            BigInteger amount = (BigInteger) valueDecodeList.get(1).getValue();
+            System.out.println("Rewards : " + Convert.fromWei(amount.toString(), Convert.Unit.ETHER) + " FX");
+            System.out.println();
+        });
+
+
     }
 
 
