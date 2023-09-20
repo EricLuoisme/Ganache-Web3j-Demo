@@ -119,8 +119,10 @@ public class Delegation_Test {
         String contract = "0x0000000000000000000000000000000000001003";
 
         Function delegationQueryFunc = new Function("delegation",
-                Arrays.asList(new Utf8String(validatorAddress), new Address(sender)),
-                Arrays.asList(TypeReference.create(Uint256.class), TypeReference.create(Uint256.class)));
+                Arrays.asList(
+                        new Utf8String(validatorAddress), new Address(sender)),
+                Arrays.asList(
+                        TypeReference.create(Uint256.class), TypeReference.create(Uint256.class)));
         String encode = FunctionEncoder.encode(delegationQueryFunc);
 
         Transaction mmCallingTxn = Transaction.createEthCallTransaction(contract, contract, encode);
@@ -135,6 +137,57 @@ public class Delegation_Test {
         Uint256 delegateAmt = (Uint256) decode.get(1);
         System.out.println("Delegate: " + delegateAmt.getValue());
         System.out.println();
+    }
+
+
+    @Test
+    public void queryDelegationRewards() throws IOException {
+        String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        String validatorAddress = "fxvaloper1t67ryvnqmnud5g3vpmck00l3umelwkz7huh0s3";
+        String contract = "0x0000000000000000000000000000000000001003";
+
+        Function delegationQueryFunc = new Function("delegationRewards",
+                Arrays.asList(
+                        new Utf8String(validatorAddress), new Address(sender)),
+                Collections.singletonList(TypeReference.create(Uint256.class)));
+        String encode = FunctionEncoder.encode(delegationQueryFunc);
+
+        Transaction mmCallingTxn = Transaction.createEthCallTransaction(contract, contract, encode);
+        EthCall send = web3j.ethCall(mmCallingTxn, DefaultBlockParameterName.LATEST).send();
+
+        // decode
+        List<Type> decode = FunctionReturnDecoder.decode(send.getValue(), delegationQueryFunc.getOutputParameters());
+        Uint256 rewards = (Uint256) decode.get(0);
+        // Rewards: 0.00238237185127644 FX
+        System.out.println("Rewards: " + Convert.fromWei(rewards.getValue().toString(), Convert.Unit.ETHER) + " FX");
+        System.out.println();
+    }
+
+    @Test
+    public void withdrawDelegationRewards() throws IOException {
+
+        String priKeyStr = "";
+        Credentials credential = Credentials.create(priKeyStr);
+        System.out.println("Derived address: " + credential.getAddress());
+
+        String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        String contract = "0x0000000000000000000000000000000000001003";
+        String validatorAddress = "fxvaloper1t67ryvnqmnud5g3vpmck00l3umelwkz7huh0s3";
+        BigInteger unDelegateAmt = Convert.toWei(new BigDecimal("15"), Convert.Unit.ETHER).toBigInteger();
+
+        // construct txn
+        Function delegateFunc = new Function("undelegate",
+                Arrays.asList(
+                        new Utf8String(validatorAddress), new Uint256(unDelegateAmt)),
+                Arrays.asList(
+                        TypeReference.create(Uint256.class), TypeReference.create(Uint256.class), TypeReference.create(Uint256.class))
+        );
+
+        String data = FunctionEncoder.encode(delegateFunc);
+        System.out.println("delegation function encoded data: " + data);
+
+        // call contract
+        constructAndCallingContractFunction(sender, data, BigInteger.ZERO, contract, credential);
     }
 
 
