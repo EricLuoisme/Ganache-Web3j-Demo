@@ -233,7 +233,7 @@ public class Delegation_Test {
     }
 
     @Test
-    public void doUndelegation() throws IOException {
+    public void doUnDelegation() throws IOException {
 
         String priKeyStr = "";
         Credentials credential = Credentials.create(priKeyStr);
@@ -257,6 +257,60 @@ public class Delegation_Test {
 
         // call contract
         constructAndCallingContractFunction(sender, data, BigInteger.ZERO, contract, credential);
+    }
+
+    // would not emit transfer event
+    @Test
+    public void decodeUnDelegation() throws IOException {
+
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10438913)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10438913)),
+                Collections.emptyList());
+
+        Event unDelegateEvt = new Event("Undelegate", Arrays.asList(
+                TypeReference.create(Address.class, true),
+                TypeReference.create(Utf8String.class),
+                TypeReference.create(Uint256.class),
+                TypeReference.create(Uint256.class),
+                TypeReference.create(Uint256.class)
+        ));
+        String unDelegateTopic = EventEncoder.encode(unDelegateEvt);
+
+        filter.addOptionalTopics(unDelegateTopic);
+        EthLog logs = web3j.ethGetLogs(filter).send();
+
+        logs.getLogs().forEach(sinEthLog -> {
+
+            EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
+            Iterator<String> iterator = curLogObj.getTopics().iterator();
+
+            // 1. signature
+            iterator.next();
+
+            // 2. sender
+            String delegator = new Address(iterator.next()).getValue();
+            System.out.println("Un-Delegator: " + delegator);
+
+            // 3. non-indexed stuff
+            String valueStr = curLogObj.getData();
+            List<Type> valueDecodeList = FunctionReturnDecoder.decode(valueStr, unDelegateEvt.getNonIndexedParameters());
+
+            String validator = (String) valueDecodeList.get(0).getValue();
+            System.out.println("Validator: " + validator);
+
+            BigInteger shares = (BigInteger) valueDecodeList.get(1).getValue();
+            System.out.println("Shares : " + shares);
+
+            BigInteger amount = (BigInteger) valueDecodeList.get(2).getValue();
+            System.out.println("Amount : " + Convert.fromWei(amount.toString(), Convert.Unit.ETHER) + " FX");
+
+            BigInteger completionTime = (BigInteger) valueDecodeList.get(3).getValue();
+            System.out.println("Completion Time : " + new java.util.Date(completionTime.longValue() * 1000));
+            System.out.println();
+        });
+
+
     }
 
 
