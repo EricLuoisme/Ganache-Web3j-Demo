@@ -13,10 +13,8 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
-import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
-import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
-import org.web3j.protocol.core.methods.response.EthLog;
-import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.request.Transaction;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Convert;
 import org.web3j.utils.Numeric;
@@ -112,6 +110,31 @@ public class Delegation_Test {
         });
 
 
+    }
+
+    @Test
+    public void queryDelegation() throws IOException {
+        String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        String validatorAddress = "fxvaloper1t67ryvnqmnud5g3vpmck00l3umelwkz7huh0s3";
+        String contract = "0x0000000000000000000000000000000000001003";
+
+        Function delegationQueryFunc = new Function("delegation",
+                Arrays.asList(new Utf8String(validatorAddress), new Address(sender)),
+                Arrays.asList(TypeReference.create(Uint256.class), TypeReference.create(Uint256.class)));
+        String encode = FunctionEncoder.encode(delegationQueryFunc);
+
+        Transaction mmCallingTxn = Transaction.createEthCallTransaction(contract, contract, encode);
+        EthCall send = web3j.ethCall(mmCallingTxn, DefaultBlockParameterName.LATEST).send();
+
+        // decode
+        List<Type> decode = FunctionReturnDecoder.decode(send.getValue(), delegationQueryFunc.getOutputParameters());
+
+        Uint256 shares = (Uint256) decode.get(0);
+        System.out.println("Shares  : " + shares.getValue());
+
+        Uint256 delegateAmt = (Uint256) decode.get(1);
+        System.out.println("Delegate: " + delegateAmt.getValue());
+        System.out.println();
     }
 
 
