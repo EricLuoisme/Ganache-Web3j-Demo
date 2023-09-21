@@ -331,6 +331,8 @@ public class CrossChain_Out_Test {
             EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
             Iterator<String> iterator = curLogObj.getTopics().iterator();
 
+            System.out.println("TxHash: " + curLogObj.getTransactionHash());
+
             // 1. signature
             iterator.next();
 
@@ -349,6 +351,35 @@ public class CrossChain_Out_Test {
             System.out.println("TxID: " + txId);
             System.out.println();
         });
+    }
+
+
+    @Test
+    public void increaseBridgeFee() throws IOException {
+
+        String priKeyStr = "";
+        Credentials credential = Credentials.create(priKeyStr);
+        System.out.println("Derived address: " + credential.getAddress());
+
+        String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        String tokenContract = "0x3515F25AB7637adcF1b69F4D384ed5936B83431F"; // USDT
+        String crossBridgeContract = "0x0000000000000000000000000000000000001004";
+
+        // construct txn
+        Function increaseBridgeFeeFunc = new Function("increaseBridgeFee",
+                Arrays.asList(
+                        new Utf8String("eth"), // chain
+                        new Uint256(new BigInteger("2326")), // txId
+                        new Address(tokenContract), // token, original token -> 0x0000000000000000000000000000000000000000
+                        new Uint256(new BigInteger("1000000")) // increase fee amount, 1 USDT
+                ),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+
+        String data = FunctionEncoder.encode(increaseBridgeFeeFunc);
+        System.out.println("increase bridge fee function encoded data: " + data);
+
+        // call contract
+        constructAndCallingContractFunction(sender, data, crossBridgeContract, credential);
     }
 
 
