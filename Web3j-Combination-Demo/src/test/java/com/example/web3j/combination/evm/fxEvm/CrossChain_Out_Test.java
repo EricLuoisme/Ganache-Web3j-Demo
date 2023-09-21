@@ -306,6 +306,51 @@ public class CrossChain_Out_Test {
         constructAndCallingContractFunction(sender, data, crossBridgeContract, credential);
     }
 
+    @Test
+    public void cancelCrossChainLogDecoding() throws IOException {
+
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10453193)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10453193)),
+                Collections.emptyList());
+
+        Event cancelSendToExternalEvt = new Event("CancelSendToExternal", Arrays.asList(
+                TypeReference.create(Address.class, true), // sender
+                TypeReference.create(Utf8String.class), // chain
+                TypeReference.create(Uint256.class) // txID
+
+        ));
+        String cancelCrossChainTopic = EventEncoder.encode(cancelSendToExternalEvt);
+        System.out.println("cancel cross chain topic: " + cutSignature(cancelCrossChainTopic));
+
+        filter.addOptionalTopics(cancelCrossChainTopic);
+        EthLog logs = web3j.ethGetLogs(filter).send();
+
+        logs.getLogs().forEach(sinEthLog -> {
+
+            EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
+            Iterator<String> iterator = curLogObj.getTopics().iterator();
+
+            // 1. signature
+            iterator.next();
+
+            // 2. sender
+            String sender = new Address(iterator.next()).getValue();
+            System.out.println("Sender: " + sender);
+
+            // 4. non-indexed stuff
+            String valueStr = curLogObj.getData();
+            List<Type> valueDecodeList = FunctionReturnDecoder.decode(valueStr, cancelSendToExternalEvt.getNonIndexedParameters());
+
+            String chain = (String) valueDecodeList.get(0).getValue();
+            System.out.println("Chain: " + chain);
+
+            BigInteger txId = (BigInteger) valueDecodeList.get(1).getValue();
+            System.out.println("TxID: " + txId);
+            System.out.println();
+        });
+    }
+
 
     @NotNull
     public static Credentials loadBip44Mnemonic2Credential(String mnemonic, String password, int addressIdx) {
