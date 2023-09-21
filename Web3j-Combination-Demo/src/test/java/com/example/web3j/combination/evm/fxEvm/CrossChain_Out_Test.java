@@ -353,7 +353,6 @@ public class CrossChain_Out_Test {
         });
     }
 
-
     @Test
     public void increaseBridgeFee() throws IOException {
 
@@ -380,6 +379,63 @@ public class CrossChain_Out_Test {
 
         // call contract
         constructAndCallingContractFunction(sender, data, crossBridgeContract, credential);
+    }
+
+
+    @Test
+    public void increaseBridgeFeeLogDecoding() throws IOException {
+
+        EthFilter filter = new EthFilter(
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10453435)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10453435)),
+                Collections.emptyList());
+
+        Event increaseBridgeFeeEvt = new Event("IncreaseBridgeFee", Arrays.asList(
+                TypeReference.create(Address.class, true), // sender
+                TypeReference.create(Address.class, true), // token
+                TypeReference.create(Utf8String.class), // chain
+                TypeReference.create(Uint256.class), // txID
+                TypeReference.create(Uint256.class) // fee
+
+        ));
+        String increaseBridgeFeeTopic = EventEncoder.encode(increaseBridgeFeeEvt);
+        System.out.println("increase cross chain topic: " + cutSignature(increaseBridgeFeeTopic));
+
+        filter.addOptionalTopics(increaseBridgeFeeTopic);
+        EthLog logs = web3j.ethGetLogs(filter).send();
+
+        logs.getLogs().forEach(sinEthLog -> {
+
+            EthLog.LogObject curLogObj = (EthLog.LogObject) sinEthLog;
+            Iterator<String> iterator = curLogObj.getTopics().iterator();
+
+            System.out.println("TxHash: " + curLogObj.getTransactionHash());
+
+            // 1. signature
+            iterator.next();
+
+            // 2. sender
+            String sender = new Address(iterator.next()).getValue();
+            System.out.println("Sender: " + sender);
+
+            // 3. token address
+            String token = new Address(iterator.next()).getValue();
+            System.out.println("Token: " + token);
+
+            // 4. non-indexed stuff
+            String valueStr = curLogObj.getData();
+            List<Type> valueDecodeList = FunctionReturnDecoder.decode(valueStr, increaseBridgeFeeEvt.getNonIndexedParameters());
+
+            String chain = (String) valueDecodeList.get(0).getValue();
+            System.out.println("Chain: " + chain);
+
+            BigInteger txId = (BigInteger) valueDecodeList.get(1).getValue();
+            System.out.println("TxID: " + txId);
+
+            BigInteger fee = (BigInteger) valueDecodeList.get(2).getValue();
+            System.out.println("Raw Increase Fee: " + fee);
+            System.out.println();
+        });
     }
 
 
