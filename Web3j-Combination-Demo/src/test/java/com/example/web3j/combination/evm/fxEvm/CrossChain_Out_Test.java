@@ -36,7 +36,6 @@ import static org.web3j.crypto.Bip32ECKeyPair.HARDENED_BIT;
 
 public class CrossChain_Out_Test {
 
-    //    private static final String web3Url = "https://fx-json-web3.functionx.io:8545";
     private static final String web3Url = "https://testnet-fx-json-web3.functionx.io:8545";
 
     private static final Web3j web3j = Web3j.build(new HttpService(web3Url));
@@ -48,8 +47,8 @@ public class CrossChain_Out_Test {
     public void crossChainLogDecoding() throws IOException {
 
         EthFilter filter = new EthFilter(
-                DefaultBlockParameter.valueOf(BigInteger.valueOf(9303183)),
-                DefaultBlockParameter.valueOf(BigInteger.valueOf(9303183)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10452593)),
+                DefaultBlockParameter.valueOf(BigInteger.valueOf(10452593)),
                 Collections.emptyList());
 
         Event crossChainEvt = new Event("CrossChain", Arrays.asList(
@@ -233,15 +232,17 @@ public class CrossChain_Out_Test {
     @Test
     public void sendCrossChain_FxEvm2Others() throws IOException {
 
-        String mnemonic = "";
-        String password = "";
-        Credentials credential = loadBip44Mnemonic2Credential(mnemonic, password, 0);
+//        String mnemonic = "";
+//        String password = "";
+//        Credentials credential = loadBip44Mnemonic2Credential(mnemonic, password, 0);
+
+        String priKeyStr = "";
+        Credentials credential = Credentials.create(priKeyStr);
         System.out.println("Derived address: " + credential.getAddress());
 
-        String sender = "0x70076F9f8e221d4729314f99a8AB410C117560aB";
+        String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
         String tokenContract = "0x3515F25AB7637adcF1b69F4D384ed5936B83431F";
         String crossBridgeContract = "0x0000000000000000000000000000000000001004";
-
 
         // estimate bridgeFee
         String bridgeFeeStr = getCrossBridgeFeeStandard("ethereum", tokenContract);
@@ -280,20 +281,54 @@ public class CrossChain_Out_Test {
         constructAndCallingContractFunction(sender, data, crossBridgeContract, credential);
     }
 
+    @Test
+    public void cancelCrossChain() throws IOException {
+
+        String priKeyStr = "";
+        Credentials credential = Credentials.create(priKeyStr);
+        System.out.println("Derived address: " + credential.getAddress());
+
+        String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        String crossBridgeContract = "0x0000000000000000000000000000000000001004";
+
+        // construct txn
+        Function cancelCrossChainFunc = new Function("cancelSendToExternal",
+                Arrays.asList(
+                        new Utf8String("eth"), // chain
+                        new Uint256(new BigInteger("2324")) // txId
+                ),
+                Collections.singletonList(TypeReference.create(Bool.class)));
+
+        String data = FunctionEncoder.encode(cancelCrossChainFunc);
+        System.out.println("crossChain function encoded data: " + data);
+
+        // call contract
+        constructAndCallingContractFunction(sender, data, crossBridgeContract, credential);
+    }
+
+
+    @NotNull
+    public static Credentials loadBip44Mnemonic2Credential(String mnemonic, String password, int addressIdx) {
+        byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
+        Bip32ECKeyPair masterKeypair = Bip32ECKeyPair.generateKeyPair(seed);
+        final int[] path = {44 | HARDENED_BIT, 60 | HARDENED_BIT, 0 | HARDENED_BIT, 0, addressIdx};
+        Bip32ECKeyPair childKeypair = Bip32ECKeyPair.deriveKeyPair(masterKeypair, path);
+        return Credentials.create(childKeypair);
+    }
 
     /**
      * Construct txn inputs & execute, for some reason, the nonce could not be correctly get from web3j.ethGetTransactionCount
      */
-    private void constructAndCallingContractFunction(String senderAddress, String data, String callingContract, Credentials credentials) throws IOException {
+    private static void constructAndCallingContractFunction(String senderAddress, String data, String callingContract, Credentials credentials) throws IOException {
         // another stuff need to be filled
         long chainId = 90001; // for fx-evm
 
         EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(senderAddress, DefaultBlockParameterName.LATEST).send();
         BigInteger nonce = ethGetTransactionCount.getTransactionCount();
 
-        BigInteger gasLimit = new BigInteger("63292");
-        BigInteger maxPriorityFeePerGas = Convert.toWei("1", Convert.Unit.GWEI).toBigInteger();
-        BigInteger maxFeePerGas = Convert.toWei("563.5", Convert.Unit.GWEI).toBigInteger();
+        BigInteger gasLimit = new BigInteger("100000");
+        BigInteger maxPriorityFeePerGas = Convert.toWei("5", Convert.Unit.GWEI).toBigInteger();
+        BigInteger maxFeePerGas = Convert.toWei("600", Convert.Unit.GWEI).toBigInteger();
 
         System.out.println("maxPriorityFee: " + maxPriorityFeePerGas.multiply(gasLimit));
         System.out.println("maxFee        : " + maxFeePerGas.multiply(gasLimit));
@@ -337,14 +372,6 @@ public class CrossChain_Out_Test {
         return jsonObject.getJSONObject("data").getString("standard");
     }
 
-    @NotNull
-    public static Credentials loadBip44Mnemonic2Credential(String mnemonic, String password, int addressIdx) {
-        byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
-        Bip32ECKeyPair masterKeypair = Bip32ECKeyPair.generateKeyPair(seed);
-        final int[] path = {44 | HARDENED_BIT, 60 | HARDENED_BIT, 0 | HARDENED_BIT, 0, addressIdx};
-        Bip32ECKeyPair childKeypair = Bip32ECKeyPair.deriveKeyPair(masterKeypair, path);
-        return Credentials.create(childKeypair);
-    }
 
     public static String cutSignature(String wholeSignature) {
         return wholeSignature.length() > 10 ? wholeSignature.substring(0, 10) : wholeSignature;
