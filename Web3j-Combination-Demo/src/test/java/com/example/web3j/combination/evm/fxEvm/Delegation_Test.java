@@ -46,7 +46,7 @@ public class Delegation_Test {
 
         String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
         String contract = "0x0000000000000000000000000000000000001003";
-        String validatorAddress = "fxvaloper1t67ryvnqmnud5g3vpmck00l3umelwkz7huh0s3";
+        String validatorAddress = "fxvaloper1etzrlsszsm0jaj4dp5l25vk3p4w0x4ntl64hlw";
         BigInteger delegateAmt = Convert.toWei(new BigDecimal("10"), Convert.Unit.ETHER).toBigInteger();
 
         // construct txn
@@ -170,7 +170,7 @@ public class Delegation_Test {
 
         String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
         String contract = "0x0000000000000000000000000000000000001003";
-        String validatorAddress = "fxvaloper1t67ryvnqmnud5g3vpmck00l3umelwkz7huh0s3";
+        String validatorAddress = "fxvaloper1etzrlsszsm0jaj4dp5l25vk3p4w0x4ntl64hlw";
 
         // construct txn
         Function withdrawFunc = new Function("withdraw",
@@ -241,7 +241,7 @@ public class Delegation_Test {
 
         String sender = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
         String contract = "0x0000000000000000000000000000000000001003";
-        String validatorAddress = "fxvaloper1t67ryvnqmnud5g3vpmck00l3umelwkz7huh0s3";
+        String validatorAddress = "fxvaloper1etzrlsszsm0jaj4dp5l25vk3p4w0x4ntl64hlw";
         BigInteger unDelegateShares = Convert.toWei(new BigDecimal("10"), Convert.Unit.ETHER).toBigInteger();
 
         // construct txn
