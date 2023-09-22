@@ -295,7 +295,7 @@ public class CrossChain_Out_Test {
         Function cancelCrossChainFunc = new Function("cancelSendToExternal",
                 Arrays.asList(
                         new Utf8String("eth"), // chain
-                        new Uint256(new BigInteger("2324")) // txId
+                        new Uint256(new BigInteger("2331")) // txId
                 ),
                 Collections.singletonList(TypeReference.create(Bool.class)));
 
