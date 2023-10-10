@@ -15,7 +15,9 @@ public class BaseGoerliTests {
 
 
     //    public static final Web3j web3j = Web3j.build(new HttpService("https://mainnet.base.org"));
-    public static final Web3j web3j = Web3j.build(new HttpService("https://goerli.base.org"));
+
+//    public static final Web3j web3j = Web3j.build(new HttpService("https://goerli.base.org"));
+    public static final Web3j web3j = Web3j.build(new HttpService("https://base-goerli.public.blastapi.io"));
 
     @Test
     public void testConnection() {
