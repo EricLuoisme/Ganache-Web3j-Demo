@@ -88,10 +88,10 @@ public class NFTTest {
      */
     @Test
     public void getHoldingNFTsByAddress_v3() throws IOException {
-        String owner = "0x36F0A040C8e60974d1F34b316B3e956f509Db7e5";
+        String owner = "0x898cA75AE2e21D3Df62bCD8dcF6b71d00B81864C";
         boolean withMetadata = true;
 
-        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://eth-goerli.g.alchemy.com/nft/v3/" + apiKey).newBuilder();
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://polygon-main.g.alchemy.com/nft/v3/" + apiKey).newBuilder();
         urlBuilder.addPathSegment("getNFTsForOwner")
                 .addQueryParameter("owner", owner)
                 .addQueryParameter("withMetadata", String.valueOf(withMetadata));
