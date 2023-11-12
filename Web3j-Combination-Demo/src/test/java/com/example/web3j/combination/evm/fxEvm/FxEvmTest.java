@@ -2,6 +2,7 @@ package com.example.web3j.combination.evm.fxEvm;
 
 import com.example.web3j.combination.web3j.EthLogConstants;
 import com.example.web3j.combination.web3j.handler.NftUriDecodeHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.*;
 import org.web3j.abi.datatypes.*;
@@ -9,6 +10,7 @@ import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthChainId;
@@ -32,11 +34,12 @@ import java.util.List;
  */
 public class FxEvmTest {
 
-    //    private static final String web3Url = "https://fx-json-web3.functionx.io:8545";
-    private static final String web3Url = "https://testnet-fx-json-web3.functionx.io:8545";
+    private static final String web3Url = "https://fx-json-web3.functionx.io:8545";
+//    private static final String web3Url = "https://testnet-fx-json-web3.functionx.io:8545";
 
-    public static final Web3j web3j = Web3j.build(new HttpService(web3Url));
+    private static final Web3j web3j = Web3j.build(new HttpService(web3Url));
 
+    private static final ObjectMapper om = new ObjectMapper();
 
     @Test
     public void testConnection() {
@@ -56,8 +59,9 @@ public class FxEvmTest {
 
     @Test
     public void getBlock() throws IOException {
-        EthBlock block_5528640 = web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf(new BigInteger("5528640")), false).send();
-        System.out.println(block_5528640.toString());
+//        EthBlock block = web3j.ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false).send();
+        EthBlock block = web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf(new BigInteger("12742601")), false).send();
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(block));
     }
 
     @Test
