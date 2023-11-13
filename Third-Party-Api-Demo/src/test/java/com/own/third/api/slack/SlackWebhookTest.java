@@ -5,6 +5,9 @@ import okhttp3.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class SlackWebhookTest {
@@ -30,7 +33,8 @@ public class SlackWebhookTest {
 
         String serverName = "Spring-Cloud-Specific-Service";
         String description = "Description of the Error";
-        String dateFmt = "2099-10-10 06:29:49";
+//        String dateFmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Instant.now().toEpochMilli());
+        String dateFmt = Instant.now().toString();
 
         RequestBody body = RequestBody.create(String.format(PAYLOAD, serverName, serverName, description, dateFmt), mediaType);
         Request request = new Request.Builder()
