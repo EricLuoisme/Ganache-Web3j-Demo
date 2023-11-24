@@ -20,7 +20,7 @@ public class GroupingByDemo {
     }
 
     // Example class
-    static class Item {
+    private static class Item {
         String key;
         String value;
 
