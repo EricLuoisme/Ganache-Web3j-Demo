@@ -1,11 +1,14 @@
 package com.own.third.api.binance;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.binance.connector.client.impl.SpotClientImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BinanceOrderTest {
 
@@ -21,16 +24,18 @@ public class BinanceOrderTest {
     @Test
     public void testConnection() {
         SpotClientImpl spotClient = new SpotClientImpl(TEST_API, TEST_SRC, TEST_URL);
-        String ping = spotClient.createMarket().time();
+        String ping = spotClient.createMarket().ping();
         System.out.println(ping);
     }
 
     @Test
-    public void exchangeInfo() throws JsonProcessingException {
+    public void testAccInfo() throws JsonProcessingException {
         SpotClientImpl spotClient = new SpotClientImpl(TEST_API, TEST_SRC, TEST_URL);
-
-
-
+        Map<String, Object> reqMap = new HashMap<>();
+        reqMap.put("timestamp", Instant.now().toEpochMilli());
+        String accountInfoResp = spotClient.createTrade().account(reqMap);
+        JSONObject jsonObject = JSONObject.parseObject(accountInfoResp);
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
     }
 
 }
