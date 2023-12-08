@@ -33,15 +33,6 @@ public class BinanceInfoAPITest {
     }
 
     @Test
-    public void testAccInfo() throws JsonProcessingException {
-        Map<String, Object> reqMap = new HashMap<>();
-        reqMap.put("timestamp", Instant.now().toEpochMilli());
-        String accountInfoResp = TESTNET_SPOT_CLIENT.createTrade().account(reqMap);
-        JSONObject jsonObject = JSONObject.parseObject(accountInfoResp);
-        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
-    }
-
-    @Test
     public void testTradeInfo() throws JsonProcessingException {
         String resp = MAINNET_SPOT_CLIENT.createMarket().exchangeInfo(Collections.emptyMap());
         JSONObject jsonObject = JSONObject.parseObject(resp);
