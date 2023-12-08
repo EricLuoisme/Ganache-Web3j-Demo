@@ -64,6 +64,16 @@ public class BinanceOrderAPITest {
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
     }
 
+    @Test
+    public void querySpecificOrder() throws JsonProcessingException {
+        Map<String, Object> reqMap = new HashMap<>();
+        reqMap.put("symbol", "BTCUSDT");
+        reqMap.put("orderId", "746260");
+        reqMap.put("timestamp", Instant.now().toEpochMilli());
+        String resp = TESTNET_SPOT_CLIENT.createTrade().getOrder(reqMap);
+        JSONObject jsonObject = JSONObject.parseObject(resp);
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
+    }
 
 
 }
