@@ -57,5 +57,14 @@ public class BinanceInfoAPITest {
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
     }
 
+    @Test
+    public void specificTradePairPrice() throws JsonProcessingException {
+        Map<String, Object> reqMap = new HashMap<>();
+        reqMap.put("symbol", "BTCUSDT");
+        String resp = TESTNET_SPOT_CLIENT.createMarket().tickerSymbol(reqMap);
+        JSONObject jsonObject = JSONObject.parseObject(resp);
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
+    }
+
 
 }
