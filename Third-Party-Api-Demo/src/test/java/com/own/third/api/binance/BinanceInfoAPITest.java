@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,15 +46,5 @@ public class BinanceInfoAPITest {
         JSONObject jsonObject = JSONObject.parseObject(resp);
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
     }
-
-    @Test
-    public void specificTradePairPrice() throws JsonProcessingException {
-        Map<String, Object> reqMap = new HashMap<>();
-        reqMap.put("symbol", "BTCUSDT");
-        String resp = TESTNET_SPOT_CLIENT.createMarket().tickerSymbol(reqMap);
-        JSONObject jsonObject = JSONObject.parseObject(resp);
-        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
-    }
-
 
 }

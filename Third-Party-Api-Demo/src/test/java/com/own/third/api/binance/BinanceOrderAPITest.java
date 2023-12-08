@@ -35,6 +35,24 @@ public class BinanceOrderAPITest {
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
     }
 
+    @Test
+    public void specificTradePairPrice() throws JsonProcessingException {
+        Map<String, Object> reqMap = new HashMap<>();
+        reqMap.put("symbol", "BTCUSDT");
+        String resp = TESTNET_SPOT_CLIENT.createMarket().tickerSymbol(reqMap);
+        JSONObject jsonObject = JSONObject.parseObject(resp);
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
+    }
+
+    @Test
+    public void avgTradePairPrice() throws JsonProcessingException {
+        Map<String, Object> reqMap = new HashMap<>();
+        reqMap.put("symbol", "BTCUSDT");
+        String resp = MAINNET_SPOT_CLIENT.createMarket().averagePrice(reqMap);
+        JSONObject jsonObject = JSONObject.parseObject(resp);
+        System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
+    }
+
 
     @Test
     public void allOrders() throws JsonProcessingException {
