@@ -74,7 +74,7 @@ public class BinanceUtil {
         }
         reqMap.put("timestamp", Instant.now().toEpochMilli());
         try {
-            String resp = spotClient.createMarket().depth(reqMap);
+            String resp = spotClient.createTrade().getOrder(reqMap);
             QueryOrderDetail queryOrderDetail = JSONObject.parseObject(resp, QueryOrderDetail.class);
             return Optional.of(queryOrderDetail);
         } catch (Exception e) {
