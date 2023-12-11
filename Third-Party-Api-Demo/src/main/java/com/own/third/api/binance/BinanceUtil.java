@@ -100,7 +100,7 @@ public class BinanceUtil {
         reqMap.put("type", type);
         reqMap.put("quantity", quantity);
         try {
-            String resp = spotClient.createMarket().depth(reqMap);
+            String resp = spotClient.createTrade().newOrder(reqMap);
             OrderDetail orderDetail = JSONObject.parseObject(resp, OrderDetail.class);
             return Optional.of(orderDetail);
         } catch (Exception e) {
