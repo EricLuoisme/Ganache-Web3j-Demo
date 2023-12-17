@@ -42,7 +42,7 @@ public class BinanceInfoAPITest {
     public void specificTradePairInfo() throws JsonProcessingException {
         Map<String, Object> reqMap = new HashMap<>();
         reqMap.put("symbol", "BTCUSDT");
-        String resp = TESTNET_SPOT_CLIENT.createMarket().exchangeInfo(reqMap);
+        String resp = MAINNET_SPOT_CLIENT.createMarket().exchangeInfo(reqMap);
         JSONObject jsonObject = JSONObject.parseObject(resp);
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
     }
