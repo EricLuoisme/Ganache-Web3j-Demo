@@ -2,6 +2,7 @@ package com.own.third.api.binance;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.binance.connector.client.exceptions.BinanceClientException;
 import com.binance.connector.client.impl.SpotClientImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -86,9 +87,17 @@ public class BinanceOrderAPITest {
     public void querySpecificOrder() throws JsonProcessingException {
         Map<String, Object> reqMap = new HashMap<>();
         reqMap.put("symbol", "BTCUSDT");
-        reqMap.put("orderId", "746260");
+//        reqMap.put("orderId", "746260");
+        reqMap.put("orderId", "74623423420");
         reqMap.put("timestamp", Instant.now().toEpochMilli());
-        String resp = TESTNET_SPOT_CLIENT.createTrade().getOrder(reqMap);
+
+        String resp = "";
+        try {
+            resp = TESTNET_SPOT_CLIENT.createTrade().getOrder(reqMap);
+        } catch (BinanceClientException bEx) {
+            System.out.println();
+        }
+
         JSONObject jsonObject = JSONObject.parseObject(resp);
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject));
     }
