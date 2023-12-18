@@ -75,7 +75,8 @@ public class BinanceOrderAPITest {
         // use quantity under MARKET price order, we may need to pay more/less USDT
         // the quantity must within the range from Lot_Size, which can be retrieved from PairInfo
         // and the stepSize also need to be considered
-        reqMap.put("quantity", "0.1005");
+//        reqMap.put("quantity", "0.1005");
+        reqMap.put("quoteOrderQty", "1000");
 
         reqMap.put("timestamp", Instant.now().toEpochMilli());
         String resp = TESTNET_SPOT_CLIENT.createTrade().newOrder(reqMap);
@@ -87,8 +88,8 @@ public class BinanceOrderAPITest {
     public void querySpecificOrder() throws JsonProcessingException {
         Map<String, Object> reqMap = new HashMap<>();
         reqMap.put("symbol", "BTCUSDT");
-//        reqMap.put("orderId", "746260");
-        reqMap.put("orderId", "74623423420");
+        reqMap.put("orderId", "6214210");
+//        reqMap.put("orderId", "74623423420");
         reqMap.put("timestamp", Instant.now().toEpochMilli());
 
         String resp = "";
