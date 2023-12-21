@@ -59,21 +59,26 @@ public class TelegramBotTest {
         urlBuilder.addPathSegment("sendMessage");
         String url = urlBuilder.build().toString();
 
-        String text = "*bold \\*text*\n" +
-                "_italic \\*text_\n" +
-                "__underline__\n" +
-                "~strikethrough~\n" +
-                "||spoiler||\n" +
-                "*bold _italic bold ~italic bold strikethrough ||italic bold strikethrough spoiler||~ __underline italic bold___ bold*\n" +
-                "[inline URL](http://www.example.com/)\n" +
-                "[inline mention of a user](tg://user?id=123456789)\n" +
-                "![\uD83D\uDC4D](tg://emoji?id=5368324170671202286)\n" +
-                "`inline fixed-width code`\n" +
-                "```\n" +
-                "pre-formatted fixed-width code block\n" +
-                "```\n" +
-                "```python\n" +
-                "pre-formatted fixed-width code block written in the Python programming language\n" +
+//        String text = "*bold \\*text*\n" +
+//                "_italic \\*text_\n" +
+//                "__underline__\n" +
+//                "~strikethrough~\n" +
+//                "||spoiler||\n" +
+//                "*bold _italic bold ~italic bold strikethrough ||italic bold strikethrough spoiler||~ __underline italic bold___ bold*\n" +
+//                "[inline URL](http://www.example.com/)\n" +
+//                "[inline mention of a user](tg://user?id=123456789)\n" +
+//                "![\uD83D\uDC4D](tg://emoji?id=5368324170671202286)\n" +
+//                "`inline fixed-width code`\n" +
+//                "```\n" +
+//                "pre-formatted fixed-width code block\n" +
+//                "```\n" +
+//                "```python\n" +
+//                "pre-formatted fixed-width code block written in the Python programming language\n" +
+//                "```";
+
+        String text = "*BALANCE ALERT*\n\n" +
+                "Remaining BTC Balance less than 0\\.0005" +
+                "```AccountNo \n123423xxxxxxx1324234" +
                 "```";
 
         JSONObject reqJson = new JSONObject();
