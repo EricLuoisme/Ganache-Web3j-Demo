@@ -76,8 +76,11 @@ public class TelegramBotTest {
 //                "pre-formatted fixed-width code block written in the Python programming language\n" +
 //                "```";
 
-        String text = "*BALANCE ALERT*\n\n" +
-                "Remaining BTC Balance less than 0\\.0005" +
+        String text = "⚠\uFE0F*BALANCE ALERT*\n" +
+                "Remaining BTC Balance less than 0\\.0005\n\n" +
+                "_Service_:   dec\\-the\\-service\n" +
+                "_Time_:      20220902 12:23:23 UTC\\+8" +
+                "" +
                 "```AccountNo \n123423xxxxxxx1324234" +
                 "```";
 
