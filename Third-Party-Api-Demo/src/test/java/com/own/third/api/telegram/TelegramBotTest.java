@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.own.third.api.TrustAllX509CertManager;
+import net.steppschuh.markdowngenerator.table.Table;
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
 
@@ -90,13 +91,18 @@ public class TelegramBotTest {
 //                "2024\\-01\\-11   05\\:55\\:47  \\-0\\.00321   \\+124\\.46713429\n" +
 //                "2024\\-01\\-11   05\\:55\\:47  \\-0\\.00321   \\+124\\.46713429\n" +
 //                "```";
-        String text = "```\n" +
-                "| Symbol | Price | Change |\n" +
-                "|--------|-------|--------|\n" +
-                "| ABC    | 20.85 |  1.626 |\n" +
-                "| DEF    | 78.95 |  0.099 |\n" +
-                "| GHI    | 23.45 |  0.192 |\n" +
-                "| JKL    | 98.85 |  0.292 |```";
+
+        final Table.Builder tableBuilder = new Table.Builder()
+                .withAlignments(Table.ALIGN_CENTER, Table.ALIGN_CENTER)
+                .withRowLimit(2)
+                .addRow("Date", "START", "END", "BTC", "USDT");
+        tableBuilder.addRow("2024-01-11", "05:55:47", "06:55:47", "-0.00321", "+124.46713429");
+        String text = tableBuilder.build().toString();
+
+        text = "*Money Flow Checking*\n\n" +
+                "```BTCUSDT \n" +
+                text +
+                "\n```";
 
 
         JSONObject reqJson = new JSONObject();
