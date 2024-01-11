@@ -17,7 +17,7 @@ public class TelegramBotTest {
 
     private static final String BASE_URL = "https://api.telegram.org/bot";
 
-    private static final String CHAT_ID = "-4015005671";
+    private static final String CHAT_ID = "";
 
     private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .readTimeout(10, TimeUnit.SECONDS)
@@ -76,18 +76,33 @@ public class TelegramBotTest {
 //                "pre-formatted fixed-width code block written in the Python programming language\n" +
 //                "```";
 
-        String text = "⚠\uFE0F*BALANCE ALERT*\n" +
-                "Remaining BTC Balance less than 0\\.0005\n\n" +
-                "_Service_:   dec\\-the\\-service\n" +
-                "_Time_:      20220902 12:23:23 UTC\\+8" +
-                "" +
-                "```AccountNo \n123423xxxxxxx1324234" +
-                "```";
+//        String text = "⚠\uFE0F*BALANCE ALERT*\n" +
+//                "Remaining BTC Balance less than 0\\.0005\n\n" +
+//                "_Service_:   dec\\-the\\-service\n" +
+//                "_Time_:      20220902 12:23:23 UTC\\+8" +
+//                "" +
+//                "```AccountNo \n123423xxxxxxx1324234" +
+//                "```";
+
+//        String text = "*Money Flow Checking*\n\n" +
+//                "```BTCUSDT \n" +
+//                "   DATE      START       BTC         USDT\n" +
+//                "2024\\-01\\-11   05\\:55\\:47  \\-0\\.00321   \\+124\\.46713429\n" +
+//                "2024\\-01\\-11   05\\:55\\:47  \\-0\\.00321   \\+124\\.46713429\n" +
+//                "```";
+        String text = "```\n" +
+                "| Symbol | Price | Change |\n" +
+                "|--------|-------|--------|\n" +
+                "| ABC    | 20.85 |  1.626 |\n" +
+                "| DEF    | 78.95 |  0.099 |\n" +
+                "| GHI    | 23.45 |  0.192 |\n" +
+                "| JKL    | 98.85 |  0.292 |```";
+
 
         JSONObject reqJson = new JSONObject();
         reqJson.put("chat_id", CHAT_ID);
         reqJson.put("text", text);
-        reqJson.put("parse_mode", "MarkdownV2");
+        reqJson.put("parse_mode", "Markdown");
         RequestBody body = RequestBody.create(reqJson.toJSONString(), mediaType);
 
         Request request = new Request.Builder()
