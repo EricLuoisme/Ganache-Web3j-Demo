@@ -10,11 +10,18 @@ public class ThreadPoolExceptionTest {
             2, 4, 500, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(100),
             new BasicThreadFactory.Builder()
+                    .namingPattern("ThreadPool-%d")
+                    .uncaughtExceptionHandler(
+                            (t, e) -> System.out.println("Failed with exception:" + e.getMessage()
+                                    + ", under thread:" + t.getName()))
                     .build(),
             new ThreadPoolExecutor.AbortPolicy());
 
     public static void main(String[] args) throws InterruptedException {
-        poolExecutor.execute(new TaskLogWrapper(new OperationTask()));
+        // 1) use wrapper
+//        poolExecutor.execute(new TaskLogWrapper(new OperationTask()));
+        // 2) config the threadFactory
+        poolExecutor.execute(new OperationTask());
         TimeUnit.SECONDS.sleep(10);
         System.out.println("Main Thread Stop");
     }
