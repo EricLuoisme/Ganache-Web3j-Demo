@@ -73,7 +73,14 @@
             <version>4.1.0</version>
         </dependency>
 
-        <!-- Binance -->
+        <!-- Twitter-Official -->
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>twitter-api-java-sdk</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+
+        <!-- Binance-Official -->
         <dependency>
             <groupId>io.github.binance</groupId>
             <artifactId>binance-connector-java</artifactId>
@@ -122,19 +129,6 @@
             <artifactId>openhtmltopdf-pdfbox</artifactId>
             <version>1.0.10</version>
         </dependency>
-        <!--        <dependency>-->
-<!--            <groupId>org.xhtmlrenderer</groupId>-->
-<!--            <artifactId>flying-saucer-core</artifactId>-->
-<!--            <version>9.4.1</version>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>org.xhtmlrenderer</groupId>-->
-<!--            <artifactId>flying-saucer-pdf</artifactId>-->
-<!--            <version>9.4.1</version>-->
-<!--        </dependency>-->
-
-
 
 
     </dependencies>
