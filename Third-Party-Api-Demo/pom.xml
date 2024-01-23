@@ -14,7 +14,7 @@
         <maven.compiler.source>11</maven.compiler.source>
 
         <junit5.ver>5.6.3</junit5.ver>
-        <okhttp3.ver>4.5.0</okhttp3.ver>
+        <okhttp3.ver>4.12.0</okhttp3.ver>
         <jackson.ver>2.15.2</jackson.ver>
         <fastjson2.ver>2.0.34</fastjson2.ver>
         <lombok.ver>1.18.28</lombok.ver>
@@ -66,6 +66,13 @@
             <version>4.9.8</version>
         </dependency>
 
+        <!-- OAuth -->
+        <dependency>
+            <groupId>com.github.scribejava</groupId>
+            <artifactId>scribejava-core</artifactId>
+            <version>8.3.3</version>
+        </dependency>
+
         <!-- Geo Location -->
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>
@@ -87,6 +94,7 @@
             <version>1.4.3</version>
         </dependency>
 
+        <!-- twittered-->
         <dependency>
             <groupId>io.github.redouane59.twitter</groupId>
             <artifactId>twittered</artifactId>

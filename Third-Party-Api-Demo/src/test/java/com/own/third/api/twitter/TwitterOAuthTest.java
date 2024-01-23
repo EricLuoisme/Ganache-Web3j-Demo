@@ -12,15 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class TwitterAPITest_oauth1 {
+public class TwitterOAuthTest {
 
     private static final String baseAuthUrl = "https://api.twitter.com/oauth";
 
     private static final String CONSUMER_K = "";
 
     private static final String CONSUMER_S = "";
-
-    private final MediaType mediaType = MediaType.parse("application/json");
 
     private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .readTimeout(10, TimeUnit.SECONDS)
@@ -101,7 +99,7 @@ public class TwitterAPITest_oauth1 {
     }
 
 
-    public static Map<String, String> parseStringToMap(String queryString) {
+    private static Map<String, String> parseStringToMap(String queryString) {
         Map<String, String> params = new HashMap<>();
         String[] pairs = queryString.split("&");
         for (String pair : pairs) {

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Scanner;
 
-public class TwitterAPITest_OfficialPkg {
+public class TwitterOAuth2Test {
 
     private static final String BEARER = "";
 
