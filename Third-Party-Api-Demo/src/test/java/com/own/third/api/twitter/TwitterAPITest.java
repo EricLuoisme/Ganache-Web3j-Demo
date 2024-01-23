@@ -7,19 +7,29 @@ import com.twitter.clientlib.api.TwitterApi;
 import com.twitter.clientlib.model.Get2TweetsIdResponse;
 import com.twitter.clientlib.model.ResourceUnauthorizedProblem;
 import org.junit.jupiter.api.Test;
+import twitter4j.*;
+import twitter4j.auth.AccessToken;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class TwitterAPITest {
 
     private static final String BEARER = "";
 
+    private static final String CONSUMER_K = "";
+    private static final String CONSUMER_S = "";
+
+    private static final String ACCESS_T = "";
+
+    private static final String ACCESS_S = "";
+
     private static final TwitterApi apiInstance = new TwitterApi(new TwitterCredentialsBearer(BEARER));
 
 
     @Test
-    public void retrieveTweetInfo() {
+    public void retrieveTweetInfo_official() {
 
         String tweetId = "1749122435029299397";
 
@@ -61,6 +71,40 @@ public class TwitterAPITest {
             e.printStackTrace();
         }
 
+
+    }
+
+
+    @Test
+    public void retrieveReTweet_4Jv2() {
+        Twitter twitter = new TwitterFactory().getInstance();
+        twitter.setOAuthConsumer(CONSUMER_K, CONSUMER_S);
+        twitter.setOAuthAccessToken(new AccessToken(ACCESS_T, ACCESS_S));
+        TwitterV2 v2 = TwitterV2ExKt.getV2(twitter);
+
+        try {
+
+            Long tweetId = 1733434068816089520L;
+
+
+            v2.getTweets(new long[]{tweetId}, V2DefaultFields.mediaFields, null, null, "attachments", null, "attachments.media_keys");
+
+
+            // Check for Retweets
+            List<Status> retweets = twitter.getRetweets(tweetId);
+            for (Status retweet : retweets) {
+                System.out.println("Retweet by User ID: " + retweet.getUser().getId());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    @Test
+    public void retrieveTweetInfo_twittered() {
 
     }
 

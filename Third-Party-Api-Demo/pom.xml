@@ -80,6 +80,19 @@
             <version>2.0.3</version>
         </dependency>
 
+        <!-- Twitter Wrapper V2 -->
+        <dependency>
+            <groupId>io.github.takke</groupId>
+            <artifactId>jp.takke.twitter4j-v2</artifactId>
+            <version>1.4.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.redouane59.twitter</groupId>
+            <artifactId>twittered</artifactId>
+            <version>2.23</version>
+        </dependency>
+
         <!-- Binance-Official -->
         <dependency>
             <groupId>io.github.binance</groupId>
