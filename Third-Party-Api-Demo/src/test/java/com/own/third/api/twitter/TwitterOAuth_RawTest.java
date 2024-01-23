@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class TwitterOAuthTest {
+public class TwitterOAuth_RawTest {
 
     private static final String baseAuthUrl = "https://api.twitter.com/oauth";
 

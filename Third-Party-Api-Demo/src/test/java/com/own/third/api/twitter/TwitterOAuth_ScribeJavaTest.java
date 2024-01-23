@@ -7,6 +7,8 @@ import com.github.scribejava.core.model.OAuth1RequestToken;
 import com.github.scribejava.core.oauth.OAuth10aService;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
@@ -44,6 +46,23 @@ public class TwitterOAuth_ScribeJavaTest {
         System.out.println("Got the Access Token!");
         System.out.println("(The raw response looks like this: " + accessToken.getRawResponse() + "')");
         System.out.println();
+
+        Map<String, String> params = parseStringToMap(accessToken.getRawResponse());
+        System.out.println("OAuth Token: " + params.get("oauth_token"));
+        System.out.println("OAuth Token Secret: " + params.get("oauth_token_secret"));
+        System.out.println("User ID: " + params.get("user_id"));
+        System.out.println("Screen Name: " + params.get("screen_name"));
+        System.out.println();
+    }
+
+    private static Map<String, String> parseStringToMap(String queryString) {
+        Map<String, String> params = new HashMap<>();
+        String[] pairs = queryString.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            params.put(pair.substring(0, idx), pair.substring(idx + 1));
+        }
+        return params;
     }
 
 }
