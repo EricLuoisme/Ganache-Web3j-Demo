@@ -14,14 +14,14 @@ import java.util.concurrent.ExecutionException;
 
 public class TwitterOAuth_ScribeJavaTest {
 
-    private static final String CLIENT_ID = "";
-    private static final String CLIENT_S = "";
+    private static final String CONSUMER_K = "";
+    private static final String CONSUMER_S = "";
 
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
 
-        final OAuth10aService service = new ServiceBuilder(CLIENT_ID)
-                .apiSecret(CLIENT_S)
+        final OAuth10aService service = new ServiceBuilder(CONSUMER_K)
+                .apiSecret(CONSUMER_S)
                 .build(TwitterApi.instance());
         final Scanner in = new Scanner(System.in);
 
