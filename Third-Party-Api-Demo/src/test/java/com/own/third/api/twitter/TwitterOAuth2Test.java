@@ -3,30 +3,35 @@ package com.own.third.api.twitter;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.pkce.PKCE;
 import com.github.scribejava.core.pkce.PKCECodeChallengeMethod;
-import com.twitter.clientlib.TwitterCredentialsBearer;
 import com.twitter.clientlib.TwitterCredentialsOAuth2;
 import com.twitter.clientlib.auth.TwitterOAuth20Service;
-import org.junit.jupiter.api.Test;
 
 import java.util.Scanner;
 
 public class TwitterOAuth2Test {
 
-    private static final String BEARER = "";
+    private static final String OAUTH_2_CLIENT_ID = "";
 
-    private static final String CLIENT_ID = "";
-
-    private static final String CLIENT_S = "";
-
-    private static final TwitterCredentialsBearer bearerCredential = new TwitterCredentialsBearer(BEARER);
+    private static final String OAUTH_2_CLIENT_S = "";
 
     private static final TwitterCredentialsOAuth2 oauth2Credential = new TwitterCredentialsOAuth2(
-            CLIENT_ID, CLIENT_S, "", "");
+            OAUTH_2_CLIENT_ID, OAUTH_2_CLIENT_S, "", "");
 
-    @Test
-    public void oauth2Process() {
+
+    public static void main(String[] args) {
+
         // 1. get oauth 2 access token
         OAuth2AccessToken accessToken = getAccessToken(oauth2Credential);
+        if (accessToken == null) {
+            System.out.println("Error, cease because of null accessToken");
+        }
+
+        // 2. print
+        System.out.println("Access Token: " + accessToken.getAccessToken());
+        System.out.println("Refresh Token: " + accessToken.getRefreshToken());
+        System.out.println("Expires In: " + accessToken.getExpiresIn());
+        System.out.println("Token Type: " + accessToken.getTokenType());
+        System.out.println("Scope: " + accessToken.getScope());
     }
 
 
