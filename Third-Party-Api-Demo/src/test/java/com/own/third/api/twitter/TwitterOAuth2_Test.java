@@ -8,7 +8,7 @@ import com.twitter.clientlib.auth.TwitterOAuth20Service;
 
 import java.util.Scanner;
 
-public class TwitterOAuth2Test {
+public class TwitterOAuth2_Test {
 
     private static final String OAUTH_2_CLIENT_ID = "";
 
@@ -24,6 +24,7 @@ public class TwitterOAuth2Test {
         OAuth2AccessToken accessToken = getAccessToken(oauth2Credential);
         if (accessToken == null) {
             System.out.println("Error, cease because of null accessToken");
+            return;
         }
 
         // 2. print
