@@ -17,7 +17,7 @@ public class TwitterOAuth_APICallingTest {
 
     private static final String USER_ID = "1571040121339904002";
 
-    private static final String TWITTER_ID = "1746964887949934958";
+    private static final String TWITTER_ID = "1574944913178755073";
 
     private static final String CONSUMER_K = "";
     private static final String CONSUMER_S = "";
@@ -28,7 +28,7 @@ public class TwitterOAuth_APICallingTest {
 
 
     @Test
-    public void checkRetweet_WithTweetIdAndUserId() throws IOException, ExecutionException, InterruptedException {
+    public void retweetForUser() throws IOException, ExecutionException, InterruptedException {
 
         // OAuth1.0a
         OAuth10aService auth10aService = new ServiceBuilder(CONSUMER_K)
@@ -49,5 +49,4 @@ public class TwitterOAuth_APICallingTest {
         System.out.println(bodyStr);
 
     }
-
 }
