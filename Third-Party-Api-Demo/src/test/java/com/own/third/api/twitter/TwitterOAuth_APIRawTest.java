@@ -89,7 +89,31 @@ public class TwitterOAuth_APIRawTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
 
+    @Test
+    public void likedByUser() {
+        // path
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL).newBuilder();
+        urlBuilder.addPathSegment("tweets")
+                .addPathSegment(TWITTER_ID)
+                .addPathSegment("retweeted_by");
+        HttpUrl url = urlBuilder.build();
+        System.out.println("url: " + url);
 
+        // request
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer " + BEARER)
+                .get()
+                .build();
+
+        try {
+            okhttp3.Response response = okHttpClient.newCall(request).execute();
+            String respStr = response.body().string();
+            System.out.println("Response: " + respStr);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
