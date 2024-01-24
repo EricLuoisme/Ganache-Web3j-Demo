@@ -23,6 +23,8 @@ public class TwitterOAuth_APIRawTest {
 
     private static final String TWITTER_ID = "1573323429251612673";
 
+    private static final String CONVERSATION_ID = "1749897590492327984";
+
     private static final String BASE_URL = "https://api.twitter.com/2";
 
     private static final String CONSUMER_K = "";
@@ -62,6 +64,35 @@ public class TwitterOAuth_APIRawTest {
         String bodyStr = resp.getBody();
         System.out.println(bodyStr);
 
+    }
+
+    @Test
+    public void checkFollowers() {
+
+        // TODO need extra permissions
+
+        // path
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL).newBuilder();
+        urlBuilder.addPathSegment("users")
+                .addPathSegment(USER_ID)
+                .addPathSegment("followers");
+        HttpUrl url = urlBuilder.build();
+        System.out.println("url: " + url);
+
+        // request
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer " + BEARER)
+                .get()
+                .build();
+
+        try {
+            okhttp3.Response response = okHttpClient.newCall(request).execute();
+            String respStr = response.body().string();
+            System.out.println("Response: " + respStr);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -116,4 +147,67 @@ public class TwitterOAuth_APIRawTest {
             throw new RuntimeException(e);
         }
     }
+
+    @Test
+    public void singleTweetChecking() {
+        // path
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL).newBuilder();
+        urlBuilder.addPathSegment("tweets")
+                .addPathSegment("1749897590492327984")
+                .addQueryParameter("tweet.fields", "created_at,in_reply_to_user_id,conversation_id")
+                .addQueryParameter("expansions", "in_reply_to_user_id")
+                .addQueryParameter("user.fields", "id,name");
+
+        HttpUrl url = urlBuilder.build();
+        System.out.println("url: " + url);
+
+        // request
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer " + BEARER)
+                .get()
+                .build();
+
+        try {
+            okhttp3.Response response = okHttpClient.newCall(request).execute();
+            String respStr = response.body().string();
+            System.out.println("Response: " + respStr);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void recentTweetLookingUp() {
+        // path
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL).newBuilder();
+        urlBuilder.addPathSegment("tweets")
+                .addPathSegment("search")
+                .addPathSegment("recent")
+                .addQueryParameter("query", "conversation_id:1749897590492327984")
+                .addQueryParameter("tweet.fields", "in_reply_to_user_id,created_at")
+                .addQueryParameter("expansions", "in_reply_to_user_id")
+                .addQueryParameter("user.fields", "id,name")
+                .addQueryParameter("max_results", "100");
+
+        HttpUrl url = urlBuilder.build();
+        System.out.println("url: " + url);
+
+        // request
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer " + BEARER)
+                .get()
+                .build();
+
+        try {
+            okhttp3.Response response = okHttpClient.newCall(request).execute();
+            String respStr = response.body().string();
+            System.out.println("Response: " + respStr);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
 }
