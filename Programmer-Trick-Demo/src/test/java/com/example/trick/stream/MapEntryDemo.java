@@ -41,7 +41,7 @@ public class MapEntryDemo {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public class TaskDto {
+    public static class TaskDto {
         private Long id;
         // 需要查询taskParam
         private Long taskParamId;
@@ -54,7 +54,7 @@ public class MapEntryDemo {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public class TaskParamDto {
+    public static class TaskParamDto {
         private Long id;
         private String paramStuff;
     }
