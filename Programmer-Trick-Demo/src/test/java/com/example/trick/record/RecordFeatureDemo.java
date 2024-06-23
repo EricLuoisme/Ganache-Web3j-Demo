@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 public class RecordFeatureDemo {
 
 
@@ -12,7 +14,9 @@ public class RecordFeatureDemo {
         AAA a = AAA.builder().featureA("A").build();
         BBB b = BBB.builder().featureB("B").build();
         APackB aPackB = tryPackAAndB(a, b);
+        System.out.println(APackB.NAME);
         System.out.println(aPackB);
+        System.out.println(aPackB.getFeatureA());
     }
 
 
@@ -22,6 +26,19 @@ public class RecordFeatureDemo {
 
 
     public record APackB(AAA a, BBB b) {
+
+        public static final String NAME = "THIS IS A PACKED RECORD";
+
+        public APackB {
+            // 对于Record还可以添加类似的constructor校验
+            if (Objects.isNull(a.featureA)) {
+                throw new IllegalArgumentException("Could not be null");
+            }
+        }
+
+        public String getFeatureA() {
+            return a.featureA;
+        }
     }
 
 
